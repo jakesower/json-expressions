@@ -21,17 +21,21 @@ JSON Expressions is built around several key principles:
 
 Expressions are JSON objects that describe computations to be performed on data. Each expression has a single key that identifies the expression type (prefixed with `$`) and a value that provides the parameters:
 
+Simple comaprison:
 ```json
-// Simple comparison
-{ "$gt": 18 }  // inputData > 18
+{ "$gt": 18 }
+```
 
-// Logical expressions
+Logical expressions:
+```json
 { "$and": [
   { "$gt": 80 },
   { "$lt": 5 }
 ]}
+```
 
-// Conditional logic
+Conditional logic:
+```json
 { "$if": {
   "if": { "$eq": "active" },
   "then": { "$get": "fullName" },
