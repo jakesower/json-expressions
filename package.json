@@ -1,0 +1,59 @@
+{
+  "name": "json-expressions",
+  "version": "0.2.1",
+  "description": "A JavaScript expression engine for JSON-based dynamic computations and function composition",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "keywords": [
+    "expressions",
+    "json",
+    "functional",
+    "composition",
+    "evaluation",
+    "dynamic",
+    "rules-engine"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "didyoumean": "^1.2.2",
+    "es-toolkit": "^1.28.0",
+    "glob": "^11.0.3"
+  },
+  "scripts": {
+    "build": "npm run clean && rollup -c && cp index.d.ts dist/",
+    "clean": "rm -rf dist",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "lint": "eslint src/ test/",
+    "lint:fix": "eslint --fix src/ test/",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "rollup": "^4.50.0",
+    "vitest": "^3.2.4"
+  }
+}

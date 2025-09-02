@@ -1,0 +1,12 @@
+node_modules/
+lerna-debug.log
+npm-debug.log
+.idea
+.vscode
+.npmrc
+dist/
+.DS_STORE
+coverage/
+
+# LLM
+CLAUDE.md
