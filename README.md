@@ -139,11 +139,11 @@ Evaluates an expression against input data.
 **Returns:** Result of the expression evaluation
 
 ```javascript
-const expression = { $sum: [10, 20] };
-const data = null; // Not used for this static expression
+const expression = { $add: 5 };
+const data = 10;
 
 const result = engine.apply(expression, data);
-// Returns: 30
+// Returns: 15
 ```
 
 #### `evaluate(expression)`
@@ -248,20 +248,49 @@ evaluate({ $ensurePath: [data, "user.profile.email"] }); // Throws if path doesn
 
 #### `$get`
 
-Retrieves a value from the data object using lodash-style path notation.
+Retrieves a value from the data object using lodash-style path notation. Supports optional default values when the path does not exist.
 
 **Apply form:**
 
 ```javascript
 apply({ $get: "name" }, data); // Gets data.name
 apply({ $get: "user.age" }, data); // Gets data.user.age (nested path)
+
+// With default values
+apply({ $get: ["name", "Anonymous"] }, data); // Gets data.name or "Anonymous" if undefined
+apply({ $get: ["user.profile.email", "no-email@example.com"] }, data); // Nested path with default
 ```
 
 **Evaluate form:**
 
 ```javascript
 evaluate({ $get: [data, "user.age"] }); // Gets data.user.age
+
+// With default values
+evaluate({ $get: [data, "name", "Anonymous"] }); // Gets data.name or "Anonymous" if undefined  
+evaluate({ $get: [data, "user.profile.email", "no-email@example.com"] }); // Nested path with default
 ```
+
+#### `$prop`
+
+Retrieves a direct property from an object using strict access (will throw errors on null/undefined objects). Use this for simple property access when you want validation that the object exists. For safer path traversal with graceful error handling, use `$get` instead.
+
+**Apply form:**
+
+```javascript
+apply({ $prop: "name" }, data); // Gets data.name (throws if data is null/undefined)
+apply({ $prop: "length" }, [1, 2, 3]); // Gets array length: 3
+apply({ $prop: 0 }, ["first", "second"]); // Gets data[0]: "first"
+```
+
+**Evaluate form:**
+
+```javascript
+evaluate({ $prop: [data, "name"] }); // Gets data.name (throws if data is null/undefined)
+evaluate({ $prop: [["a", "b", "c"], 1] }); // Gets array[1]: "b"
+```
+
+**Note:** `$prop` throws `TypeError` when accessing properties on `null` or `undefined` objects, making it suitable for strict validation scenarios. For graceful handling of missing data, use `$get` with default values instead.
 
 #### `$isDefined`
 
@@ -1084,7 +1113,7 @@ All temporal expressions ignore their operand and return the current time when e
 import { defaultExpressionEngine } from "json-expressions";
 
 const daycareData = {
-  teacher: { name: "Ahmed", age: 28 },
+  teacher: { name: "James", age: 28 },
   children: [
     { name: "Ximena", age: 4, activity: "playing" },
     { name: "Kwame", age: 5, activity: "napping" },
@@ -1110,7 +1139,45 @@ const teacherName = defaultExpressionEngine.apply(
   { $get: "name" },
   daycareData.teacher,
 );
-// Returns: "Ahmed"
+// Returns: "James"
+
+// Get optional contact info with defaults
+const teacherEmail = defaultExpressionEngine.apply(
+  { $get: ["email", "no-email@daycare.com"] },
+  daycareData.teacher,
+);
+// Returns: "no-email@daycare.com" (since teacher object has no email)
+
+const teacherPhone = defaultExpressionEngine.apply(
+  { $get: ["contact.phone", "555-0000"] },
+  daycareData.teacher,
+);
+// Returns: "555-0000" (nested path with default)
+
+// Demonstrate strict vs safe property access
+const childData = { name: "Amara", age: 4 };
+
+// Safe access with $get - handles missing properties safely and silently
+const safeAccess = defaultExpressionEngine.apply(
+  { $get: "nickname" },
+  childData,
+);
+// Returns: undefined (safe, no error)
+
+// Strict access with $prop - assumes valid object structure
+const childName = defaultExpressionEngine.apply(
+  { $prop: "name" },
+  childData,
+);
+// Returns: "Amara"
+
+// Strict access will throw on null data (good for enforcing expectations)
+try {
+  defaultExpressionEngine.apply({ $prop: "name" }, null);
+} catch (error) {
+  console.log("$prop caught invalid data:", error.message);
+  // Logs: "$prop caught invalid data: Cannot read properties of null (reading 'name')"
+}
 
 // Calculate total daily meal cost using static evaluation
 const mealCosts = daycareData.dailyMeals.map((meal) => meal.cost);

@@ -69,27 +69,60 @@ const $ensurePath = {
   },
 };
 
-/**
- * Creates a path-based expression that operates on object-path pairs.
- * @param {function(any, string): any} pathFn - Function that takes (object, path) and returns result
- * @param {string} expressionName - Name of the expression for error messages
- * @returns {object} Expression object with apply and evaluate methods
- */
-const createPathExpression = (pathFn, expressionName) => ({
-  apply: (operand, inputData, { apply }) =>
-    pathFn(inputData, apply(operand, inputData)),
+const $get = {
+  apply: (operand, inputData, { apply }) => {
+    if (typeof operand === "string") {
+      return get(inputData, operand);
+    }
+    if (Array.isArray(operand)) {
+      const [path, defaultValue] = operand;
+      const evaluatedPath = apply(path, inputData);
+      const result = get(inputData, evaluatedPath);
+      return result !== undefined ? result : apply(defaultValue, inputData);
+    }
+    throw new Error("$get operand must be string or array");
+  },
   evaluate: (operand, { evaluate }) => {
     if (!Array.isArray(operand)) {
       throw new Error(
-        `${expressionName} evaluate form requires array operand: [object, path]`,
+        "$get evaluate form requires array operand: [object, path] or [object, path, default]",
       );
     }
-    const [object, path] = operand;
-    return pathFn(evaluate(object), evaluate(path));
-  },
-});
 
-const $get = createPathExpression((object, path) => get(object, path), "$get");
+    if (operand.length === 2) {
+      const [object, path] = operand;
+      return get(evaluate(object), evaluate(path));
+    }
+
+    if (operand.length === 3) {
+      const [object, path, defaultValue] = operand;
+      const result = get(evaluate(object), evaluate(path));
+      return result !== undefined ? result : evaluate(defaultValue);
+    }
+
+    throw new Error(
+      "$get evaluate form requires array operand: [object, path] or [object, path, default]",
+    );
+  },
+};
+
+const $prop = {
+  apply: (operand, inputData, { apply }) => {
+    const property = apply(operand, inputData);
+    return inputData[property];
+  },
+  evaluate: (operand, { evaluate }) => {
+    if (!Array.isArray(operand)) {
+      throw new Error(
+        "$prop evaluate form requires array operand: [object, property]",
+      );
+    }
+    const [object, property] = operand;
+    const evaluatedObject = evaluate(object);
+    const evaluatedProperty = evaluate(property);
+    return evaluatedObject[evaluatedProperty];
+  },
+};
 
 const $literal = {
   apply: (operand) => operand,
@@ -157,5 +190,6 @@ export const coreDefinitions = {
   $isDefined,
   $literal,
   $pipe,
+  $prop,
   $ensurePath,
 };

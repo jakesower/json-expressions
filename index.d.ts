@@ -45,11 +45,15 @@ export interface ExpressionEngine {
 // === CORE EXPRESSIONS ===
 
 export interface GetExpression {
-	$get: string | [unknown, string];
+	$get: string | [string, unknown] | [unknown, string] | [unknown, string, unknown];
 }
 
 export interface LiteralExpression {
 	$literal: unknown;
+}
+
+export interface PropExpression {
+	$prop: string | number | symbol | [unknown, string | number | symbol];
 }
 
 export interface IsDefined {
@@ -302,6 +306,7 @@ export type AnyExpression =
 	// Core
 	| GetExpression
 	| LiteralExpression
+	| PropExpression
 	| IsDefined
 	| EnsurePathExpression
 	| DebugExpression

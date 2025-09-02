@@ -155,11 +155,35 @@ describe("$get", () => {
 			).toEqual("Arnar");
 		});
 
+		it("gets value with default when path exists", () => {
+			expect(
+				evaluate({ $get: [{ name: "Amara", age: 30 }, "name", "defaultName"] }),
+			).toEqual("Amara");
+		});
+
+		it("returns default when path does not exist", () => {
+			expect(
+				evaluate({ $get: [{ age: 30 }, "name", "defaultName"] }),
+			).toEqual("defaultName");
+		});
+
+		it("returns default when nested path does not exist", () => {
+			expect(
+				evaluate({ $get: [{ user: {} }, "user.name", "Anonymous"] }),
+			).toEqual("Anonymous");
+		});
+
+		it("works with complex default values", () => {
+			expect(
+				evaluate({ $get: [{ age: 30 }, "user", { name: "Guest", role: "visitor" }] }),
+			).toEqual({ name: "Guest", role: "visitor" });
+		});
+
 		it("throws with non-array operand", () => {
 			expect(() => {
 				evaluate({ $get: "name" });
 			}).toThrowError(
-				"$get evaluate form requires array operand: [object, path]",
+				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
 			);
 		});
 
@@ -167,8 +191,147 @@ describe("$get", () => {
 			expect(() => {
 				evaluate({ $get: { object: {}, path: "name" } });
 			}).toThrowError(
-				"$get evaluate form requires array operand: [object, path]",
+				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
 			);
+		});
+
+		it("throws with invalid array length", () => {
+			expect(() => {
+				evaluate({ $get: [{}] });
+			}).toThrowError(
+				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
+			);
+		});
+	});
+
+	describe("apply form", () => {
+		it("gets value using string path", () => {
+			expect(apply({ $get: "name" }, { name: "Fatima", age: 25 })).toEqual("Fatima");
+		});
+
+		it("gets nested value using string path", () => {
+			expect(apply({ $get: "user.name" }, { user: { name: "Chen" } })).toEqual("Chen");
+		});
+
+		it("gets value with default when path exists", () => {
+			expect(apply({ $get: ["name", "defaultName"] }, { name: "Kenji", age: 25 })).toEqual("Kenji");
+		});
+
+		it("returns default when path does not exist", () => {
+			expect(apply({ $get: ["name", "defaultName"] }, { age: 25 })).toEqual("defaultName");
+		});
+
+		it("returns default when nested path does not exist", () => {
+			expect(apply({ $get: ["user.name", "Anonymous"] }, { user: {} })).toEqual("Anonymous");
+		});
+
+		it("works with expression as default", () => {
+			expect(
+				apply(
+					{ $get: ["name", { $get: "fallbackName" }] }, 
+					{ age: 25, fallbackName: "Guest" },
+				),
+			).toEqual("Guest");
+		});
+
+		it("works with complex default values", () => {
+			expect(
+				apply({ $get: ["user", { name: "Guest", role: "visitor" }] }, { age: 25 }),
+			).toEqual({ name: "Guest", role: "visitor" });
+		});
+
+		it("handles undefined vs null correctly", () => {
+			expect(apply({ $get: ["name", "default"] }, { name: null })).toEqual(null);
+			expect(apply({ $get: ["name", "default"] }, {})).toEqual("default");
+		});
+
+		it("throws with invalid operand type", () => {
+			expect(() => {
+				apply({ $get: 123 }, {});
+			}).toThrowError("$get operand must be string or array");
+		});
+	});
+});
+
+describe("$prop", () => {
+	describe("apply form", () => {
+		it("gets simple property", () => {
+			expect(apply({ $prop: "name" }, { name: "Kenji", age: 25 })).toEqual("Kenji");
+		});
+
+		it("gets property using expression", () => {
+			expect(apply({ $prop: { $literal: "age" } }, { name: "Yuki", age: 30 })).toEqual(30);
+		});
+
+		it("returns undefined for missing property", () => {
+			expect(apply({ $prop: "missing" }, { name: "Sato" })).toBeUndefined();
+		});
+
+		it("throws when accessing property on null", () => {
+			expect(() => {
+				apply({ $prop: "name" }, null);
+			}).toThrowError("Cannot read properties of null");
+		});
+
+		it("throws when accessing property on undefined", () => {
+			expect(() => {
+				apply({ $prop: "name" }, undefined);
+			}).toThrowError("Cannot read properties of undefined");
+		});
+
+		it("works with numeric properties", () => {
+			expect(apply({ $prop: 0 }, ["first", "second"])).toEqual("first");
+			expect(apply({ $prop: "length" }, ["a", "b", "c"])).toEqual(3);
+		});
+
+		it("works with symbol properties", () => {
+			const sym = Symbol("test");
+			const obj = { [sym]: "symbol value" };
+			expect(apply({ $prop: { $literal: sym } }, obj)).toEqual("symbol value");
+		});
+	});
+
+	describe("evaluate form", () => {
+		it("gets property from object", () => {
+			expect(evaluate({ $prop: [{ name: "Chen", age: 28 }, "name"] })).toEqual("Chen");
+		});
+
+		it("gets numeric property", () => {
+			expect(evaluate({ $prop: [["zero", "one", "two"], 1] })).toEqual("one");
+		});
+
+		it("returns undefined for missing property", () => {
+			expect(evaluate({ $prop: [{ age: 25 }, "name"] })).toBeUndefined();
+		});
+
+		it("throws when object is null", () => {
+			expect(() => {
+				evaluate({ $prop: [null, "name"] });
+			}).toThrowError("Cannot read properties of null");
+		});
+
+		it("throws when object is undefined", () => {
+			expect(() => {
+				evaluate({ $prop: [undefined, "name"] });
+			}).toThrowError("Cannot read properties of undefined");
+		});
+
+		it("throws with non-array operand", () => {
+			expect(() => {
+				evaluate({ $prop: "name" });
+			}).toThrowError(
+				"$prop evaluate form requires array operand: [object, property]",
+			);
+		});
+
+		it("handles single element array gracefully", () => {
+			expect(evaluate({ $prop: [{ someKey: "value" }] })).toBeUndefined();
+		});
+
+		it("works with computed property names", () => {
+			expect(
+				evaluate({ $prop: [{ a: "value-a", b: "value-b" }, { $literal: "a" }] }),
+			).toEqual("value-a");
 		});
 	});
 });
