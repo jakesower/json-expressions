@@ -143,63 +143,71 @@ describe("$get", () => {
 	describe("evaluate form", () => {
 		const { evaluate } = defaultExpressionEngine;
 
-		it("gets value from object using array syntax", () => {
-			expect(evaluate({ $get: [{ name: "Arnar", age: 30 }, "name"] })).toEqual(
+		it("gets value from object using object syntax", () => {
+			expect(evaluate({ $get: { object: { name: "Arnar", age: 30 }, path: "name" } })).toEqual(
 				"Arnar",
 			);
 		});
 
 		it("gets nested value from object", () => {
 			expect(
-				evaluate({ $get: [{ user: { name: "Arnar" } }, "user.name"] }),
+				evaluate({ $get: { object: { user: { name: "Arnar" } }, path: "user.name" } }),
 			).toEqual("Arnar");
 		});
 
 		it("gets value with default when path exists", () => {
 			expect(
-				evaluate({ $get: [{ name: "Amara", age: 30 }, "name", "defaultName"] }),
+				evaluate({ $get: { object: { name: "Amara", age: 30 }, path: "name", default: "defaultName" } }),
 			).toEqual("Amara");
 		});
 
 		it("returns default when path does not exist", () => {
 			expect(
-				evaluate({ $get: [{ age: 30 }, "name", "defaultName"] }),
+				evaluate({ $get: { object: { age: 30 }, path: "name", default: "defaultName" } }),
 			).toEqual("defaultName");
 		});
 
 		it("returns default when nested path does not exist", () => {
 			expect(
-				evaluate({ $get: [{ user: {} }, "user.name", "Anonymous"] }),
+				evaluate({ $get: { object: { user: {} }, path: "user.name", default: "Anonymous" } }),
 			).toEqual("Anonymous");
 		});
 
 		it("works with complex default values", () => {
 			expect(
-				evaluate({ $get: [{ age: 30 }, "user", { name: "Guest", role: "visitor" }] }),
+				evaluate({ $get: { object: { age: 30 }, path: "user", default: { name: "Guest", role: "visitor" } } }),
 			).toEqual({ name: "Guest", role: "visitor" });
 		});
 
-		it("throws with non-array operand", () => {
+		it("throws with string operand", () => {
 			expect(() => {
 				evaluate({ $get: "name" });
 			}).toThrowError(
-				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
+				"$get evaluate form requires object operand: {object, path, default?}",
 			);
 		});
 
-		it("throws with object operand", () => {
+		it("throws with array operand", () => {
 			expect(() => {
-				evaluate({ $get: { object: {}, path: "name" } });
+				evaluate({ $get: [{ name: "test" }, "name"] });
 			}).toThrowError(
-				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
+				"$get evaluate form requires object operand: {object, path, default?}",
 			);
 		});
 
-		it("throws with invalid array length", () => {
+		it("throws when missing required properties", () => {
 			expect(() => {
-				evaluate({ $get: [{}] });
+				evaluate({ $get: { object: {} } });
 			}).toThrowError(
-				"$get evaluate form requires array operand: [object, path] or [object, path, default]",
+				"$get evaluate form requires 'object' and 'path' properties",
+			);
+		});
+
+		it("throws when missing object property", () => {
+			expect(() => {
+				evaluate({ $get: { path: "name" } });
+			}).toThrowError(
+				"$get evaluate form requires 'object' and 'path' properties",
 			);
 		});
 	});
@@ -213,42 +221,53 @@ describe("$get", () => {
 			expect(apply({ $get: "user.name" }, { user: { name: "Chen" } })).toEqual("Chen");
 		});
 
-		it("gets value with default when path exists", () => {
-			expect(apply({ $get: ["name", "defaultName"] }, { name: "Kenji", age: 25 })).toEqual("Kenji");
+		it("gets value with default when path exists using object form", () => {
+			expect(apply({ $get: { path: "name", default: "defaultName" } }, { name: "Kenji", age: 25 })).toEqual("Kenji");
 		});
 
-		it("returns default when path does not exist", () => {
-			expect(apply({ $get: ["name", "defaultName"] }, { age: 25 })).toEqual("defaultName");
+		it("returns default when path does not exist using object form", () => {
+			expect(apply({ $get: { path: "name", default: "defaultName" } }, { age: 25 })).toEqual("defaultName");
 		});
 
-		it("returns default when nested path does not exist", () => {
-			expect(apply({ $get: ["user.name", "Anonymous"] }, { user: {} })).toEqual("Anonymous");
+		it("returns default when nested path does not exist using object form", () => {
+			expect(apply({ $get: { path: "user.name", default: "Anonymous" } }, { user: {} })).toEqual("Anonymous");
 		});
 
-		it("works with expression as default", () => {
+		it("works with expression as default using object form", () => {
 			expect(
 				apply(
-					{ $get: ["name", { $get: "fallbackName" }] }, 
+					{ $get: { path: "name", default: { $get: "fallbackName" } } }, 
 					{ age: 25, fallbackName: "Guest" },
 				),
 			).toEqual("Guest");
 		});
 
-		it("works with complex default values", () => {
+		it("works with complex default values using object form", () => {
 			expect(
-				apply({ $get: ["user", { name: "Guest", role: "visitor" }] }, { age: 25 }),
+				apply({ $get: { path: "user", default: { name: "Guest", role: "visitor" } } }, { age: 25 }),
 			).toEqual({ name: "Guest", role: "visitor" });
 		});
 
-		it("handles undefined vs null correctly", () => {
-			expect(apply({ $get: ["name", "default"] }, { name: null })).toEqual(null);
-			expect(apply({ $get: ["name", "default"] }, {})).toEqual("default");
+		it("handles undefined vs null correctly using object form", () => {
+			expect(apply({ $get: { path: "name", default: "default" } }, { name: null })).toEqual(null);
+			expect(apply({ $get: { path: "name", default: "default" } }, {})).toEqual("default");
+		});
+
+		it("works without default in object form", () => {
+			expect(apply({ $get: { path: "name" } }, { name: "Chen" })).toEqual("Chen");
+			expect(apply({ $get: { path: "missing" } }, { name: "Chen" })).toBeUndefined();
 		});
 
 		it("throws with invalid operand type", () => {
 			expect(() => {
 				apply({ $get: 123 }, {});
-			}).toThrowError("$get operand must be string or array");
+			}).toThrowError("$get operand must be string or object with {path, default?}");
+		});
+
+		it("throws when missing path in object form", () => {
+			expect(() => {
+				apply({ $get: { default: "test" } }, {});
+			}).toThrowError("$get object form requires 'path' property");
 		});
 	});
 });

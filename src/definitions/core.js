@@ -74,35 +74,43 @@ const $get = {
     if (typeof operand === "string") {
       return get(inputData, operand);
     }
-    if (Array.isArray(operand)) {
-      const [path, defaultValue] = operand;
+    if (typeof operand === "object" && !Array.isArray(operand)) {
+      const { path, default: defaultValue } = operand;
+      if (path === undefined) {
+        throw new Error("$get object form requires 'path' property");
+      }
       const evaluatedPath = apply(path, inputData);
       const result = get(inputData, evaluatedPath);
-      return result !== undefined ? result : apply(defaultValue, inputData);
+      return result !== undefined
+        ? result
+        : defaultValue !== undefined
+          ? apply(defaultValue, inputData)
+          : undefined;
     }
-    throw new Error("$get operand must be string or array");
+    throw new Error(
+      "$get operand must be string or object with {path, default?}",
+    );
   },
   evaluate: (operand, { evaluate }) => {
-    if (!Array.isArray(operand)) {
+    if (typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$get evaluate form requires array operand: [object, path] or [object, path, default]",
+        "$get evaluate form requires object operand: {object, path, default?}",
       );
     }
 
-    if (operand.length === 2) {
-      const [object, path] = operand;
-      return get(evaluate(object), evaluate(path));
+    const { object, path, default: defaultValue } = operand;
+    if (object === undefined || path === undefined) {
+      throw new Error(
+        "$get evaluate form requires 'object' and 'path' properties",
+      );
     }
 
-    if (operand.length === 3) {
-      const [object, path, defaultValue] = operand;
-      const result = get(evaluate(object), evaluate(path));
-      return result !== undefined ? result : evaluate(defaultValue);
-    }
-
-    throw new Error(
-      "$get evaluate form requires array operand: [object, path] or [object, path, default]",
-    );
+    const result = get(evaluate(object), evaluate(path));
+    return result !== undefined
+      ? result
+      : defaultValue !== undefined
+        ? evaluate(defaultValue)
+        : undefined;
   },
 };
 

@@ -257,18 +257,18 @@ apply({ $get: "name" }, data); // Gets data.name
 apply({ $get: "user.age" }, data); // Gets data.user.age (nested path)
 
 // With default values
-apply({ $get: ["name", "Anonymous"] }, data); // Gets data.name or "Anonymous" if undefined
-apply({ $get: ["user.profile.email", "no-email@example.com"] }, data); // Nested path with default
+apply({ $get: { path: "name", default: "Anonymous" } }, data); // Gets data.name or "Anonymous" if undefined
+apply({ $get: { path: "user.profile.email", default: "no-email@example.com" } }, data); // Nested path with default
 ```
 
 **Evaluate form:**
 
 ```javascript
-evaluate({ $get: [data, "user.age"] }); // Gets data.user.age
+evaluate({ $get: { object: data, path: "user.age" } }); // Gets data.user.age
 
 // With default values
-evaluate({ $get: [data, "name", "Anonymous"] }); // Gets data.name or "Anonymous" if undefined  
-evaluate({ $get: [data, "user.profile.email", "no-email@example.com"] }); // Nested path with default
+evaluate({ $get: { object: data, path: "name", default: "Anonymous" } }); // Gets data.name or "Anonymous" if undefined  
+evaluate({ $get: { object: data, path: "user.profile.email", default: "no-email@example.com" } }); // Nested path with default
 ```
 
 #### `$prop`
@@ -1143,13 +1143,13 @@ const teacherName = defaultExpressionEngine.apply(
 
 // Get optional contact info with defaults
 const teacherEmail = defaultExpressionEngine.apply(
-  { $get: ["email", "no-email@daycare.com"] },
+  { $get: { path: "email", default: "no-email@daycare.com" } },
   daycareData.teacher,
 );
 // Returns: "no-email@daycare.com" (since teacher object has no email)
 
 const teacherPhone = defaultExpressionEngine.apply(
-  { $get: ["contact.phone", "555-0000"] },
+  { $get: { path: "contact.phone", default: "555-0000" } },
   daycareData.teacher,
 );
 // Returns: "555-0000" (nested path with default)
