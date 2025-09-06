@@ -73,6 +73,10 @@ const $mode = createAggregativeExpression((values) => {
       : modes.sort((a, b) => a - b);
 });
 
+// Individual exports for tree shaking
+export { $count, $max, $mean, $median, $min, $mode, $sum };
+
+// Grouped export for compatibility
 export const aggregativeDefinitions = {
   $count,
   $max,

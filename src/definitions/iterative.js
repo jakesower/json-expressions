@@ -76,6 +76,21 @@ const $reverse = {
   },
 };
 
+// Individual exports for tree shaking
+export {
+  $all,
+  $any,
+  $append,
+  $filter,
+  $find,
+  $flatMap,
+  $join,
+  $map,
+  $prepend,
+  $reverse,
+};
+
+// Grouped export for compatibility
 export const iterativeDefinitions = {
   $all,
   $any,

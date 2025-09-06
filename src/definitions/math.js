@@ -47,6 +47,10 @@ const $modulo = createMathExpression(
   },
 );
 
+// Individual exports for tree shaking
+export { $add, $subtract, $multiply, $divide, $modulo };
+
+// Grouped export for compatibility
 export const mathDefinitions = {
   $add,
   $subtract,

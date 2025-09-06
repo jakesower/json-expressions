@@ -191,6 +191,19 @@ const $pipe = createCompositionExpression(
     expressions.reduce(reduceFn, initialValue),
 );
 
+// Individual exports for tree shaking
+export {
+  $compose,
+  $debug,
+  $get,
+  $isDefined,
+  $literal,
+  $pipe,
+  $prop,
+  $ensurePath,
+};
+
+// Grouped export for compatibility
 export const coreDefinitions = {
   $compose,
   $debug,

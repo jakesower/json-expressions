@@ -1,13 +1,5 @@
 import didYouMean from "didyoumean";
-import { coreDefinitions } from "./definitions/core.js";
-import { aggregativeDefinitions } from "./definitions/aggregative.js";
-import { comparativeDefinitions } from "./definitions/comparative.js";
-import { conditionalDefinitions } from "./definitions/conditional.js";
-import { generativeDefinitions } from "./definitions/generative.js";
-import { iterativeDefinitions } from "./definitions/iterative.js";
-import { logicalDefinitions } from "./definitions/logical.js";
-import { temporalDefinitions } from "./definitions/temporal.js";
-import { mathDefinitions } from "./definitions/math.js";
+import { base } from "./packs/base.js";
 import { mapValues } from "es-toolkit";
 
 /**
@@ -52,15 +44,35 @@ function looksLikeExpression(val) {
 }
 
 /**
- * @param {object} definitions
- * @param {boolean} [mergeDefaults=true] whether or not to include the core definitions in the engine
- *
+ * @typedef {object} ExpressionEngineConfig
+ * @property {object[]} [packs] - Array of expression pack objects to include
+ * @property {object} [custom] - Custom expression definitions
+ * @property {string[]} [exclude] - Expression names to exclude from final engine
+ * @property {boolean} [includeBase=true] - Whether to include base expressions
+ */
+
+/**
+ * @param {ExpressionEngineConfig} [config={}] - Configuration object for the expression engine
  * @returns {ExpressionEngine}
  */
-export function createExpressionEngine(definitions, mergeDefaults = true) {
-  const expressions = mergeDefaults
-    ? { ...coreDefinitions, ...definitions }
-    : definitions;
+export function createExpressionEngine(config = {}) {
+  const { packs = [], custom = {}, exclude = [], includeBase = true } = config;
+
+  // Start with base expressions if included
+  let expressions = includeBase ? { ...base } : {};
+
+  // Merge in pack expressions (later packs override earlier ones)
+  for (const pack of packs) {
+    expressions = { ...expressions, ...pack };
+  }
+
+  // Merge in custom expressions (override packs)
+  expressions = { ...expressions, ...custom };
+
+  // Remove excluded expressions
+  for (const excludeName of exclude) {
+    delete expressions[excludeName];
+  }
 
   const isExpression = (val) =>
     looksLikeExpression(val) && Object.keys(val)[0] in expressions;
@@ -125,30 +137,4 @@ export function createExpressionEngine(definitions, mergeDefaults = true) {
   };
 }
 
-export const defaultExpressions = {
-  ...coreDefinitions,
-  ...aggregativeDefinitions,
-  ...comparativeDefinitions,
-  ...conditionalDefinitions,
-  ...generativeDefinitions,
-  ...iterativeDefinitions,
-  ...logicalDefinitions,
-  ...mathDefinitions,
-  ...temporalDefinitions,
-};
-
-export const defaultExpressionEngine =
-  createExpressionEngine(defaultExpressions);
-
-// Export individual definition groups
-export {
-  coreDefinitions,
-  aggregativeDefinitions,
-  comparativeDefinitions,
-  conditionalDefinitions,
-  generativeDefinitions,
-  iterativeDefinitions,
-  logicalDefinitions,
-  mathDefinitions,
-  temporalDefinitions,
-};
+export const defaultExpressionEngine = createExpressionEngine();

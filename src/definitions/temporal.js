@@ -23,6 +23,10 @@ const $nowUTC = createTemporalExpression(() => new Date().toISOString());
 
 const $timestamp = createTemporalExpression(() => Date.now());
 
+// Individual exports for tree shaking
+export { $nowLocal, $nowUTC, $timestamp };
+
+// Grouped export for compatibility
 export const temporalDefinitions = {
   $nowLocal,
   $nowUTC,

@@ -103,4 +103,8 @@ const $case = {
   },
 };
 
+// Individual exports for tree shaking
+export { $if, $switch, $case };
+
+// Grouped export for compatibility
 export const conditionalDefinitions = { $if, $switch, $case };
