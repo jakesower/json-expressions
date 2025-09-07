@@ -84,10 +84,10 @@ describe("$random", () => {
       expect(result).toBeLessThan(1);
     });
 
-    it("work in switch expressions", () => {
+    it("work in case expressions", () => {
       const result = apply(
         {
-          $switch: {
+          $case: {
             value: "generate",
             cases: [{ when: "generate", then: { $random: null } }],
             default: "no",

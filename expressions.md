@@ -152,47 +152,63 @@ evaluate({ $between: { value: 72, min: 68, max: 75 } })
 
 ## $case
 
-Conditional expression using boolean predicates for complex logic.
+Unified conditional expression supporting both literal comparisons and boolean predicates.
 
-**Apply Form:**
+The `$case` expression automatically determines how to handle each `when` clause:
+- **Boolean predicate expressions** (`$gt`, `$eq`, `$and`, etc.) → Applied as predicates with the case value as input
+- **All other values** → Evaluated and compared literally using deep equality
+
+**Apply Form - Mixed literal and predicate conditions:**
 ```javascript
-// Determine activity based on child's age and mood
-const child = { age: 4, mood: "energetic" };
+// Flexible activity assignment using both literal and predicate matching
+const child = { age: 4, status: "active" };
 apply({
   $case: {
-    value: child,
+    value: { $get: "age" },
     cases: [
-      { 
-        when: { $and: [
-          { $pipe: [{ $get: "age" }, { $lte: 3 }] },
-          { $pipe: [{ $get: "mood" }, { $eq: "calm" }] }
-        ] },
-        then: "Quiet sensory play"
-      },
-      {
-        when: { $pipe: [{ $get: "mood" }, { $eq: "energetic" }] },
-        then: "Active outdoor games"
-      }
+      { when: 2, then: "Sensory play and simple puzzles" },           // Literal comparison
+      { when: 3, then: "Art activities and story time" },             // Literal comparison  
+      { when: { $eq: 4 }, then: "Pre-writing skills and group games" }, // Boolean predicate
+      { when: { $gte: 5 }, then: "Early math and reading readiness" }   // Boolean predicate
     ],
-    default: "Free choice activities"
+    default: "Age-appropriate developmental activities"
   }
 }, child)
-// Returns: "Active outdoor games"
+// Returns: "Pre-writing skills and group games"
+```
+
+**Apply Form - Status-based with mixed conditions:**
+```javascript  
+// Mix literal status checks with computed conditions
+const child = { status: "active", energy: 8 };
+apply({
+  $case: {
+    value: { $get: "status" },
+    cases: [
+      { when: "napping", then: "Quiet time activities" },             // Literal comparison
+      { when: "active", then: "High energy games" },                  // Literal comparison
+      { when: { $get: "fallbackStatus" }, then: "Custom activity" }   // Expression evaluated to literal
+    ],
+    default: "Free play"
+  }
+}, child)
+// Returns: "High energy games"
 ```
 
 **Evaluate Form:**
 ```javascript
-// Complex conditional logic
-evaluate([{
+// Static conditional logic with mixed condition types
+evaluate({
   $case: {
     value: 4,
     cases: [
-      { when: { $lt: 3 }, then: "Toddler activities" },
-      { when: { $gte: 4 }, then: "Preschool activities" }
+      { when: 2, then: "Toddler activities" },                        // Literal comparison: 4 === 2? No
+      { when: { $gt: 3 }, then: "Preschool activities" },            // Boolean predicate: 4 > 3? Yes!
+      { when: { $eq: 4 }, then: "Age four activities" }              // Would match but already found one
     ],
     default: "Mixed age activities"
   }
-}])
+})
 // Returns: "Preschool activities"
 ```
 
@@ -1288,45 +1304,6 @@ evaluate({ $sum: [5, 10, 15, 20] })
 // Returns: 50
 ```
 
-## $switch
-
-Switch-like expression for deep equality matching.
-
-**Apply Form:**
-```javascript
-// Assign snack based on child's age
-const child = { age: 4 };
-apply({
-  $switch: {
-    value: { $get: "age" },
-    cases: [
-      { when: 2, then: "Soft finger foods" },
-      { when: 3, then: "Cut fruit and crackers" },
-      { when: 4, then: "Trail mix and cheese" },
-      { when: 5, then: "Granola bar and fruit" }
-    ],
-    default: "Age-appropriate snack"
-  }
-}, child)
-// Returns: "Trail mix and cheese"
-```
-
-**Evaluate Form:**
-```javascript
-// Switch on static value
-evaluate([{
-  $switch: {
-    value: "rainy",
-    cases: [
-      { when: "sunny", then: "Outdoor play" },
-      { when: "rainy", then: "Indoor activities" },
-      { when: "snowy", then: "Winter crafts" }
-    ],
-    default: "Flexible activities"
-  }
-}])
-// Returns: "Indoor activities"
-```
 
 ## $take
 

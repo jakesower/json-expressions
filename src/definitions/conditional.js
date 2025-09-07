@@ -35,83 +35,91 @@ const $if = {
   },
 };
 
+
 /**
- * Internal helper to find a matching switch case using deep equality.
- * @param {any} value - The value to match against
- * @param {Array} cases - Array of case objects with 'when' and 'then' properties
- * @param {function} evaluateWhen - Function to evaluate the 'when' condition
- * @returns {object|undefined} The matching case object or undefined
+ * Check if an expression is a boolean predicate (comparison/logic operator)
+ * @param {any} expr - The expression to check
+ * @returns {boolean} True if it's a boolean predicate expression
  */
-const findSwitchCase = (value, cases, evaluateWhen) => {
-  return cases.find((caseItem) => {
-    if (caseItem.when === undefined) {
-      throw new Error("Switch case must have 'when' property");
-    }
-    return isEqual(evaluateWhen(caseItem.when), value);
-  });
-};
-
-const $switch = {
-  apply(operand, inputData, { apply }) {
-    const value = apply(operand.value, inputData);
-    const found = findSwitchCase(value, operand.cases, (when) =>
-      apply(when, inputData),
-    );
-    return found
-      ? apply(found.then, inputData)
-      : apply(operand.default, inputData);
-  },
-  evaluate(operand, { evaluate }) {
-    const [switchOperand] = operand;
-    const value = evaluate(switchOperand.value);
-    const found = findSwitchCase(value, switchOperand.cases, evaluate);
-    return found ? evaluate(found.then) : evaluate(switchOperand.default);
-  },
+const isBooleanPredicate = (expr) => {
+  if (!expr || typeof expr !== "object" || Array.isArray(expr)) {
+    return false;
+  }
+  
+  const [key] = Object.keys(expr);
+  // Boolean predicate operators that return true/false
+  const booleanOps = [
+    '$gt', '$gte', '$lt', '$lte', '$eq', '$ne', 
+    '$in', '$nin', '$isNull', '$isNotNull', '$between',
+    '$and', '$or', '$not',
+    '$matchesRegex', '$matchesLike', '$matchesGlob',
+    '$all', '$any'
+  ];
+  
+  return booleanOps.includes(key);
 };
 
 /**
- * Internal helper to find a matching case using boolean predicates.
+ * Internal helper to find a matching case using flexible matching.
+ * Supports both literal comparisons and expression predicates.
  * @param {any} value - The value to test against
  * @param {Array} cases - Array of case objects with 'when' and 'then' properties
- * @param {function} evaluateWhen - Function to evaluate the 'when' predicate
+ * @param {function} evaluateWhen - Function to evaluate the 'when' condition
+ * @param {function} isExpression - Function to check if a value is an expression
+ * @param {function} apply - Function to apply expressions with input data
  * @returns {object|undefined} The matching case object or undefined
  */
-const findPredicateCase = (value, cases, evaluateWhen) => {
+const findFlexibleCase = (value, cases, evaluateWhen, isExpression, apply) => {
   return cases.find((caseItem) => {
     if (caseItem.when === undefined) {
       throw new Error("Case item must have 'when' property");
     }
 
-    const condition = evaluateWhen(caseItem.when, value);
-    if (typeof condition !== "boolean") {
-      throw new Error(
-        `$case.when must resolve to a boolean, got ${JSON.stringify(condition)}`,
-      );
+    if (isExpression(caseItem.when) && isBooleanPredicate(caseItem.when)) {
+      // Boolean predicate mode: apply the expression with value as input data
+      const condition = apply(caseItem.when, value);
+      if (typeof condition !== "boolean") {
+        throw new Error(
+          `$case.when expression must resolve to a boolean, got ${JSON.stringify(condition)}`,
+        );
+      }
+      return condition;
+    } else {
+      // Literal mode: evaluate when clause and deep equality comparison
+      const evaluatedWhen = evaluateWhen(caseItem.when);
+      return isEqual(value, evaluatedWhen);
     }
-    return condition;
   });
 };
 
 const $case = {
-  apply(operand, inputData, { apply }) {
+  apply(operand, inputData, { apply, isExpression }) {
     const value = apply(operand.value, inputData);
-    const found = findPredicateCase(value, operand.cases, (when, val) =>
-      apply(when, val),
+    const found = findFlexibleCase(
+      value, 
+      operand.cases, 
+      (when) => apply(when, inputData),
+      isExpression,
+      apply
     );
     return found
       ? apply(found.then, inputData)
       : apply(operand.default, inputData);
   },
-  evaluate(operand, { evaluate }) {
-    const [caseOperand] = operand;
-    const found = findPredicateCase(
-      caseOperand.value,
+  evaluate(operand, { evaluate, isExpression, apply }) {
+    // Handle array format for evaluate form
+    const caseOperand = Array.isArray(operand) ? operand[0] : operand;
+    const value = evaluate(caseOperand.value);
+    const found = findFlexibleCase(
+      value,
       caseOperand.cases,
-      (when) => evaluate(when),
+      evaluate,
+      isExpression,
+      apply
     );
     return found ? evaluate(found.then) : evaluate(caseOperand.default);
   },
 };
 
 // Individual exports for tree shaking
-export { $if, $switch, $case };
+export { $if, $case };

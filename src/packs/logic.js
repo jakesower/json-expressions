@@ -3,7 +3,7 @@
  *
  * All boolean logic and conditional operations:
  * - Boolean operations ($and, $or, $not)
- * - Conditional branching ($if, $switch, $case)
+ * - Conditional branching ($if, $case)
  */
 
 // Import logical and conditional expressions

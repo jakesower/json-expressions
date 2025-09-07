@@ -143,36 +143,19 @@ export interface IfExpression {
 	};
 }
 
-export interface SwitchExpression {
-	$switch: {
-		value: unknown;
-		cases: Array<{
-			when: unknown;
-			then: unknown;
-		}>;
-		default: unknown;
-	} | [{
-		value: unknown;
-		cases: Array<{
-			when: unknown;
-			then: unknown;
-		}>;
-		default: unknown;
-	}];
-}
 
 export interface CaseExpression {
 	$case: {
 		value: unknown;
 		cases: Array<{
-			when: Expression;
+			when: unknown; // Can be literal value OR boolean predicate expression
 			then: unknown;
 		}>;
 		default: unknown;
 	} | [{
 		value: unknown;
 		cases: Array<{
-			when: Expression;
+			when: unknown; // Can be literal value OR boolean predicate expression
 			then: unknown;
 		}>;
 		default: unknown;
@@ -326,7 +309,6 @@ export type AnyExpression =
 	| NotExpression
 	// Conditional
 	| IfExpression
-	| SwitchExpression
 	| CaseExpression
 	// Aggregative
 	| CountExpression
@@ -363,44 +345,52 @@ export type AnyExpression =
 // === MAIN EXPORTS ===
 
 /**
- * Creates a new expression engine with optional custom expressions
- * @param customExpressions - Custom expression definitions to add
+ * Configuration object for creating an expression engine
+ */
+export interface ExpressionEngineConfig {
+	/** Array of expression pack objects to include */
+	packs?: object[];
+	/** Custom expression definitions */
+	custom?: { [k: string]: {
+		apply: (operand: unknown, inputData: unknown, context?: { 
+			apply: (expr: Expression, data: unknown) => unknown;
+			evaluate: (expr: Expression) => unknown;
+			isExpression: (value: unknown) => boolean;
+		}) => unknown;
+		evaluate: (operand: unknown, context?: {
+			apply: (expr: Expression, data: unknown) => unknown;
+			evaluate: (expr: Expression) => unknown;
+			isExpression: (value: unknown) => boolean;
+		}) => unknown;
+	} };
+	/** Whether to include base expressions (default: true) */
+	includeBase?: boolean;
+}
+
+/**
+ * Creates a new expression engine with specified configuration
+ * @param config - Configuration object for the expression engine
  * @returns Expression engine instance
  */
-export function createExpressionEngine(customExpressions?: { [k: string]: {
-	apply: (operand: unknown, inputData: unknown, context?: { 
-		apply: (expr: Expression, data: unknown) => unknown;
-		evaluate: (expr: Expression) => unknown;
-		isExpression: (value: unknown) => boolean;
-	}) => unknown;
-	evaluate: (operand: unknown, context?: {
-		apply: (expr: Expression, data: unknown) => unknown;
-		evaluate: (expr: Expression) => unknown;
-		isExpression: (value: unknown) => boolean;
-	}) => unknown;
-} }): ExpressionEngine;
+export function createExpressionEngine(config?: ExpressionEngineConfig): ExpressionEngine;
 
-/**
- * The default expression engine with all built-in expressions
- */
-export const defaultExpressionEngine: ExpressionEngine;
 
-/**
- * Object containing all built-in expression definitions
- */
-export const defaultExpressions: { [k: string]: {
-	apply: (operand: unknown, inputData: unknown, context?: unknown) => unknown;
-	evaluate: (operand: unknown, context?: unknown) => unknown;
-} };
+// === PACK EXPORTS ===
 
-// === DEFINITION EXPORTS ===
+export const aggregation: { [k: string]: unknown };
+export const all: { [k: string]: unknown };
+export const array: { [k: string]: unknown };
+export const base: { [k: string]: unknown };
+export const comparison: { [k: string]: unknown };
+export const filtering: { [k: string]: unknown };
+export const logic: { [k: string]: unknown };
+export const math: { [k: string]: unknown };
+export const projection: { [k: string]: unknown };
+export const string: { [k: string]: unknown };
+export const time: { [k: string]: unknown };
 
-export const coreDefinitions: { [k: string]: unknown };
-export const aggregativeDefinitions: { [k: string]: unknown };
-export const comparativeDefinitions: { [k: string]: unknown };
-export const conditionalDefinitions: { [k: string]: unknown };
-export const generativeDefinitions: { [k: string]: unknown };
-export const iterativeDefinitions: { [k: string]: unknown };
-export const logicalDefinitions: { [k: string]: unknown };
-export const mathDefinitions: { [k: string]: unknown };
-export const temporalDefinitions: { [k: string]: unknown };
+// === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
+
+// All individual expression definitions are exported via export * statements
+// from their respective definition files (aggregative, comparative, conditional, 
+// core, generative, iterative, logical, math, string, temporal)

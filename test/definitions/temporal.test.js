@@ -210,10 +210,10 @@ describe("$timestamp", () => {
       expect(result).toBeGreaterThan(0);
     });
 
-    it("work in switch expressions", () => {
+    it("work in case expressions", () => {
       const result = apply(
         {
-          $switch: {
+          $case: {
             value: "time",
             cases: [{ when: "time", then: { $timestamp: null } }],
             default: 0,

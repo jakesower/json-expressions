@@ -59,13 +59,16 @@ JSON Expressions provides two distinct execution modes that serve different purp
 Applies the expression **to** input data. The expression acts like a function that receives the input data and transforms or tests it.
 
 ```javascript
-import { defaultExpressionEngine } from "json-expressions";
+import { createExpressionEngine } from "json-expressions";
+
+// Create an engine (users choose their own packs)
+const engine = createExpressionEngine();
 
 // Expression: "is the input greater than 18?"
 const expression = { $gt: 18 };
 const inputData = 25;
 
-const result = defaultExpressionEngine.apply(expression, inputData);
+const result = engine.apply(expression, inputData);
 // Returns: true (because 25 > 18)
 ```
 
@@ -82,7 +85,7 @@ Evaluates the expression **independently** without input data. The expression is
 // Expression: "what is the sum of these numbers?"
 const expression = { $sum: [1, 2, 3, 4] };
 
-const result = defaultExpressionEngine.evaluate(expression);
+const result = engine.evaluate(expression);
 // Returns: 10 (static calculation)
 ```
 
@@ -100,7 +103,10 @@ In evaluate mode, expressions contain all the data they need:
 Get up and running in 30 seconds:
 
 ```javascript
-import { defaultExpressionEngine } from "json-expressions";
+import { createExpressionEngine } from "json-expressions";
+
+// Create engine - users choose packs they need
+const engine = createExpressionEngine();
 
 // Simple data filtering
 const children = [
@@ -110,7 +116,7 @@ const children = [
 ];
 
 // Find school-age children (5+)
-const schoolAge = defaultExpressionEngine.apply(
+const schoolAge = engine.apply(
   {
     $pipe: [
       { $filter: { $gte: 5 } },
@@ -126,15 +132,16 @@ const schoolAge = defaultExpressionEngine.apply(
 
 ### Core Functions
 
-#### `defaultExpressionEngine`
+#### Basic Usage
 
-Pre-configured expression engine with base expressions included.
+Users create engines with the packs they need:
 
 ```javascript
-import { defaultExpressionEngine } from "json-expressions";
+import { createExpressionEngine } from "json-expressions";
 
-const result = defaultExpressionEngine.apply(expression, data);
-const staticResult = defaultExpressionEngine.evaluate(expression);
+const engine = createExpressionEngine(); // Includes base pack by default
+const result = engine.apply(expression, data);
+const staticResult = engine.evaluate(expression);
 ```
 
 #### `createExpressionEngine(config)`
@@ -204,11 +211,11 @@ JSON Expressions provides clear error messages for common issues:
 
 ```javascript
 // Unknown expression
-defaultExpressionEngine.apply({ $unknown: 5 }, 10);
+engine.apply({ $unknown: 5 }, 10);
 // Error: Unknown expression operator: "$unknown". Did you mean "$not"?
 
 // Values that look like expressions but aren't
-defaultExpressionEngine.apply({ $notAnExpression: 5 }, 10);
+engine.apply({ $notAnExpression: 5 }, 10);
 // Error: Unknown expression operator: "$notAnExpression". Use { $literal: {"$notAnExpression": 5} } if you meant this as a literal value.
 ```
 
@@ -216,23 +223,23 @@ defaultExpressionEngine.apply({ $notAnExpression: 5 }, 10);
 
 ```javascript
 // Wrong operand type
-defaultExpressionEngine.apply({ $get: 123 }, { name: "Chen" });
+engine.apply({ $get: 123 }, { name: "Chen" });
 // Error: $get operand must be string or object with {path, default?}
 
-// Boolean required for conditionals
-defaultExpressionEngine.apply({ $case: { value: 5, cases: [{ when: "not boolean", then: "result" }] } });
-// Error: $case.when must resolve to a boolean, got "not boolean"
+// Boolean predicates must return boolean values
+engine.apply({ $case: { value: 5, cases: [{ when: { $literal: "not boolean" }, then: "result" }] } });  
+// Works fine - literal comparison: 5 === "not boolean" → false, continues to default
 ```
 
 ### Data Access Errors
 
 ```javascript
 // Strict property access on null/undefined
-defaultExpressionEngine.apply({ $prop: "name" }, null);
+engine.apply({ $prop: "name" }, null);
 // Error: Cannot read properties of null (reading 'name')
 
 // Missing required properties
-defaultExpressionEngine.evaluate({ $get: { path: "name" } });
+engine.evaluate({ $get: { path: "name" } });
 // Error: $get evaluate form requires 'object' and 'path' properties
 ```
 
@@ -250,18 +257,20 @@ JSON Expressions includes comprehensive TypeScript definitions for type safety a
 ### Basic Usage
 
 ```typescript
-import { defaultExpressionEngine, Expression } from "json-expressions";
+import { createExpressionEngine, Expression } from "json-expressions";
+
+const engine = createExpressionEngine();
 
 // Type-safe expression definition
 const expression: Expression = { $gt: 18 };
 
 // Apply with typed input and output
-const result: unknown = defaultExpressionEngine.apply(expression, 25);
+const result: unknown = engine.apply(expression, 25);
 
 // Type guards for expressions
-if (defaultExpressionEngine.isExpression(someValue)) {
+if (engine.isExpression(someValue)) {
   // someValue is now typed as Expression
-  const result = defaultExpressionEngine.apply(someValue, data);
+  const result = engine.apply(someValue, data);
 }
 ```
 
@@ -380,15 +389,81 @@ Scalar comparison operations for filtering and validation:
 - [**$isNull**](expressions.md#isnull) - Tests if value is null or undefined
 - [**$nin**](expressions.md#nin) - Tests if value does not exist in an array
 
+#### Filtering Pack
+
+Complete toolkit for WHERE clause logic and data filtering - combines field access, comparisons, logic, and pattern matching:
+
+- [**$get**](expressions.md#get) - Field access with dot notation paths
+- [**$pipe**](expressions.md#pipe) - Chain multiple filtering operations
+- [**$eq**](expressions.md#eq), [**$ne**](expressions.md#ne), [**$gt**](expressions.md#gt), [**$gte**](expressions.md#gte), [**$lt**](expressions.md#lt), [**$lte**](expressions.md#lte) - Basic comparisons
+- [**$and**](expressions.md#and), [**$or**](expressions.md#or), [**$not**](expressions.md#not) - Boolean logic
+- [**$in**](expressions.md#in), [**$nin**](expressions.md#nin) - Membership tests
+- [**$isNull**](expressions.md#isnull), [**$isNotNull**](expressions.md#isnotnull) - Existence checks
+- [**$matchesRegex**](expressions.md#matchesregex), [**$matchesLike**](expressions.md#matcheslike), [**$matchesGlob**](expressions.md#matchesglob) - Pattern matching
+
+Perfect for building complex filters with a single import:
+
+```javascript
+import { createExpressionEngine, filtering } from "json-expressions";
+
+const engine = createExpressionEngine({ packs: [filtering] });
+
+// Complex daycare filtering
+const activeToddlers = engine.apply({
+  $and: [
+    { $gte: 2 },                    // Age >= 2
+    { $lt: 4 },                     // Age < 4  
+    { $get: "active" },             // Active status
+    { $nin: ["napping", "sick"] }   // Not napping or sick
+  ]
+}, children);
+```
+
 #### Logic Pack
 
 Boolean logic and conditional operations:
 
 - [**$and**](expressions.md#and) - Logical AND - all expressions must be truthy
-- [**$case**](expressions.md#case) - Conditional expression using boolean predicates for complex logic
+- [**$case**](expressions.md#case) - Unified conditional expression supporting both literal comparisons and boolean predicates
 - [**$not**](expressions.md#not) - Logical NOT - inverts the truthiness of an expression
 - [**$or**](expressions.md#or) - Logical OR - at least one expression must be truthy
-- [**$switch**](expressions.md#switch) - Switch-like expression for deep equality matching
+
+#### Projection Pack
+
+Complete toolkit for SELECT clause operations and data transformation - combines aggregation, array operations, string transforms, and conditionals:
+
+- [**$get**](expressions.md#get) - Field access with dot notation paths
+- [**$pipe**](expressions.md#pipe) - Chain multiple projection operations
+- [**$count**](expressions.md#count), [**$sum**](expressions.md#sum), [**$min**](expressions.md#min), [**$max**](expressions.md#max), [**$mean**](expressions.md#mean) - Aggregation functions
+- [**$map**](expressions.md#map), [**$filter**](expressions.md#filter), [**$flatMap**](expressions.md#flatmap), [**$distinct**](expressions.md#distinct) - Array transformations
+- [**$concat**](expressions.md#concat), [**$join**](expressions.md#join), [**$substring**](expressions.md#substring), [**$uppercase**](expressions.md#uppercase), [**$lowercase**](expressions.md#lowercase) - String/value operations
+- [**$if**](expressions.md#if), [**$case**](expressions.md#case) - Conditionals for computed fields
+
+Perfect for transforming and projecting data with a single import:
+
+```javascript
+import { createExpressionEngine, projection } from "json-expressions";
+
+const engine = createExpressionEngine({ packs: [projection] });
+
+// Complex daycare reporting
+const report = engine.apply({
+  $pipe: [
+    { $get: "children" },
+    { $map: {
+      name: { $get: "name" },
+      displayName: { $uppercase: { $get: "name" } },
+      ageGroup: { $if: {
+        if: { $gte: 4 },
+        then: "Pre-K",
+        else: "Toddler"
+      }},
+      activities: { $join: ", " }
+    }},
+    { $filter: { $get: "active" } }
+  ]
+}, daycareData);
+```
 
 #### Math Pack
 
@@ -400,6 +475,7 @@ Arithmetic operations and mathematical functions:
 - [**$modulo**](expressions.md#modulo) - Modulo (remainder) operation
 - [**$multiply**](expressions.md#multiply) - Multiplication operation
 - [**$pow**](expressions.md#pow) - Power/exponentiation operation
+- [**$random**](expressions.md#random) - Generate random numbers with optional bounds and precision
 - [**$sqrt**](expressions.md#sqrt) - Square root operation
 - [**$subtract**](expressions.md#subtract) - Subtraction operation
 
@@ -428,12 +504,36 @@ Temporal functions for date/time operations:
 - [**$timeDiff**](expressions.md#timediff) - Calculates difference between two timestamps
 - [**$timestamp**](expressions.md#timestamp) - Current timestamp as milliseconds since Unix epoch
 
+### Standalone Expressions
+
+Some expressions don't belong to any specific pack but are available when imported individually:
+
+- [**$uuid**](expressions.md#uuid) - Generates a random UUID v4 string
+
+These expressions must be imported individually or used in custom engine configurations:
+
+```javascript
+import { createExpressionEngine } from "json-expressions";
+import { $uuid } from "json-expressions";
+
+// Create engine with standalone expressions
+const engine = createExpressionEngine({
+  custom: { $uuid }
+});
+
+// Generate a unique identifier
+const id = engine.evaluate({ $uuid: null });
+// Returns: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+```
+
 ## Usage Examples
 
 ### Basic Data Transformation
 
 ```javascript
-import { defaultExpressionEngine } from "json-expressions";
+import { createExpressionEngine } from "json-expressions";
+
+const engine = createExpressionEngine();
 
 const daycareData = {
   teacher: { name: "Amara", age: 28 },
@@ -445,14 +545,14 @@ const daycareData = {
 };
 
 // Get teacher name with default
-const teacherName = defaultExpressionEngine.apply(
+const teacherName = engine.apply(
   { $get: { path: "name", default: "Unknown" } },
   daycareData.teacher
 );
 // Returns: "Amara"
 
 // Find children ready for kindergarten (age 5+)
-const kindergartenReady = defaultExpressionEngine.apply(
+const kindergartenReady = engine.apply(
   {
     $pipe: [
       { $get: "children" },
@@ -469,29 +569,29 @@ const kindergartenReady = defaultExpressionEngine.apply(
 
 ```javascript
 // Calculate meal budget
-const totalMealCost = defaultExpressionEngine.evaluate({
+const totalMealCost = engine.evaluate({
   $sum: [8.50, 12.75, 4.25]  // breakfast, lunch, snack
 });
 // Returns: 25.5
 
 // Generate unique session ID
-const sessionId = defaultExpressionEngine.evaluate({ $uuid: null });
+const sessionId = engine.evaluate({ $uuid: null });
 // Returns: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 ```
 
 ### Complex Business Logic
 
 ```javascript
-// Age-based activity recommendations
-const activityRecommendation = defaultExpressionEngine.apply(
+// Age-based activity recommendations with mixed literal and expression conditions
+const activityRecommendation = engine.apply(
   {
-    $switch: {
+    $case: {
       value: { $get: "age" },
       cases: [
-        { when: 2, then: "Sensory play and simple puzzles" },
-        { when: 3, then: "Art activities and story time" },
-        { when: 4, then: "Pre-writing skills and group games" },
-        { when: 5, then: "Early math and reading readiness" }
+        { when: 2, then: "Sensory play and simple puzzles" },           // Literal comparison
+        { when: 3, then: "Art activities and story time" },             // Literal comparison  
+        { when: { $eq: 4 }, then: "Pre-writing skills and group games" }, // Expression predicate
+        { when: { $gte: 5 }, then: "Early math and reading readiness" }   // Expression predicate
       ],
       default: "Age-appropriate developmental activities"
     }

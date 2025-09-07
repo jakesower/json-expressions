@@ -86,36 +86,37 @@ describe("$case", () => {
       ).toEqual("Any age");
     });
 
-    it("throws when when clause doesn't resolve to boolean", () => {
-      expect(() => {
+    it("handles literal values in when clause", () => {
+      expect(
         apply(
           {
             $case: {
               value: 5,
-              cases: [{ when: "not a boolean", then: "Result" }],
+              cases: [
+                { when: "not matching", then: "Result" },
+                { when: 5, then: "Found five" }
+              ],
               default: "Default",
             },
           },
           {},
-        );
-      }).toThrowError(
-        '$case.when must resolve to a boolean, got "not a boolean"',
-      );
+        ),
+      ).toEqual("Found five");
     });
 
-    it("throws when when clause resolves to number", () => {
-      expect(() => {
+    it("handles expression values in when clause (literal mode)", () => {
+      expect(
         apply(
           {
             $case: {
-              value: 5,
-              cases: [{ when: { $add: 2 }, then: "Result" }],
+              value: 7,
+              cases: [{ when: { $literal: 7 }, then: "Found seven" }],
               default: "Default",
             },
           },
           {},
-        );
-      }).toThrowError("$case.when must resolve to a boolean, got 7");
+        ),
+      ).toEqual("Found seven");
     });
 
     it("handles expressions in value", () => {
@@ -175,8 +176,8 @@ describe("$case", () => {
             {
               value: 7,
               cases: [
-                { when: { $gt: [7, 5] }, then: "Greater than 5" },
-                { when: { $lt: [7, 5] }, then: "Less than 5" },
+                { when: { $gt: 5 }, then: "Greater than 5" },      // Boolean predicate: is 7 > 5?
+                { when: { $lt: 5 }, then: "Less than 5" },         // Boolean predicate: is 7 < 5?
               ],
               default: "Equal to 5",
             },
@@ -185,29 +186,70 @@ describe("$case", () => {
       ).toEqual("Greater than 5");
     });
 
-    it("throws on non-boolean when in evaluate form", () => {
-      expect(() => {
+    it("handles literal values in evaluate form", () => {
+      expect(
         evaluate({
           $case: [
             {
               value: 5,
-              cases: [{ when: "not boolean", then: "Result" }],
+              cases: [
+                { when: "not matching", then: "Result" },
+                { when: 5, then: "Found five" }
+              ],
               default: "Default",
             },
           ],
-        });
-      }).toThrowError("$case.when must resolve to a boolean");
+        })
+      ).toEqual("Found five");
+    });
+
+    it("supports unified behavior - mixed literal and expression cases", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: 4,
+              cases: [
+                { when: "active", then: "Status match" },        // Literal comparison
+                { when: { $gt: 5 }, then: "Greater than 5" },    // Expression predicate
+                { when: 4, then: "Exactly four" },               // Literal comparison
+                { when: { $lt: 3 }, then: "Less than 3" },       // Expression predicate
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Exactly four");
+    });
+
+    it("expression mode takes precedence over literal for expression-like objects", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: 10,
+              cases: [
+                { when: { $gt: 5 }, then: "Expression matched" },  // This should match as expression
+                { when: 10, then: "Literal matched" },             // This would match if reached
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Expression matched");
     });
   });
 });
 
-describe("$switch", () => {
+describe("$case - literal mode (unified behavior)", () => {
   describe("apply form", () => {
     it("matches first case", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "playing",
               cases: [
                 { when: "playing", then: "Child is playing" },
@@ -226,7 +268,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "napping",
               cases: [
                 { when: "playing", then: "Child is playing" },
@@ -245,7 +287,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "crying",
               cases: [
                 { when: "playing", then: "Child is playing" },
@@ -264,7 +306,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: { $get: "activity" },
               cases: [
                 { when: "playing", then: "Child is playing" },
@@ -282,7 +324,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: { $get: "activity" },
               cases: [
                 { when: { $get: "playStatus" }, then: "Child is playing" },
@@ -300,7 +342,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "playing",
               cases: [
                 { when: "playing", then: { $get: "message" } },
@@ -318,7 +360,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "crying",
               cases: [
                 { when: "playing", then: "Child is playing" },
@@ -343,7 +385,7 @@ describe("$switch", () => {
 
       apply(
         {
-          $switch: {
+          $case: {
             value: { $get: "activity" },
             cases: [
               { when: "playing", then: "Child is playing" },
@@ -363,7 +405,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: "playing",
               cases: [
                 { when: "playing", then: "First match" },
@@ -381,7 +423,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: { name: "Amara", age: 4, allergies: ["peanuts"] },
               cases: [
                 {
@@ -405,7 +447,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: ["apple", "crackers", "juice"],
               cases: [
                 { when: ["banana", "crackers"], then: "Light snack" },
@@ -424,7 +466,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: {
                 child: { name: "Ravi", age: 3 },
                 guardian: { name: "Priya", phone: "555-0123" },
@@ -457,7 +499,7 @@ describe("$switch", () => {
       expect(
         apply(
           {
-            $switch: {
+            $case: {
               value: { name: "Zara", age: 5, room: "sunflower" },
               cases: [
                 {
@@ -481,7 +523,7 @@ describe("$switch", () => {
   describe("evaluate form", () => {
     it("evaluates simple case matching", () => {
       const result = evaluate({
-        $switch: [
+        $case: [
           {
             value: "playing",
             cases: [
@@ -498,7 +540,7 @@ describe("$switch", () => {
 
     it("evaluates deep equality with teacher objects in evaluate form", () => {
       const result = evaluate({
-        $switch: [
+        $case: [
           {
             value: {
               name: "Kenji Tanaka",
@@ -532,7 +574,7 @@ describe("$switch", () => {
 
     it("evaluates deep equality with activity schedules in evaluate form", () => {
       const result = evaluate({
-        $switch: [
+        $case: [
           {
             value: ["circle time", "outdoor play", "snack", "art"],
             cases: [

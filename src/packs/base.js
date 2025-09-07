@@ -2,7 +2,7 @@
  * Base Pack - Near Universal Expressions
  *
  * Essential expressions used across almost all scenarios:
- * - Data access ($get)
+ * - Data access ($get, $prop, $isDefined)
  * - Basic conditionals ($if)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Operation chaining ($pipe)
@@ -11,7 +11,7 @@
  */
 
 // Import the near universal expressions
-import { $get, $pipe, $debug, $literal } from "../definitions/core.js";
+import { $get, $pipe, $debug, $literal, $isDefined, $prop } from "../definitions/core.js";
 import { $if } from "../definitions/conditional.js";
 import { $eq, $ne, $gt, $gte, $lt, $lte } from "../definitions/comparative.js";
 import { $filter, $map } from "../definitions/iterative.js";
@@ -22,6 +22,8 @@ export const base = {
   $pipe,
   $debug,
   $literal,
+  $isDefined,
+  $prop,
   $if,
   $eq,
   $ne,
