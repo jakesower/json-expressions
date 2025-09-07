@@ -35,7 +35,6 @@ const $if = {
   },
 };
 
-
 /**
  * Check if an expression is a boolean predicate (comparison/logic operator)
  * @param {any} expr - The expression to check
@@ -45,17 +44,31 @@ const isBooleanPredicate = (expr) => {
   if (!expr || typeof expr !== "object" || Array.isArray(expr)) {
     return false;
   }
-  
+
   const [key] = Object.keys(expr);
   // Boolean predicate operators that return true/false
   const booleanOps = [
-    '$gt', '$gte', '$lt', '$lte', '$eq', '$ne', 
-    '$in', '$nin', '$isNull', '$isNotNull', '$between',
-    '$and', '$or', '$not',
-    '$matchesRegex', '$matchesLike', '$matchesGlob',
-    '$all', '$any'
+    "$gt",
+    "$gte",
+    "$lt",
+    "$lte",
+    "$eq",
+    "$ne",
+    "$in",
+    "$nin",
+    "$isNull",
+    "$isNotNull",
+    "$between",
+    "$and",
+    "$or",
+    "$not",
+    "$matchesRegex",
+    "$matchesLike",
+    "$matchesGlob",
+    "$all",
+    "$any",
   ];
-  
+
   return booleanOps.includes(key);
 };
 
@@ -96,11 +109,11 @@ const $case = {
   apply(operand, inputData, { apply, isExpression }) {
     const value = apply(operand.value, inputData);
     const found = findFlexibleCase(
-      value, 
-      operand.cases, 
+      value,
+      operand.cases,
       (when) => apply(when, inputData),
       isExpression,
-      apply
+      apply,
     );
     return found
       ? apply(found.then, inputData)
@@ -115,7 +128,7 @@ const $case = {
       caseOperand.cases,
       evaluate,
       isExpression,
-      apply
+      apply,
     );
     return found ? evaluate(found.then) : evaluate(caseOperand.default);
   },

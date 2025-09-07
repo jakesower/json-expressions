@@ -94,7 +94,7 @@ describe("$case", () => {
               value: 5,
               cases: [
                 { when: "not matching", then: "Result" },
-                { when: 5, then: "Found five" }
+                { when: 5, then: "Found five" },
               ],
               default: "Default",
             },
@@ -176,8 +176,8 @@ describe("$case", () => {
             {
               value: 7,
               cases: [
-                { when: { $gt: 5 }, then: "Greater than 5" },      // Boolean predicate: is 7 > 5?
-                { when: { $lt: 5 }, then: "Less than 5" },         // Boolean predicate: is 7 < 5?
+                { when: { $gt: 5 }, then: "Greater than 5" }, // Boolean predicate: is 7 > 5?
+                { when: { $lt: 5 }, then: "Less than 5" }, // Boolean predicate: is 7 < 5?
               ],
               default: "Equal to 5",
             },
@@ -194,12 +194,12 @@ describe("$case", () => {
               value: 5,
               cases: [
                 { when: "not matching", then: "Result" },
-                { when: 5, then: "Found five" }
+                { when: 5, then: "Found five" },
               ],
               default: "Default",
             },
           ],
-        })
+        }),
       ).toEqual("Found five");
     });
 
@@ -210,10 +210,10 @@ describe("$case", () => {
             $case: {
               value: 4,
               cases: [
-                { when: "active", then: "Status match" },        // Literal comparison
-                { when: { $gt: 5 }, then: "Greater than 5" },    // Expression predicate
-                { when: 4, then: "Exactly four" },               // Literal comparison
-                { when: { $lt: 3 }, then: "Less than 3" },       // Expression predicate
+                { when: "active", then: "Status match" }, // Literal comparison
+                { when: { $gt: 5 }, then: "Greater than 5" }, // Expression predicate
+                { when: 4, then: "Exactly four" }, // Literal comparison
+                { when: { $lt: 3 }, then: "Less than 3" }, // Expression predicate
               ],
               default: "No match",
             },
@@ -230,8 +230,8 @@ describe("$case", () => {
             $case: {
               value: 10,
               cases: [
-                { when: { $gt: 5 }, then: "Expression matched" },  // This should match as expression
-                { when: 10, then: "Literal matched" },             // This would match if reached
+                { when: { $gt: 5 }, then: "Expression matched" }, // This should match as expression
+                { when: 10, then: "Literal matched" }, // This would match if reached
               ],
               default: "No match",
             },

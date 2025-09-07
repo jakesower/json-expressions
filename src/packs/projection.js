@@ -13,7 +13,14 @@
 import { $count, $sum, $min, $max, $mean } from "../definitions/aggregative.js";
 
 // Import array transformation expressions
-import { $map, $filter, $flatMap, $distinct, $concat, $join } from "../definitions/iterative.js";
+import {
+  $map,
+  $filter,
+  $flatMap,
+  $distinct,
+  $concat,
+  $join,
+} from "../definitions/iterative.js";
 
 // Import string transformation expressions
 import { $substring, $uppercase, $lowercase } from "../definitions/string.js";

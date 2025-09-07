@@ -11,7 +11,14 @@
  */
 
 // Import the near universal expressions
-import { $get, $pipe, $debug, $literal, $isDefined, $prop } from "../definitions/core.js";
+import {
+  $get,
+  $pipe,
+  $debug,
+  $literal,
+  $isDefined,
+  $prop,
+} from "../definitions/core.js";
 import { $if } from "../definitions/conditional.js";
 import { $eq, $ne, $gt, $gte, $lt, $lte } from "../definitions/comparative.js";
 import { $filter, $map } from "../definitions/iterative.js";
