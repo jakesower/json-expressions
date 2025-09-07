@@ -26,6 +26,19 @@ const createArrayOperationExpression = (operationFn) => ({
   },
 });
 
+/**
+ * Creates a simple array transformation expression (no operand needed).
+ * @param {function(Array): any} transformFn - Function that transforms an array
+ * @returns {object} Expression object with apply and evaluate methods
+ */
+const createArrayTransformExpression = (transformFn) => ({
+  apply: (_, inputData) => transformFn(inputData),
+  evaluate: (operand, { evaluate }) => {
+    const array = evaluate(operand);
+    return transformFn(array);
+  },
+});
+
 const $filter = createArrayIterationExpression(
   (array, itemFn) => array.filter(itemFn),
   "$filter",
@@ -68,11 +81,48 @@ const $join = createArrayOperationExpression((separator, array) =>
   array.join(separator),
 );
 
-const $reverse = {
-  apply: (_, inputData) => inputData.slice().reverse(),
+const $reverse = createArrayTransformExpression((array) =>
+  array.slice().reverse(),
+);
+
+const $take = createArrayOperationExpression((count, array) =>
+  array.slice(0, count),
+);
+
+const $skip = createArrayOperationExpression((count, array) =>
+  array.slice(count),
+);
+
+const $concat = {
+  apply: (operand, inputData, { apply }) => {
+    const arrays = apply(operand, inputData);
+    return inputData.concat(...arrays);
+  },
   evaluate: (operand, { evaluate }) => {
-    const array = evaluate(operand);
-    return array.slice().reverse();
+    const [baseArray, ...arrays] = evaluate(operand);
+    return baseArray.concat(...arrays);
+  },
+};
+
+const $distinct = createArrayTransformExpression((array) => [
+  ...new Set(array),
+]);
+
+/**
+ * Internal helper to find the first non-null value in an array.
+ * @param {Array} values - Array of values to check
+ * @returns {any} First non-null value or undefined
+ */
+const findFirstNonNull = (values) => values.find((value) => value != null);
+
+const $coalesce = {
+  apply: (operand, inputData, { apply }) => {
+    const values = apply(operand, inputData);
+    return findFirstNonNull(values);
+  },
+  evaluate: (operand, { evaluate }) => {
+    const values = evaluate(operand);
+    return findFirstNonNull(values);
   },
 };
 
@@ -88,18 +138,9 @@ export {
   $map,
   $prepend,
   $reverse,
-};
-
-// Grouped export for compatibility
-export const iterativeDefinitions = {
-  $all,
-  $any,
-  $append,
-  $filter,
-  $find,
-  $flatMap,
-  $join,
-  $map,
-  $prepend,
-  $reverse,
+  $take,
+  $skip,
+  $concat,
+  $distinct,
+  $coalesce,
 };

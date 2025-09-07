@@ -48,41 +48,13 @@ const $median = createAggregativeExpression((values) => {
     : sorted[mid];
 });
 
-const $mode = createAggregativeExpression((values) => {
-  if (values.length === 0) return undefined;
-  const frequency = {};
-  let maxCount = 0;
-  let modes = [];
+const $first = createAggregativeExpression((values) => {
+  return values.length === 0 ? undefined : values[0];
+});
 
-  // Count frequencies
-  for (const value of values) {
-    frequency[value] = (frequency[value] ?? 0) + 1;
-    if (frequency[value] > maxCount) {
-      maxCount = frequency[value];
-      modes = [value];
-    } else if (frequency[value] === maxCount && !modes.includes(value)) {
-      modes.push(value);
-    }
-  }
-
-  // Return single mode if only one, array if multiple, or undefined if all values appear once
-  return maxCount === 1
-    ? undefined
-    : modes.length === 1
-      ? modes[0]
-      : modes.sort((a, b) => a - b);
+const $last = createAggregativeExpression((values) => {
+  return values.length === 0 ? undefined : values[values.length - 1];
 });
 
 // Individual exports for tree shaking
-export { $count, $max, $mean, $median, $min, $mode, $sum };
-
-// Grouped export for compatibility
-export const aggregativeDefinitions = {
-  $count,
-  $max,
-  $mean,
-  $median,
-  $min,
-  $mode,
-  $sum,
-};
+export { $count, $max, $mean, $median, $min, $sum, $first, $last };

@@ -1,22 +1,16 @@
 /**
- * String Pack - String Pattern Matching Operations
+ * String Pack - String Processing Operations
  *
  * String processing and pattern matching functions:
- * - Regular expression matching ($matchesRegex)
- * - SQL LIKE pattern matching ($matchesLike)
- * - Unix GLOB pattern matching ($matchesGlob)
+ * - Pattern matching ($matchesRegex, $matchesLike, $matchesGlob)
+ * - String transformations ($split, $trim, $uppercase, $lowercase)
+ * - String operations ($replace, $substring)
  */
 
-// Import string pattern matching expressions
-import {
-  $matchesRegex,
-  $matchesLike,
-  $matchesGlob,
-} from "../definitions/string.js";
+// Import string expressions
+import * as stringExpressions from "../definitions/string.js";
 
 // Export as grouped object
 export const string = {
-  $matchesRegex,
-  $matchesLike,
-  $matchesGlob,
+  ...stringExpressions,
 };

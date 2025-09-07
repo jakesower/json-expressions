@@ -30,10 +30,3 @@ const $not = {
 
 // Individual exports for tree shaking
 export { $and, $not, $or };
-
-// Grouped export for compatibility
-export const logicalDefinitions = {
-  $and,
-  $not,
-  $or,
-};

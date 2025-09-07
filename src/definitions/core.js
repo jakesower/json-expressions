@@ -23,52 +23,6 @@ const $isDefined = createSimpleExpression(
   "$isDefined evaluate form requires array operand: [value]",
 );
 
-const $ensurePath = {
-  apply: (operand, inputData, { apply }) => {
-    const path = apply(operand, inputData);
-    const go = (curValue, paths, used = []) => {
-      if (paths.length === 0) return;
-
-      const [head, ...tail] = paths;
-      if (!(head in curValue)) {
-        throw new Error(
-          `"${head}" was not found along the path ${used.join(".")}`,
-        );
-      }
-
-      go(curValue[head], tail, [...used, head]);
-    };
-
-    go(inputData, path.split("."));
-    return inputData;
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!Array.isArray(operand)) {
-      throw new Error(
-        "$ensurePath evaluate form requires array operand: [object, path]",
-      );
-    }
-    const [object, path] = operand;
-    const evaluatedObject = evaluate(object);
-    const evaluatedPath = evaluate(path);
-    const go = (curValue, paths, used = []) => {
-      if (paths.length === 0) return;
-
-      const [head, ...tail] = paths;
-      if (!(head in curValue)) {
-        throw new Error(
-          `"${head}" was not found along the path ${used.join(".")}`,
-        );
-      }
-
-      go(curValue[head], tail, [...used, head]);
-    };
-
-    go(evaluatedObject, evaluatedPath.split("."));
-    return evaluatedObject;
-  },
-};
-
 const $get = {
   apply: (operand, inputData, { apply }) => {
     if (typeof operand === "string") {
@@ -181,36 +135,10 @@ const createCompositionExpression = (composeFn) => ({
   },
 });
 
-const $compose = createCompositionExpression(
-  (expressions, reduceFn, initialValue) =>
-    expressions.reduceRight(reduceFn, initialValue),
-);
-
 const $pipe = createCompositionExpression(
   (expressions, reduceFn, initialValue) =>
     expressions.reduce(reduceFn, initialValue),
 );
 
 // Individual exports for tree shaking
-export {
-  $compose,
-  $debug,
-  $get,
-  $isDefined,
-  $literal,
-  $pipe,
-  $prop,
-  $ensurePath,
-};
-
-// Grouped export for compatibility
-export const coreDefinitions = {
-  $compose,
-  $debug,
-  $get,
-  $isDefined,
-  $literal,
-  $pipe,
-  $prop,
-  $ensurePath,
-};
+export { $debug, $get, $isDefined, $literal, $pipe, $prop };

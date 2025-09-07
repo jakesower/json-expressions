@@ -56,11 +56,29 @@ const $nin = createInclusionExpression(
   (value, array) => !array.includes(value),
 );
 
-// Individual exports for tree shaking
-export { $eq, $gt, $gte, $lt, $lte, $ne, $in, $nin };
+const $between = {
+  apply: (operand, inputData, { apply }) => {
+    const { min, max } = apply(operand, inputData);
+    return inputData >= min && inputData <= max;
+  },
+  evaluate: (operand, { evaluate }) => {
+    const { value, min, max } = evaluate(operand);
+    return value >= min && value <= max;
+  },
+};
 
-// Grouped export for compatibility
-export const comparativeDefinitions = {
+const $isNull = {
+  apply: (operand, inputData) => inputData == null,
+  evaluate: (operand, { evaluate }) => evaluate(operand) == null,
+};
+
+const $isNotNull = {
+  apply: (operand, inputData) => inputData != null,
+  evaluate: (operand, { evaluate }) => evaluate(operand) != null,
+};
+
+// Individual exports for tree shaking
+export {
   $eq,
   $gt,
   $gte,
@@ -69,4 +87,7 @@ export const comparativeDefinitions = {
   $ne,
   $in,
   $nin,
+  $between,
+  $isNull,
+  $isNotNull,
 };

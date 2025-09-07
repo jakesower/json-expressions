@@ -4,22 +4,13 @@
  * Pure arithmetic operations for mathematical calculations:
  * - Basic operations ($add, $subtract, $multiply, $divide)
  * - Modulo operation ($modulo)
+ * - Mathematical functions ($abs, $pow, $sqrt)
  */
 
 // Import arithmetic expressions
-import {
-  $add,
-  $subtract,
-  $multiply,
-  $divide,
-  $modulo,
-} from "../definitions/math.js";
+import * as mathExpressions from "../definitions/math.js";
 
 // Export as grouped object
 export const math = {
-  $add,
-  $subtract,
-  $multiply,
-  $divide,
-  $modulo,
+  ...mathExpressions,
 };

@@ -6,32 +6,15 @@
  * - Predicates ($all, $any)
  * - Advanced operations ($flatMap)
  * - Array modifications ($append, $prepend, $reverse, $join)
+ * - Array slicing ($take, $skip)
+ * - Array operations ($concat, $distinct)
+ * - Utility ($coalesce)
  */
 
 // Import iterative expressions
-import {
-  $map,
-  $filter,
-  $find,
-  $all,
-  $any,
-  $flatMap,
-  $append,
-  $prepend,
-  $reverse,
-  $join,
-} from "../definitions/iterative.js";
+import * as iterativeExpressions from "../definitions/iterative.js";
 
 // Export as grouped object
 export const array = {
-  $map,
-  $filter,
-  $find,
-  $all,
-  $any,
-  $flatMap,
-  $append,
-  $prepend,
-  $reverse,
-  $join,
+  ...iterativeExpressions,
 };

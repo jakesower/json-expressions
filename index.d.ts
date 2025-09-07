@@ -72,9 +72,6 @@ export interface PipeExpression {
 	$pipe: Expression[] | [Expression[], unknown];
 }
 
-export interface ComposeExpression {
-	$compose: Expression[] | [Expression[], unknown];
-}
 
 // === COMPARATIVE EXPRESSIONS ===
 
@@ -311,7 +308,6 @@ export type AnyExpression =
 	| EnsurePathExpression
 	| DebugExpression
 	| PipeExpression
-	| ComposeExpression
 	// Comparative
 	| EqualExpression
 	| NotEqualExpression

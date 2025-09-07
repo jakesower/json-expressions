@@ -1,17 +1,17 @@
 /**
  * Time Pack - Time-Based Operations
  *
- * Time and temporal functions for date/time generation:
+ * Time and temporal functions for date/time operations:
  * - Current time in different formats ($nowLocal, $nowUTC)
  * - Timestamp generation ($timestamp)
+ * - Time calculations ($timeAdd, $timeDiff)
+ * - Time formatting ($formatTime)
  */
 
 // Import temporal expressions
-import { $nowLocal, $nowUTC, $timestamp } from "../definitions/temporal.js";
+import * as temporalExpressions from "../definitions/temporal.js";
 
 // Export as grouped object
 export const time = {
-  $nowLocal,
-  $nowUTC,
-  $timestamp,
+  ...temporalExpressions,
 };

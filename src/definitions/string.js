@@ -16,6 +16,79 @@ const createStringPatternExpression = (matchFn) => ({
 });
 
 /**
+ * Creates a string transformation expression.
+ *
+ * @param {function(string): any} transformFn - Function that transforms the string
+ * @returns {object} Expression object with apply and evaluate methods
+ */
+const createStringTransformExpression = (transformFn) => ({
+  apply: (operand, inputData) => transformFn(inputData),
+  evaluate: (operand, { evaluate }) => transformFn(evaluate(operand)),
+});
+
+/**
+ * Creates a string operation expression with parameters.
+ *
+ * @param {function(string, ...any): any} operationFn - Function that operates on string with params
+ * @returns {object} Expression object with apply and evaluate methods
+ */
+const createStringOperationExpression = (operationFn) => ({
+  apply: (operand, inputData, { apply }) => {
+    if (Array.isArray(operand)) {
+      const [param, ...rest] = operand;
+      return operationFn(
+        inputData,
+        apply(param, inputData),
+        ...rest.map((r) => apply(r, inputData)),
+      );
+    }
+    return operationFn(inputData, apply(operand, inputData));
+  },
+  evaluate: (operand, { evaluate }) => {
+    const [str, ...params] = evaluate(operand);
+    return operationFn(str, ...params);
+  },
+});
+
+/**
+ * Internal helper to test if a string matches a regex pattern with flag parsing.
+ * @param {string} pattern - The regex pattern (possibly with inline flags)
+ * @param {string} inputData - The string to test
+ * @returns {boolean} Whether the pattern matches the input
+ */
+const testRegexPattern = (pattern, inputData) => {
+  if (typeof inputData !== "string") {
+    throw new Error("$matchesRegex requires string input");
+  }
+
+  // Extract inline flags and clean pattern
+  const flagMatch = pattern.match(/^\(\?([ims]*)\)(.*)/);
+  if (flagMatch) {
+    const [, flags, patternPart] = flagMatch;
+    let jsFlags = "";
+
+    if (flags.includes("i")) jsFlags += "i";
+    if (flags.includes("m")) jsFlags += "m";
+    if (flags.includes("s")) jsFlags += "s";
+
+    const regex = new RegExp(patternPart, jsFlags);
+    return regex.test(inputData);
+  }
+
+  // Check for unsupported inline flags and strip them
+  const unsupportedFlagMatch = pattern.match(/^\(\?[^)]*\)(.*)/);
+  if (unsupportedFlagMatch) {
+    const [, patternPart] = unsupportedFlagMatch;
+    const regex = new RegExp(patternPart);
+    return regex.test(inputData);
+  }
+
+  // No inline flags - use PCRE defaults
+  const regex = new RegExp(pattern);
+  return regex.test(inputData);
+};
+
+/**
  * Tests if a string matches a regular expression pattern.
  *
  * **Uses PCRE (Perl Compatible Regular Expression) semantics** as the canonical standard
@@ -50,70 +123,13 @@ const createStringPatternExpression = (matchFn) => ({
 const $matchesRegex = {
   apply(operand, inputData, { apply }) {
     const resolvedOperand = apply(operand, inputData);
-    const pattern = resolvedOperand;
-    if (typeof inputData !== "string") {
-      throw new Error("$matchesRegex requires string input");
-    }
-
-    // Extract inline flags and clean pattern
-    const flagMatch = pattern.match(/^\(\?([ims]*)\)(.*)/);
-    if (flagMatch) {
-      const [, flags, patternPart] = flagMatch;
-      let jsFlags = "";
-
-      if (flags.includes("i")) jsFlags += "i";
-      if (flags.includes("m")) jsFlags += "m";
-      if (flags.includes("s")) jsFlags += "s";
-
-      const regex = new RegExp(patternPart, jsFlags);
-      return regex.test(inputData);
-    }
-
-    // Check for unsupported inline flags and strip them
-    const unsupportedFlagMatch = pattern.match(/^\(\?[^)]*\)(.*)/);
-    if (unsupportedFlagMatch) {
-      const [, patternPart] = unsupportedFlagMatch;
-      const regex = new RegExp(patternPart);
-      return regex.test(inputData);
-    }
-
-    // No inline flags - use PCRE defaults
-    const regex = new RegExp(pattern);
-    return regex.test(inputData);
+    return testRegexPattern(resolvedOperand, inputData);
   },
   evaluate: (operand, { evaluate }) => {
     const [pattern, inputData] = operand;
     const resolvedPattern = evaluate(pattern);
     const resolvedInputData = evaluate(inputData);
-    if (typeof resolvedInputData !== "string") {
-      throw new Error("$matchesRegex requires string input");
-    }
-
-    // Extract inline flags and clean pattern
-    const flagMatch = resolvedPattern.match(/^\(\?([ims]*)\)(.*)/);
-    if (flagMatch) {
-      const [, flags, patternPart] = flagMatch;
-      let jsFlags = "";
-
-      if (flags.includes("i")) jsFlags += "i";
-      if (flags.includes("m")) jsFlags += "m";
-      if (flags.includes("s")) jsFlags += "s";
-
-      const regex = new RegExp(patternPart, jsFlags);
-      return regex.test(resolvedInputData);
-    }
-
-    // Check for unsupported inline flags and strip them
-    const unsupportedFlagMatch = resolvedPattern.match(/^\(\?[^)]*\)(.*)/);
-    if (unsupportedFlagMatch) {
-      const [, patternPart] = unsupportedFlagMatch;
-      const regex = new RegExp(patternPart);
-      return regex.test(resolvedInputData);
-    }
-
-    // No inline flags - use PCRE defaults
-    const regex = new RegExp(resolvedPattern);
-    return regex.test(resolvedInputData);
+    return testRegexPattern(resolvedPattern, resolvedInputData);
   },
 };
 
@@ -242,12 +258,33 @@ const $matchesGlob = createStringPatternExpression((inputData, pattern) => {
   return regex.test(inputData);
 });
 
-// Individual exports for tree shaking
-export { $matchesRegex, $matchesLike, $matchesGlob };
+const $split = createStringOperationExpression((str, delimiter) =>
+  str.split(delimiter),
+);
 
-// Grouped export for compatibility
-export const stringDefinitions = {
+const $trim = createStringTransformExpression((str) => str.trim());
+
+const $uppercase = createStringTransformExpression((str) => str.toUpperCase());
+
+const $lowercase = createStringTransformExpression((str) => str.toLowerCase());
+
+const $replace = createStringOperationExpression((str, search, replacement) =>
+  str.replace(new RegExp(search, "g"), replacement),
+);
+
+const $substring = createStringOperationExpression((str, start, length) =>
+  length !== undefined ? str.slice(start, start + length) : str.slice(start),
+);
+
+// Individual exports for tree shaking
+export {
   $matchesRegex,
   $matchesLike,
   $matchesGlob,
+  $split,
+  $trim,
+  $uppercase,
+  $lowercase,
+  $replace,
+  $substring,
 };

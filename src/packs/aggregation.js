@@ -3,27 +3,14 @@
  *
  * Statistical and aggregation functions for data analysis:
  * - Basic aggregations ($count, $sum, $max, $min)
- * - Statistical measures ($mean, $median, $mode)
+ * - Statistical measures ($mean, $median)
+ * - Array reduction ($first, $last)
  */
 
 // Import aggregative expressions
-import {
-  $count,
-  $sum,
-  $max,
-  $min,
-  $mean,
-  $median,
-  $mode,
-} from "../definitions/aggregative.js";
+import * as aggregativeExpressions from "../definitions/aggregative.js";
 
 // Export as grouped object
 export const aggregation = {
-  $count,
-  $sum,
-  $max,
-  $min,
-  $mean,
-  $median,
-  $mode,
+  ...aggregativeExpressions,
 };

@@ -47,14 +47,17 @@ const $modulo = createMathExpression(
   },
 );
 
-// Individual exports for tree shaking
-export { $add, $subtract, $multiply, $divide, $modulo };
-
-// Grouped export for compatibility
-export const mathDefinitions = {
-  $add,
-  $subtract,
-  $multiply,
-  $divide,
-  $modulo,
+const $abs = {
+  apply: (operand, inputData) => Math.abs(inputData),
+  evaluate: (operand, { evaluate }) => Math.abs(evaluate(operand)),
 };
+
+const $pow = createMathExpression((left, right) => Math.pow(left, right));
+
+const $sqrt = {
+  apply: (operand, inputData) => Math.sqrt(inputData),
+  evaluate: (operand, { evaluate }) => Math.sqrt(evaluate(operand)),
+};
+
+// Individual exports for tree shaking
+export { $add, $subtract, $multiply, $divide, $modulo, $abs, $pow, $sqrt };

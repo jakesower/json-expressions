@@ -1,185 +1,193 @@
 import { describe, expect, it } from "vitest";
-import { defaultExpressionEngine } from "../../src/index.js";
+import { createExpressionEngine } from "../../src/index.js";
+import { all } from "../../src/packs/all.js";
 
-const { apply, evaluate } = defaultExpressionEngine;
+const testEngine = createExpressionEngine({ packs: [all] });
+const { apply, evaluate } = testEngine;
 
 describe("$random", () => {
-	describe("apply form", () => {
-		it("generates random numbers between 0 and 1 by default", () => {
-			const result1 = apply({ $random: {} }, {});
-			const result2 = apply({ $random: null }, {});
+  describe("apply form", () => {
+    it("generates random numbers between 0 and 1 by default", () => {
+      const result1 = apply({ $random: {} }, {});
+      const result2 = apply({ $random: null }, {});
 
-			expect(typeof result1).toBe("number");
-			expect(typeof result2).toBe("number");
-			expect(result1).toBeGreaterThanOrEqual(0);
-			expect(result1).toBeLessThan(1);
-			expect(result2).toBeGreaterThanOrEqual(0);
-			expect(result2).toBeLessThan(1);
+      expect(typeof result1).toBe("number");
+      expect(typeof result2).toBe("number");
+      expect(result1).toBeGreaterThanOrEqual(0);
+      expect(result1).toBeLessThan(1);
+      expect(result2).toBeGreaterThanOrEqual(0);
+      expect(result2).toBeLessThan(1);
 
-			// Should be different values (extremely unlikely to be same)
-			expect(result1).not.toBe(result2);
-		});
+      // Should be different values (extremely unlikely to be same)
+      expect(result1).not.toBe(result2);
+    });
 
-		it("supports custom min and max values", () => {
-			const result1 = apply({ $random: { min: 10, max: 20 } }, {});
-			const result2 = apply({ $random: { min: -5, max: 5 } }, {});
+    it("supports custom min and max values", () => {
+      const result1 = apply({ $random: { min: 10, max: 20 } }, {});
+      const result2 = apply({ $random: { min: -5, max: 5 } }, {});
 
-			expect(result1).toBeGreaterThanOrEqual(10);
-			expect(result1).toBeLessThan(20);
-			expect(result2).toBeGreaterThanOrEqual(-5);
-			expect(result2).toBeLessThan(5);
-		});
+      expect(result1).toBeGreaterThanOrEqual(10);
+      expect(result1).toBeLessThan(20);
+      expect(result2).toBeGreaterThanOrEqual(-5);
+      expect(result2).toBeLessThan(5);
+    });
 
-		it("supports precision for decimal places", () => {
-			const result1 = apply({ $random: { min: 0, max: 1, precision: 2 } }, {});
-			const result2 = apply({ $random: { min: 0, max: 1, precision: 0 } }, {});
+    it("supports precision for decimal places", () => {
+      const result1 = apply({ $random: { min: 0, max: 1, precision: 2 } }, {});
+      const result2 = apply({ $random: { min: 0, max: 1, precision: 0 } }, {});
 
-			// 2 decimal places
-			expect(result1.toString().split(".")[1]?.length || 0).toBeLessThanOrEqual(
-				2,
-			);
+      // 2 decimal places
+      expect(result1.toString().split(".")[1]?.length || 0).toBeLessThanOrEqual(
+        2,
+      );
 
-			// Integer (0 decimal places)
-			expect(Number.isInteger(result2)).toBe(true);
-		});
+      // Integer (0 decimal places)
+      expect(Number.isInteger(result2)).toBe(true);
+    });
 
-		it("supports negative precision for coarse rounding", () => {
-			const result = apply({ $random: { min: 0, max: 1000, precision: -1 } }, {});
+    it("supports negative precision for coarse rounding", () => {
+      const result = apply(
+        { $random: { min: 0, max: 1000, precision: -1 } },
+        {},
+      );
 
-			// Should be rounded to nearest 10
-			expect(result % 10).toBe(0);
-		});
+      // Should be rounded to nearest 10
+      expect(result % 10).toBe(0);
+    });
 
-		it("handles null precision (no rounding)", () => {
-			const result1 = apply({ $random: { min: 0, max: 1, precision: null } }, {});
-			const result2 = apply({ $random: { min: 0, max: 1 } }, {}); // precision omitted
+    it("handles null precision (no rounding)", () => {
+      const result1 = apply(
+        { $random: { min: 0, max: 1, precision: null } },
+        {},
+      );
+      const result2 = apply({ $random: { min: 0, max: 1 } }, {}); // precision omitted
 
-			expect(typeof result1).toBe("number");
-			expect(typeof result2).toBe("number");
-			// No specific precision constraints
-		});
+      expect(typeof result1).toBe("number");
+      expect(typeof result2).toBe("number");
+      // No specific precision constraints
+    });
 
-		it("work within conditional expressions", () => {
-			const result = apply(
-				{
-					$if: {
-						if: true,
-						then: { $random: null },
-						else: "no",
-					},
-				},
-				{},
-			);
+    it("work within conditional expressions", () => {
+      const result = apply(
+        {
+          $if: {
+            if: true,
+            then: { $random: null },
+            else: "no",
+          },
+        },
+        {},
+      );
 
-			expect(typeof result).toBe("number");
-			expect(result).toBeGreaterThanOrEqual(0);
-			expect(result).toBeLessThan(1);
-		});
+      expect(typeof result).toBe("number");
+      expect(result).toBeGreaterThanOrEqual(0);
+      expect(result).toBeLessThan(1);
+    });
 
-		it("work in switch expressions", () => {
-			const result = apply(
-				{
-					$switch: {
-						value: "generate",
-						cases: [{ when: "generate", then: { $random: null } }],
-						default: "no",
-					},
-				},
-				{},
-			);
+    it("work in switch expressions", () => {
+      const result = apply(
+        {
+          $switch: {
+            value: "generate",
+            cases: [{ when: "generate", then: { $random: null } }],
+            default: "no",
+          },
+        },
+        {},
+      );
 
-			expect(typeof result).toBe("number");
-		});
-	});
+      expect(typeof result).toBe("number");
+    });
+  });
 
-	describe("evaluate form", () => {
-		it("can be evaluated statically with all options", () => {
-			const result1 = evaluate({ $random: { min: 5, max: 10, precision: 1 } });
-			const result2 = evaluate({ $random: {} });
+  describe("evaluate form", () => {
+    it("can be evaluated statically with all options", () => {
+      const result1 = evaluate({ $random: { min: 5, max: 10, precision: 1 } });
+      const result2 = evaluate({ $random: {} });
 
-			expect(result1).toBeGreaterThanOrEqual(5);
-			expect(result1).toBeLessThan(10);
-			expect(result1.toString().split(".")[1]?.length || 0).toBeLessThanOrEqual(
-				1,
-			);
+      expect(result1).toBeGreaterThanOrEqual(5);
+      expect(result1).toBeLessThan(10);
+      expect(result1.toString().split(".")[1]?.length || 0).toBeLessThanOrEqual(
+        1,
+      );
 
-			expect(result2).toBeGreaterThanOrEqual(0);
-			expect(result2).toBeLessThan(1);
-		});
+      expect(result2).toBeGreaterThanOrEqual(0);
+      expect(result2).toBeLessThan(1);
+    });
 
-		it("can be used in static evaluation of conditionals", () => {
-			const result = evaluate({
-				$if: {
-					if: true,
-					then: { $uuid: null },
-					else: "no",
-				},
-			});
+    it("can be used in static evaluation of conditionals", () => {
+      const result = evaluate({
+        $if: {
+          if: true,
+          then: { $uuid: null },
+          else: "no",
+        },
+      });
 
-			expect(typeof result).toBe("string");
-			const uuidRegex =
-				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-			expect(result).toMatch(uuidRegex);
-		});
-	});
+      expect(typeof result).toBe("string");
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(result).toMatch(uuidRegex);
+    });
+  });
 });
 
 describe("$uuid", () => {
-	describe("apply form", () => {
-		it("generates valid UUID v4 strings", () => {
-			const result1 = apply({ $uuid: null }, {});
-			const result2 = apply({ $uuid: null }, {});
+  describe("apply form", () => {
+    it("generates valid UUID v4 strings", () => {
+      const result1 = apply({ $uuid: null }, {});
+      const result2 = apply({ $uuid: null }, {});
 
-			expect(typeof result1).toBe("string");
-			expect(typeof result2).toBe("string");
+      expect(typeof result1).toBe("string");
+      expect(typeof result2).toBe("string");
 
-			// UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-			const uuidRegex =
-				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-			expect(result1).toMatch(uuidRegex);
-			expect(result2).toMatch(uuidRegex);
+      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(result1).toMatch(uuidRegex);
+      expect(result2).toMatch(uuidRegex);
 
-			// Should be different UUIDs
-			expect(result1).not.toBe(result2);
-		});
+      // Should be different UUIDs
+      expect(result1).not.toBe(result2);
+    });
 
-		it("ignores operand and input data", () => {
-			const result1 = apply({ $uuid: "ignored" }, { also: "ignored" });
-			const result2 = apply({ $uuid: [1, 2, 3] }, null);
+    it("ignores operand and input data", () => {
+      const result1 = apply({ $uuid: "ignored" }, { also: "ignored" });
+      const result2 = apply({ $uuid: [1, 2, 3] }, null);
 
-			expect(typeof result1).toBe("string");
-			expect(typeof result2).toBe("string");
+      expect(typeof result1).toBe("string");
+      expect(typeof result2).toBe("string");
 
-			const uuidRegex =
-				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-			expect(result1).toMatch(uuidRegex);
-			expect(result2).toMatch(uuidRegex);
-		});
-	});
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(result1).toMatch(uuidRegex);
+      expect(result2).toMatch(uuidRegex);
+    });
+  });
 
-	describe("evaluate form", () => {
-		it("generates UUID directly", () => {
-			const result = evaluate({ $uuid: null });
-			expect(typeof result).toBe("string");
-			expect(result).toMatch(
-				/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-			);
-		});
+  describe("evaluate form", () => {
+    it("generates UUID directly", () => {
+      const result = evaluate({ $uuid: null });
+      expect(typeof result).toBe("string");
+      expect(result).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      );
+    });
 
-		it("can be evaluated statically", () => {
-			const result1 = evaluate({ $uuid: null });
-			const result2 = evaluate({ $uuid: null });
+    it("can be evaluated statically", () => {
+      const result1 = evaluate({ $uuid: null });
+      const result2 = evaluate({ $uuid: null });
 
-			expect(typeof result1).toBe("string");
-			expect(typeof result2).toBe("string");
+      expect(typeof result1).toBe("string");
+      expect(typeof result2).toBe("string");
 
-			const uuidRegex =
-				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-			expect(result1).toMatch(uuidRegex);
-			expect(result2).toMatch(uuidRegex);
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      expect(result1).toMatch(uuidRegex);
+      expect(result2).toMatch(uuidRegex);
 
-			// Non-deterministic but valid
-			expect(result1).not.toBe(result2);
-		});
-	});
+      // Non-deterministic but valid
+      expect(result1).not.toBe(result2);
+    });
+  });
 });

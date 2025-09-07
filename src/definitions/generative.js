@@ -30,9 +30,3 @@ const $uuid = createGenerativeExpression(() => crypto.randomUUID());
 
 // Individual exports for tree shaking
 export { $random, $uuid };
-
-// Grouped export for compatibility
-export const generativeDefinitions = {
-  $random,
-  $uuid,
-};
