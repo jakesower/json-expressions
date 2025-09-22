@@ -7,11 +7,14 @@
  */
 
 // Import logical and conditional expressions
-import * as logicalExpressions from "../definitions/logical.js";
-import * as conditionalExpressions from "../definitions/conditional.js";
+import { $and, $not, $or } from "../definitions/predicate.js";
+import { $case, $if } from "../definitions/conditional.js";
 
-// Export as grouped object
+// Export as grouped object (alphabetized)
 export const logic = {
-  ...logicalExpressions,
-  ...conditionalExpressions,
+  $and,
+  $case,
+  $if,
+  $not,
+  $or,
 };

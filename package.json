@@ -15,7 +15,7 @@
     "dynamic",
     "rules-engine"
   ],
-  "author": "",
+  "author": "Jake Sower",
   "license": "MIT",
   "files": [
     "dist/",

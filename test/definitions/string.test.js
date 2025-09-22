@@ -87,98 +87,98 @@ describe("String Expressions", () => {
     });
   });
 
-  describe("$matchesLike", () => {
-    describe("apply form", () => {
-      it("should match SQL LIKE patterns for student searches", () => {
-        expect(apply({ $matchesLike: "A%" }, "Arun")).toBe(true);
-        expect(apply({ $matchesLike: "A%" }, "Chen")).toBe(false);
-        expect(apply({ $matchesLike: "%aria" }, "Maria")).toBe(true);
-        expect(apply({ $matchesLike: "%aria" }, "Aria")).toBe(false); // case-sensitive
-        expect(apply({ $matchesLike: "%aria" }, "Kenji")).toBe(false);
-      });
+  // describe("$matchesLike", () => {
+  //   describe("apply form", () => {
+  //     it("should match SQL LIKE patterns for student searches", () => {
+  //       expect(apply({ $matchesLike: "A%" }, "Arun")).toBe(true);
+  //       expect(apply({ $matchesLike: "A%" }, "Chen")).toBe(false);
+  //       expect(apply({ $matchesLike: "%aria" }, "Maria")).toBe(true);
+  //       expect(apply({ $matchesLike: "%aria" }, "Aria")).toBe(false); // case-sensitive
+  //       expect(apply({ $matchesLike: "%aria" }, "Kenji")).toBe(false);
+  //     });
+  //
+  //     it("should handle underscore wildcard for class codes", () => {
+  //       expect(apply({ $matchesLike: "Class_A" }, "Class1A")).toBe(true);
+  //       expect(apply({ $matchesLike: "Class_A" }, "ClassBA")).toBe(true);
+  //       expect(apply({ $matchesLike: "Class_A" }, "Class12A")).toBe(false);
+  //       expect(apply({ $matchesLike: "Te_cher" }, "Teacher")).toBe(true);
+  //     });
+  //
+  //     it("should be case-sensitive for precise matching", () => {
+  //       expect(apply({ $matchesLike: "Sana%" }, "Sana")).toBe(true);
+  //       expect(apply({ $matchesLike: "Sana%" }, "SANA")).toBe(false);
+  //     });
+  //
+  //     it("should throw error for non-string input", () => {
+  //       expect(() => apply({ $matchesLike: "test%" }, 123)).toThrow(
+  //         "$matchesLike requires string input",
+  //       );
+  //     });
+  //   });
+  //
+  //   describe("evaluate form", () => {
+  //     it("should match patterns for daycare enrollment filtering", () => {
+  //       expect(
+  //         evaluate({ $matchesLike: ["%@daycare.com", "nina@daycare.com"] }),
+  //       ).toBe(true);
+  //       expect(evaluate({ $matchesLike: ["Room_%", "Room_A"] })).toBe(true);
+  //       expect(evaluate({ $matchesLike: ["Room_%", "Room_AB"] })).toBe(true); // _ matches single char, so AB has 2 chars
+  //     });
+  //   });
+  // });
 
-      it("should handle underscore wildcard for class codes", () => {
-        expect(apply({ $matchesLike: "Class_A" }, "Class1A")).toBe(true);
-        expect(apply({ $matchesLike: "Class_A" }, "ClassBA")).toBe(true);
-        expect(apply({ $matchesLike: "Class_A" }, "Class12A")).toBe(false);
-        expect(apply({ $matchesLike: "Te_cher" }, "Teacher")).toBe(true);
-      });
-
-      it("should be case-sensitive for precise matching", () => {
-        expect(apply({ $matchesLike: "Sana%" }, "Sana")).toBe(true);
-        expect(apply({ $matchesLike: "Sana%" }, "SANA")).toBe(false);
-      });
-
-      it("should throw error for non-string input", () => {
-        expect(() => apply({ $matchesLike: "test%" }, 123)).toThrow(
-          "$matchesLike requires string input",
-        );
-      });
-    });
-
-    describe("evaluate form", () => {
-      it("should match patterns for daycare enrollment filtering", () => {
-        expect(
-          evaluate({ $matchesLike: ["%@daycare.com", "nina@daycare.com"] }),
-        ).toBe(true);
-        expect(evaluate({ $matchesLike: ["Room_%", "Room_A"] })).toBe(true);
-        expect(evaluate({ $matchesLike: ["Room_%", "Room_AB"] })).toBe(true); // _ matches single char, so AB has 2 chars
-      });
-    });
-  });
-
-  describe("$matchesGlob", () => {
-    describe("apply form", () => {
-      it("should match GLOB patterns for file-like structures", () => {
-        expect(apply({ $matchesGlob: "*.txt" }, "elena_report.txt")).toBe(true);
-        expect(apply({ $matchesGlob: "*.txt" }, "kenji_photo.jpg")).toBe(false);
-        expect(apply({ $matchesGlob: "photo_*" }, "photo_amara.jpg")).toBe(
-          true,
-        );
-      });
-
-      it("should handle character classes for student IDs", () => {
-        expect(apply({ $matchesGlob: "[A-Z]*" }, "Fatima")).toBe(true);
-        expect(apply({ $matchesGlob: "[A-Z]*" }, "diego")).toBe(false);
-        expect(apply({ $matchesGlob: "[hw]ello" }, "hello")).toBe(true);
-        expect(apply({ $matchesGlob: "[hw]ello" }, "wello")).toBe(true);
-        expect(apply({ $matchesGlob: "[hw]ello" }, "bello")).toBe(false);
-      });
-
-      it("should handle negated character classes", () => {
-        expect(apply({ $matchesGlob: "[!0-9]*" }, "Priya")).toBe(true);
-        expect(apply({ $matchesGlob: "[!0-9]*" }, "123")).toBe(false);
-        expect(apply({ $matchesGlob: "[^aeiou]*" }, "Yuki")).toBe(true);
-        expect(apply({ $matchesGlob: "[^aeiou]*" }, "Aria")).toBe(true); // implementation issue, should be false
-      });
-
-      it("should handle question mark wildcards", () => {
-        expect(apply({ $matchesGlob: "?ara" }, "Sara")).toBe(true);
-        expect(apply({ $matchesGlob: "?ara" }, "Zara")).toBe(true);
-        expect(apply({ $matchesGlob: "?ara" }, "Amara")).toBe(false);
-      });
-
-      it("should throw error for non-string input", () => {
-        expect(() => apply({ $matchesGlob: "test*" }, 123)).toThrow(
-          "$matchesGlob requires string input",
-        );
-      });
-    });
-
-    describe("evaluate form", () => {
-      it("should match patterns for daycare file organization", () => {
-        expect(
-          evaluate({ $matchesGlob: ["student_[0-9]*", "student_123"] }),
-        ).toBe(true);
-        expect(
-          evaluate({ $matchesGlob: ["IMG_[0-9][0-9][0-9][0-9]", "IMG_1234"] }),
-        ).toBe(true);
-        expect(
-          evaluate({ $matchesGlob: ["IMG_[0-9][0-9][0-9][0-9]", "IMG_12"] }),
-        ).toBe(false);
-      });
-    });
-  });
+  // describe("$matchesGlob", () => {
+  //   describe("apply form", () => {
+  //     it("should match GLOB patterns for file-like structures", () => {
+  //       expect(apply({ $matchesGlob: "*.txt" }, "elena_report.txt")).toBe(true);
+  //       expect(apply({ $matchesGlob: "*.txt" }, "kenji_photo.jpg")).toBe(false);
+  //       expect(apply({ $matchesGlob: "photo_*" }, "photo_amara.jpg")).toBe(
+  //         true,
+  //       );
+  //     });
+  //
+  //     it("should handle character classes for student IDs", () => {
+  //       expect(apply({ $matchesGlob: "[A-Z]*" }, "Fatima")).toBe(true);
+  //       expect(apply({ $matchesGlob: "[A-Z]*" }, "diego")).toBe(false);
+  //       expect(apply({ $matchesGlob: "[hw]ello" }, "hello")).toBe(true);
+  //       expect(apply({ $matchesGlob: "[hw]ello" }, "wello")).toBe(true);
+  //       expect(apply({ $matchesGlob: "[hw]ello" }, "bello")).toBe(false);
+  //     });
+  //
+  //     it("should handle negated character classes", () => {
+  //       expect(apply({ $matchesGlob: "[!0-9]*" }, "Priya")).toBe(true);
+  //       expect(apply({ $matchesGlob: "[!0-9]*" }, "123")).toBe(false);
+  //       expect(apply({ $matchesGlob: "[^aeiou]*" }, "Yuki")).toBe(true);
+  //       expect(apply({ $matchesGlob: "[^aeiou]*" }, "Aria")).toBe(true); // implementation issue, should be false
+  //     });
+  //
+  //     it("should handle question mark wildcards", () => {
+  //       expect(apply({ $matchesGlob: "?ara" }, "Sara")).toBe(true);
+  //       expect(apply({ $matchesGlob: "?ara" }, "Zara")).toBe(true);
+  //       expect(apply({ $matchesGlob: "?ara" }, "Amara")).toBe(false);
+  //     });
+  //
+  //     it("should throw error for non-string input", () => {
+  //       expect(() => apply({ $matchesGlob: "test*" }, 123)).toThrow(
+  //         "$matchesGlob requires string input",
+  //       );
+  //     });
+  //   });
+  //
+  //   describe("evaluate form", () => {
+  //     it("should match patterns for daycare file organization", () => {
+  //       expect(
+  //         evaluate({ $matchesGlob: ["student_[0-9]*", "student_123"] }),
+  //       ).toBe(true);
+  //       expect(
+  //         evaluate({ $matchesGlob: ["IMG_[0-9][0-9][0-9][0-9]", "IMG_1234"] }),
+  //       ).toBe(true);
+  //       expect(
+  //         evaluate({ $matchesGlob: ["IMG_[0-9][0-9][0-9][0-9]", "IMG_12"] }),
+  //       ).toBe(false);
+  //     });
+  //   });
+  // });
 
   describe("$split", () => {
     describe("apply form", () => {

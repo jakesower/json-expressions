@@ -60,9 +60,6 @@ export interface IsDefined {
 	$isDefined: unknown | [unknown];
 }
 
-export interface EnsurePathExpression {
-	$ensurePath: string | [unknown, string];
-}
 
 export interface DebugExpression {
 	$debug: Expression | unknown;
@@ -70,6 +67,74 @@ export interface DebugExpression {
 
 export interface PipeExpression {
 	$pipe: Expression[] | [Expression[], unknown];
+}
+
+export interface WhereExpression {
+	$where: { [path: string]: Expression } | [unknown, { [path: string]: Expression }];
+}
+
+export interface SelectExpression {
+	$select: string[] | { [newKey: string]: Expression } | [unknown, string[] | { [newKey: string]: Expression }];
+}
+
+export interface SortExpression {
+	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | [unknown[], string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }>];
+}
+
+export interface MergeExpression {
+	$merge: unknown[] | [unknown[]];
+}
+
+export interface PickExpression {
+	$pick: string[] | [unknown, string[]];
+}
+
+export interface OmitExpression {
+	$omit: string[] | [unknown, string[]];
+}
+
+export interface KeysExpression {
+	$keys: null | [unknown];
+}
+
+export interface ValuesExpression {
+	$values: null | [unknown];
+}
+
+export interface PairsExpression {
+	$pairs: null | [unknown];
+}
+
+export interface FromPairsExpression {
+	$fromPairs: null | [unknown[]];
+}
+
+export interface PluckExpression {
+	$pluck: string | Expression | [unknown[], string | Expression];
+}
+
+export interface DefaultExpression {
+	$default: Expression[];
+}
+
+export interface WhereExpression {
+	$where: { [path: string]: Expression } | [unknown[], { [path: string]: Expression }];
+}
+
+export interface HasExpression {
+	$has: string | [unknown, string];
+}
+
+export interface UniqueExpression {
+	$unique: null | [unknown[]];
+}
+
+export interface FlattenExpression {
+	$flatten: { depth?: number } | [unknown[], { depth?: number }];
+}
+
+export interface GroupByExpression {
+	$groupBy: string | Expression | [unknown[], string | Expression];
 }
 
 
@@ -288,9 +353,25 @@ export type AnyExpression =
 	| LiteralExpression
 	| PropExpression
 	| IsDefined
-	| EnsurePathExpression
 	| DebugExpression
 	| PipeExpression
+	| DefaultExpression
+	| WhereExpression
+	| SelectExpression
+	| SortExpression
+	// Object
+	| MergeExpression
+	| PickExpression
+	| OmitExpression
+	| KeysExpression
+	| ValuesExpression
+	| PairsExpression
+	| FromPairsExpression
+	// Array
+	| PluckExpression
+	| UniqueExpression
+	| FlattenExpression
+	| GroupByExpression
 	// Comparative
 	| EqualExpression
 	| NotEqualExpression
@@ -301,8 +382,7 @@ export type AnyExpression =
 	| InExpression
 	| NotInExpression
 	| MatchesRegexExpression
-	| MatchesLikeExpression
-	| MatchesGlobExpression
+	| HasExpression
 	// Logical
 	| AndExpression
 	| OrExpression
@@ -316,8 +396,6 @@ export type AnyExpression =
 	| MaxExpression
 	| MinExpression
 	| MeanExpression
-	| MedianExpression
-	| ModeExpression
 	// Iterative
 	| FilterExpression
 	| MapExpression
@@ -385,6 +463,7 @@ export const comparison: { [k: string]: unknown };
 export const filtering: { [k: string]: unknown };
 export const logic: { [k: string]: unknown };
 export const math: { [k: string]: unknown };
+export const object: { [k: string]: unknown };
 export const projection: { [k: string]: unknown };
 export const string: { [k: string]: unknown };
 export const time: { [k: string]: unknown };
@@ -392,5 +471,5 @@ export const time: { [k: string]: unknown };
 // === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
 
 // All individual expression definitions are exported via export * statements
-// from their respective definition files (aggregative, comparative, conditional, 
-// core, generative, iterative, logical, math, string, temporal)
+// from their respective definition files (access, array, conditional, flow,
+// generative, math, object, predicate, string, temporal, utility)

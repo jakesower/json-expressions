@@ -2,42 +2,47 @@
  * Base Pack - Near Universal Expressions
  *
  * Essential expressions used across almost all scenarios:
- * - Data access ($get, $prop, $isDefined)
- * - Basic conditionals ($if)
+ * - Data access ($get, $isDefined)
+ * - Basic conditionals ($if, $where)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Operation chaining ($pipe)
- * - Array operations ($filter, $map)
- * - Utilities ($debug, $literal)
+ * - Array operations ($filter, $map, $sort)
+ * - Object operations ($select)
+ * - Utilities ($debug, $literal, $default)
  */
 
 // Import the near universal expressions
+import { $get, $isDefined, $where } from "../definitions/access.js";
 import {
-  $get,
-  $pipe,
   $debug,
+  $default,
   $literal,
-  $isDefined,
-  $prop,
-} from "../definitions/core.js";
+  $pipe,
+  $sort,
+} from "../definitions/flow.js";
+import { $select } from "../definitions/access.js";
 import { $if } from "../definitions/conditional.js";
-import { $eq, $ne, $gt, $gte, $lt, $lte } from "../definitions/comparative.js";
-import { $filter, $map } from "../definitions/iterative.js";
+import { $eq, $gt, $gte, $lt, $lte, $ne } from "../definitions/predicate.js";
+import { $filter, $map } from "../definitions/array.js";
 
-// Export as grouped object
+// Export as grouped object (alphabetized)
 export const base = {
-  $get,
-  $pipe,
   $debug,
-  $literal,
-  $isDefined,
-  $prop,
-  $if,
+  $default,
   $eq,
-  $ne,
+  $filter,
+  $get,
   $gt,
   $gte,
+  $if,
+  $isDefined,
+  $literal,
   $lt,
   $lte,
-  $filter,
   $map,
+  $ne,
+  $pipe,
+  $select,
+  $sort,
+  $where,
 };

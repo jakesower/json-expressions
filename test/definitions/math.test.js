@@ -429,3 +429,208 @@ describe("$sqrt", () => {
     });
   });
 });
+
+describe("$first", () => {
+  describe("apply form", () => {
+    it("returns first element from array", () => {
+      expect(apply({ $first: [1, 2, 3, 4, 5] }, {})).toBe(1);
+      expect(apply({ $first: ["Amara", "Kenji", "Yuki"] }, {})).toBe("Amara");
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $first: [] }, {})).toBe(undefined);
+    });
+
+    it("works with single element arrays", () => {
+      expect(apply({ $first: [42] }, {})).toBe(42);
+      expect(apply({ $first: ["Dao"] }, {})).toBe("Dao");
+    });
+
+    it("handles mixed data types", () => {
+      expect(apply({ $first: [null, "Elena", 3] }, {})).toBe(null);
+      expect(apply({ $first: [false, true] }, {})).toBe(false);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("gets first element from static arrays", () => {
+      expect(evaluate({ $first: [1, 2, 3, 4, 5] })).toBe(1);
+      expect(evaluate({ $first: ["Yuki", "Dao", "Elena"] })).toBe("Yuki");
+    });
+
+    it("handles empty arrays in evaluate", () => {
+      expect(evaluate({ $first: [] })).toBe(undefined);
+    });
+
+    it("works with expressions that return arrays", () => {
+      const scores = [85, 92, 78, 96];
+      expect(evaluate({ $first: { $filter: [{ $gt: 80 }, scores] } })).toBe(85);
+    });
+  });
+});
+
+describe("$last", () => {
+  describe("apply form", () => {
+    it("returns last element from array", () => {
+      expect(apply({ $last: [1, 2, 3, 4, 5] }, {})).toBe(5);
+      expect(apply({ $last: ["Amara", "Kenji", "Yuki"] }, {})).toBe("Yuki");
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $last: [] }, {})).toBe(undefined);
+    });
+
+    it("works with single element arrays", () => {
+      expect(apply({ $last: [42] }, {})).toBe(42);
+      expect(apply({ $last: ["Dao"] }, {})).toBe("Dao");
+    });
+
+    it("handles mixed data types", () => {
+      expect(apply({ $last: ["Elena", 3, null] }, {})).toBe(null);
+      expect(apply({ $last: [true, false] }, {})).toBe(false);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("gets last element from static arrays", () => {
+      expect(evaluate({ $last: [1, 2, 3, 4, 5] })).toBe(5);
+      expect(evaluate({ $last: ["Yuki", "Dao", "Elena"] })).toBe("Elena");
+    });
+
+    it("handles empty arrays in evaluate", () => {
+      expect(evaluate({ $last: [] })).toBe(undefined);
+    });
+
+    it("works with expressions that return arrays", () => {
+      const ages = [3, 4, 5, 6];
+      expect(evaluate({ $last: { $filter: [{ $lt: 6 }, ages] } })).toBe(5);
+    });
+  });
+});
+
+describe("$count", () => {
+  describe("apply form", () => {
+    it("counts elements in array", () => {
+      expect(apply({ $count: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(5);
+      expect(apply({ $count: { $literal: ["Amara", "Kenji", "Yuki"] } }, {})).toBe(3);
+      expect(apply({ $count: { $literal: [] } }, {})).toBe(0);
+    });
+
+    it("counts single element", () => {
+      expect(apply({ $count: { $literal: [42] } }, {})).toBe(1);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("counts elements in static arrays", () => {
+      expect(evaluate({ $count: [1, 2, 3, 4, 5] })).toBe(5);
+      expect(evaluate({ $count: ["Yuki", "Dao", "Elena"] })).toBe(3);
+      expect(evaluate({ $count: [] })).toBe(0);
+    });
+  });
+});
+
+describe("$max", () => {
+  describe("apply form", () => {
+    it("finds maximum value in array", () => {
+      expect(apply({ $max: { $literal: [1, 5, 3, 9, 2] } }, {})).toBe(9);
+      expect(apply({ $max: { $literal: [3.14, 2.71, 1.41] } }, {})).toBe(3.14);
+      expect(apply({ $max: { $literal: [-5, -2, -10] } }, {})).toBe(-2);
+    });
+
+    it("handles single element array", () => {
+      expect(apply({ $max: { $literal: [42] } }, {})).toBe(42);
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $max: { $literal: [] } }, {})).toBe(undefined);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("finds maximum in static arrays", () => {
+      expect(evaluate({ $max: [1, 5, 3, 9, 2] })).toBe(9);
+      expect(evaluate({ $max: [3.14, 2.71, 1.41] })).toBe(3.14);
+      expect(evaluate({ $max: [] })).toBe(undefined);
+    });
+  });
+});
+
+describe("$mean", () => {
+  describe("apply form", () => {
+    it("calculates average of array elements", () => {
+      expect(apply({ $mean: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(3);
+      expect(apply({ $mean: { $literal: [2, 4, 6] } }, {})).toBe(4);
+      expect(apply({ $mean: { $literal: [10] } }, {})).toBe(10);
+    });
+
+    it("handles decimal results", () => {
+      expect(apply({ $mean: { $literal: [1, 2] } }, {})).toBe(1.5);
+      expect(apply({ $mean: { $literal: [1, 2, 3] } }, {})).toBeCloseTo(2, 10);
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $mean: { $literal: [] } }, {})).toBe(undefined);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("calculates mean of static arrays", () => {
+      expect(evaluate({ $mean: [1, 2, 3, 4, 5] })).toBe(3);
+      expect(evaluate({ $mean: [2, 4, 6] })).toBe(4);
+      expect(evaluate({ $mean: [] })).toBe(undefined);
+    });
+  });
+});
+
+describe("$min", () => {
+  describe("apply form", () => {
+    it("finds minimum value in array", () => {
+      expect(apply({ $min: { $literal: [1, 5, 3, 9, 2] } }, {})).toBe(1);
+      expect(apply({ $min: { $literal: [3.14, 2.71, 1.41] } }, {})).toBe(1.41);
+      expect(apply({ $min: { $literal: [-5, -2, -10] } }, {})).toBe(-10);
+    });
+
+    it("handles single element array", () => {
+      expect(apply({ $min: { $literal: [42] } }, {})).toBe(42);
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $min: { $literal: [] } }, {})).toBe(undefined);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("finds minimum in static arrays", () => {
+      expect(evaluate({ $min: [1, 5, 3, 9, 2] })).toBe(1);
+      expect(evaluate({ $min: [3.14, 2.71, 1.41] })).toBe(1.41);
+      expect(evaluate({ $min: [] })).toBe(undefined);
+    });
+  });
+});
+
+describe("$sum", () => {
+  describe("apply form", () => {
+    it("sums array elements", () => {
+      expect(apply({ $sum: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(15);
+      expect(apply({ $sum: { $literal: [2.5, 1.5, 3] } }, {})).toBe(7);
+      expect(apply({ $sum: { $literal: [-1, 1, -2, 2] } }, {})).toBe(0);
+    });
+
+    it("handles single element array", () => {
+      expect(apply({ $sum: { $literal: [42] } }, {})).toBe(42);
+    });
+
+    it("returns 0 for empty array", () => {
+      expect(apply({ $sum: { $literal: [] } }, {})).toBe(0);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("sums static arrays", () => {
+      expect(evaluate({ $sum: [1, 2, 3, 4, 5] })).toBe(15);
+      expect(evaluate({ $sum: [2.5, 1.5, 3] })).toBe(7);
+      expect(evaluate({ $sum: [] })).toBe(0);
+    });
+  });
+});

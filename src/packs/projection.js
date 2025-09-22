@@ -3,24 +3,25 @@
  *
  * Complete toolkit for SELECT clause operations and data transformation:
  * - Aggregation functions ($count, $sum, $min, $max, $mean)
- * - Array transformations ($map, $filter, $flatMap, $distinct)
+ * - Array transformations ($map, $filter, $flatMap, $unique, $pluck)
  * - String/value operations ($concat, $substring, $uppercase, $lowercase, $join)
  * - Conditionals for computed fields ($if, $case)
  * - Field access ($get, $pipe)
  */
 
 // Import aggregation expressions
-import { $count, $sum, $min, $max, $mean } from "../definitions/aggregative.js";
+import { $count, $sum, $min, $max, $mean } from "../definitions/math.js";
 
 // Import array transformation expressions
 import {
   $map,
   $filter,
   $flatMap,
-  $distinct,
+  $unique,
   $concat,
   $join,
-} from "../definitions/iterative.js";
+  $pluck,
+} from "../definitions/array.js";
 
 // Import string transformation expressions
 import { $substring, $uppercase, $lowercase } from "../definitions/string.js";
@@ -29,13 +30,29 @@ import { $substring, $uppercase, $lowercase } from "../definitions/string.js";
 import { $if, $case } from "../definitions/conditional.js";
 
 // Import field access
-import { $get, $pipe } from "../definitions/core.js";
+import { $get, $where } from "../definitions/access.js";
+
+// Import flow control
+import { $pipe } from "../definitions/flow.js";
+
+// Import comparison expressions for filtering
+import {
+  $eq,
+  $ne,
+  $gt,
+  $gte,
+  $lt,
+  $lte,
+  $in,
+  $nin,
+} from "../definitions/predicate.js";
 
 // Export as grouped object
 export const projection = {
   // Field access and chaining
   $get,
   $pipe,
+  $where,
   // Aggregation functions
   $count,
   $sum,
@@ -46,9 +63,10 @@ export const projection = {
   $map,
   $filter,
   $flatMap,
-  $distinct,
+  $unique,
   $concat,
   $join,
+  $pluck,
   // String/value transformations
   $substring,
   $uppercase,
@@ -56,4 +74,16 @@ export const projection = {
   // Conditionals for computed fields
   $if,
   $case,
+  // Comparison expressions for filtering
+  $eq,
+  $ne,
+  $gt,
+  $gte,
+  $lt,
+  $lte,
+  $in,
+  $nin,
 };
+
+// Individual exports for tree shaking
+export { $pluck };

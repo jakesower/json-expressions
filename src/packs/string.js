@@ -2,7 +2,7 @@
  * String Pack - String Processing Operations
  *
  * String processing and pattern matching functions:
- * - Pattern matching ($matchesRegex, $matchesLike, $matchesGlob)
+ * - Pattern matching ($matchesRegex)
  * - String transformations ($split, $trim, $uppercase, $lowercase)
  * - String operations ($replace, $substring)
  */

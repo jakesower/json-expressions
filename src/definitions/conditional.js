@@ -16,6 +16,65 @@ const executeConditional = (condition, thenValue, elseValue) => {
   return condition ? thenValue : elseValue;
 };
 
+/**
+ * Internal helper to find a matching case using flexible matching.
+ * Supports both literal comparisons and expression predicates.
+ * @param {any} value - The value to test against
+ * @param {Array} cases - Array of case objects with 'when' and 'then' properties
+ * @param {function} evaluateWhen - Function to evaluate the 'when' condition
+ * @param {function} isExpression - Function to check if a value is an expression
+ * @param {function} apply - Function to apply expressions with input data
+ * @returns {object|undefined} The matching case object or undefined
+ */
+const findFlexibleCase = (value, cases, { isExpression, apply }) =>
+  cases.find((caseItem) => {
+    const { when } = caseItem;
+
+    if (when === undefined) {
+      throw new Error("Case item must have 'when' property");
+    }
+
+    if (isExpression(when)) {
+      if (Object.keys(when)[0] === "$literal") {
+        return isEqual(value, Object.values(when)[0]);
+      }
+
+      const applied = apply(when, value);
+      if (typeof applied !== "boolean") {
+        throw new Error(
+          "only expressions that return true of false may be used in when clauses",
+        );
+      }
+
+      return applied;
+    }
+
+    return isEqual(value, when);
+  });
+
+const $case = {
+  apply(operand, inputData, { apply, isExpression }) {
+    const value = apply(operand.value, inputData);
+    const found = findFlexibleCase(value, operand.cases, {
+      apply,
+      isExpression,
+    });
+    return found
+      ? apply(found.then, inputData)
+      : apply(operand.default, inputData);
+  },
+  evaluate(operand, { apply, evaluate, isExpression }) {
+    // Handle array format for evaluate form
+    const caseOperand = Array.isArray(operand) ? operand[0] : operand;
+    const value = evaluate(caseOperand.value);
+    const found = findFlexibleCase(value, caseOperand.cases, {
+      apply,
+      isExpression,
+    });
+    return found ? evaluate(found.then) : evaluate(caseOperand.default);
+  },
+};
+
 const $if = {
   apply(operand, inputData, { apply }) {
     const condition = apply(operand.if, inputData);
@@ -32,105 +91,6 @@ const $if = {
       evaluate(operand.then),
       evaluate(operand.else),
     );
-  },
-};
-
-/**
- * Check if an expression is a boolean predicate (comparison/logic operator)
- * @param {any} expr - The expression to check
- * @returns {boolean} True if it's a boolean predicate expression
- */
-const isBooleanPredicate = (expr) => {
-  if (!expr || typeof expr !== "object" || Array.isArray(expr)) {
-    return false;
-  }
-
-  const [key] = Object.keys(expr);
-  // Boolean predicate operators that return true/false
-  const booleanOps = [
-    "$gt",
-    "$gte",
-    "$lt",
-    "$lte",
-    "$eq",
-    "$ne",
-    "$in",
-    "$nin",
-    "$isNull",
-    "$isNotNull",
-    "$between",
-    "$and",
-    "$or",
-    "$not",
-    "$matchesRegex",
-    "$matchesLike",
-    "$matchesGlob",
-    "$all",
-    "$any",
-  ];
-
-  return booleanOps.includes(key);
-};
-
-/**
- * Internal helper to find a matching case using flexible matching.
- * Supports both literal comparisons and expression predicates.
- * @param {any} value - The value to test against
- * @param {Array} cases - Array of case objects with 'when' and 'then' properties
- * @param {function} evaluateWhen - Function to evaluate the 'when' condition
- * @param {function} isExpression - Function to check if a value is an expression
- * @param {function} apply - Function to apply expressions with input data
- * @returns {object|undefined} The matching case object or undefined
- */
-const findFlexibleCase = (value, cases, evaluateWhen, isExpression, apply) => {
-  return cases.find((caseItem) => {
-    if (caseItem.when === undefined) {
-      throw new Error("Case item must have 'when' property");
-    }
-
-    if (isExpression(caseItem.when) && isBooleanPredicate(caseItem.when)) {
-      // Boolean predicate mode: apply the expression with value as input data
-      const condition = apply(caseItem.when, value);
-      if (typeof condition !== "boolean") {
-        throw new Error(
-          `$case.when expression must resolve to a boolean, got ${JSON.stringify(condition)}`,
-        );
-      }
-      return condition;
-    } else {
-      // Literal mode: evaluate when clause and deep equality comparison
-      const evaluatedWhen = evaluateWhen(caseItem.when);
-      return isEqual(value, evaluatedWhen);
-    }
-  });
-};
-
-const $case = {
-  apply(operand, inputData, { apply, isExpression }) {
-    const value = apply(operand.value, inputData);
-    const found = findFlexibleCase(
-      value,
-      operand.cases,
-      (when) => apply(when, inputData),
-      isExpression,
-      apply,
-    );
-    return found
-      ? apply(found.then, inputData)
-      : apply(operand.default, inputData);
-  },
-  evaluate(operand, { evaluate, isExpression, apply }) {
-    // Handle array format for evaluate form
-    const caseOperand = Array.isArray(operand) ? operand[0] : operand;
-    const value = evaluate(caseOperand.value);
-    const found = findFlexibleCase(
-      value,
-      caseOperand.cases,
-      evaluate,
-      isExpression,
-      apply,
-    );
-    return found ? evaluate(found.then) : evaluate(caseOperand.default);
   },
 };
 

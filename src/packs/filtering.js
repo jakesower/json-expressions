@@ -7,11 +7,12 @@
  * - Logic operations ($and, $or, $not)
  * - Membership tests ($in, $nin)
  * - Existence checks ($isNull, $isNotNull)
- * - Pattern matching ($matchesRegex, $matchesLike, $matchesGlob)
+ * - Pattern matching ($matchesRegex)
  */
 
 // Import field access expressions
-import { $get, $pipe } from "../definitions/core.js";
+import { $get } from "../definitions/access.js";
+import { $pipe } from "../definitions/flow.js";
 
 // Import comparison expressions
 import {
@@ -25,17 +26,11 @@ import {
   $nin,
   $isNull,
   $isNotNull,
-} from "../definitions/comparative.js";
-
-// Import logic expressions
-import { $and, $or, $not } from "../definitions/logical.js";
-
-// Import pattern matching expressions
-import {
+  $and,
+  $or,
+  $not,
   $matchesRegex,
-  $matchesLike,
-  $matchesGlob,
-} from "../definitions/string.js";
+} from "../definitions/predicate.js";
 
 // Export as grouped object
 export const filtering = {
@@ -61,6 +56,4 @@ export const filtering = {
   $isNotNull,
   // Pattern matching
   $matchesRegex,
-  $matchesLike,
-  $matchesGlob,
 };

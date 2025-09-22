@@ -11,10 +11,10 @@
  * - Utility ($coalesce)
  */
 
-// Import iterative expressions
-import * as iterativeExpressions from "../definitions/iterative.js";
+// Import array expressions
+import * as arrayExpressions from "../definitions/array.js";
 
 // Export as grouped object
 export const array = {
-  ...iterativeExpressions,
+  ...arrayExpressions,
 };

@@ -250,66 +250,6 @@ engine.evaluate({ $get: { path: "name" } });
 - Test expressions with sample data before using in production
 - Use `$debug` to inspect intermediate values in complex pipelines
 
-## TypeScript Support
-
-JSON Expressions includes comprehensive TypeScript definitions for type safety and better developer experience.
-
-### Basic Usage
-
-```typescript
-import { createExpressionEngine, Expression } from "json-expressions";
-
-const engine = createExpressionEngine();
-
-// Type-safe expression definition
-const expression: Expression = { $gt: 18 };
-
-// Apply with typed input and output
-const result: unknown = engine.apply(expression, 25);
-
-// Type guards for expressions
-if (engine.isExpression(someValue)) {
-  // someValue is now typed as Expression
-  const result = engine.apply(someValue, data);
-}
-```
-
-### Custom Engine Types
-
-```typescript
-import { createExpressionEngine, ExpressionEngine } from "json-expressions";
-
-// Create typed engine
-const engine: ExpressionEngine = createExpressionEngine({
-  custom: {
-    $myExpression: {
-      apply: (operand: string, inputData: any) => inputData + operand,
-      evaluate: (operand: string) => operand.toUpperCase()
-    }
-  }
-});
-```
-
-### Expression Types
-
-The library provides specific interfaces for each expression type:
-
-```typescript
-import { 
-  GetExpression, 
-  PipeExpression, 
-  FilterExpression 
-} from "json-expressions";
-
-const getExpr: GetExpression = { $get: "name" };
-const pipeExpr: PipeExpression = { 
-  $pipe: [
-    { $get: "children" },
-    { $filter: { $gte: 5 } }
-  ] 
-};
-```
-
 ## Expression Packs
 
 JSON Expressions organizes functionality into packs - curated collections of expressions for specific use cases. 
@@ -319,12 +259,17 @@ JSON Expressions organizes functionality into packs - curated collections of exp
 The base pack contains near-universal expressions used across almost all scenarios. These expressions are included by default in every engine unless explicitly excluded.
 
 - [**$debug**](expressions.md#debug) - Logs a value to console and returns it (useful for debugging pipelines)
+- [**$default**](expressions.md#default) - Returns first non-null/undefined value from array of expressions
 - [**$filter**](expressions.md#filter) - Filters array items based on a condition
 - [**$get**](expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
 - [**$if**](expressions.md#if) - Conditional expression that evaluates different branches based on a condition
+- [**$isDefined**](expressions.md#isdefined) - Tests if a value is defined (not null or undefined)
 - [**$literal**](expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
 - [**$map**](expressions.md#map) - Transforms each item in an array using an expression
 - [**$pipe**](expressions.md#pipe) - Pipes data through multiple expressions in sequence (left-to-right)
+- [**$select**](expressions.md#select) - Projects/selects specific properties from objects
+- [**$sort**](expressions.md#sort) - Sorts arrays by property or expression with optional desc flag
+- [**$where**](expressions.md#where) - Filters arrays using object-based property conditions (shorthand for complex filters)
 
 **Comparison expressions:**
 - [**$eq**](expressions.md#eq) - Tests equality using deep comparison
@@ -357,7 +302,6 @@ Statistical and aggregation functions for data analysis:
 - [**$last**](expressions.md#last) - Last item in an array
 - [**$max**](expressions.md#max) - Maximum value in an array
 - [**$mean**](expressions.md#mean) - Arithmetic mean (average) of array values
-- [**$median**](expressions.md#median) - Median (middle value) of array values
 - [**$min**](expressions.md#min) - Minimum value in an array
 - [**$sum**](expressions.md#sum) - Sum of array values
 
@@ -370,7 +314,10 @@ Complete array manipulation toolkit:
 - [**$append**](expressions.md#append) - Appends an array to the end of another array
 - [**$coalesce**](expressions.md#coalesce) - Returns the first non-null value from an array
 - [**$concat**](expressions.md#concat) - Concatenates multiple arrays together
-- [**$distinct**](expressions.md#distinct) - Returns unique values from an array
+- [**$flatten**](expressions.md#flatten) - Flattens nested arrays to specified depth
+- [**$groupBy**](expressions.md#groupby) - Groups array elements by a property or expression
+- [**$pluck**](expressions.md#pluck) - Extracts property values from array of objects
+- [**$unique**](expressions.md#unique) - Returns unique values from an array
 - [**$find**](expressions.md#find) - Returns first element that satisfies a predicate
 - [**$flatMap**](expressions.md#flatmap) - Maps and flattens array items
 - [**$join**](expressions.md#join) - Joins array elements into a string with a separator
@@ -384,6 +331,7 @@ Complete array manipulation toolkit:
 Scalar comparison operations for filtering and validation:
 
 - [**$between**](expressions.md#between) - Tests if value is between two bounds (inclusive)
+- [**$has**](expressions.md#has) - Tests if object has property at specified path (supports dot notation)
 - [**$in**](expressions.md#in) - Tests if value exists in an array
 - [**$isNotNull**](expressions.md#isnotnull) - Tests if value is not null or undefined
 - [**$isNull**](expressions.md#isnull) - Tests if value is null or undefined
@@ -465,6 +413,19 @@ const report = engine.apply({
 }, daycareData);
 ```
 
+#### Object Pack
+
+Key-value manipulation and object operations:
+
+- [**$fromPairs**](expressions.md#frompairs) - Creates object from array of [key, value] pairs
+- [**$keys**](expressions.md#keys) - Returns array of object property names
+- [**$merge**](expressions.md#merge) - Merges multiple objects together
+- [**$omit**](expressions.md#omit) - Creates object excluding specified properties
+- [**$pairs**](expressions.md#pairs) - Returns array of [key, value] pairs from object
+- [**$pick**](expressions.md#pick) - Creates object with only specified properties
+- [**$prop**](expressions.md#prop) - Gets property value from object by dynamic key
+- [**$values**](expressions.md#values) - Returns array of object property values
+
 #### Math Pack
 
 Arithmetic operations and mathematical functions:
@@ -475,7 +436,6 @@ Arithmetic operations and mathematical functions:
 - [**$modulo**](expressions.md#modulo) - Modulo (remainder) operation
 - [**$multiply**](expressions.md#multiply) - Multiplication operation
 - [**$pow**](expressions.md#pow) - Power/exponentiation operation
-- [**$random**](expressions.md#random) - Generate random numbers with optional bounds and precision
 - [**$sqrt**](expressions.md#sqrt) - Square root operation
 - [**$subtract**](expressions.md#subtract) - Subtraction operation
 
@@ -484,8 +444,6 @@ Arithmetic operations and mathematical functions:
 String processing and pattern matching:
 
 - [**$lowercase**](expressions.md#lowercase) - Converts string to lowercase
-- [**$matchesGlob**](expressions.md#matchesglob) - Tests if string matches a Unix shell GLOB pattern
-- [**$matchesLike**](expressions.md#matcheslike) - Tests if string matches a SQL LIKE pattern
 - [**$matchesRegex**](expressions.md#matchesregex) - Tests if string matches a regular expression
 - [**$replace**](expressions.md#replace) - Replaces occurrences of a pattern in a string
 - [**$split**](expressions.md#split) - Splits a string into an array using a separator
@@ -646,6 +604,139 @@ const isValid = customEngine.apply({ $isValidEmail: null }, "user@example.com");
 
 const formatted = customEngine.evaluate({ $titleCase: "john doe" });
 // Returns: "John Doe"
+```
+
+### New Expression Showcase
+
+Here are examples using some of the powerful new expressions:
+
+```javascript
+import { createExpressionEngine } from "json-expressions";
+import { object } from "json-expressions/packs/object";
+
+const engine = createExpressionEngine({ packs: [object] });
+
+const students = [
+  { name: "Aisha", age: 4, scores: [85, 90, 88], active: true },
+  { name: "Chen", age: 5, scores: [92, 87, 95], active: true },
+  { name: "Diego", age: 3, scores: [78, 84, 91], active: false },
+  { name: "Fatima", age: 6, scores: [88, 92, 85], active: true }
+];
+
+// Use $where for elegant filtering
+const activeOlderStudents = engine.apply({
+  $where: {
+    active: { $eq: true },
+    age: { $gte: 4 }
+  }
+}, students);
+// Returns: [Aisha, Chen, Fatima]
+
+// Use $pluck to extract specific fields
+const studentNames = engine.apply({ $pluck: "name" }, students);
+// Returns: ["Aisha", "Chen", "Diego", "Fatima"]
+
+// Use $groupBy to organize data
+const studentsByAge = engine.apply({ $groupBy: "age" }, students);
+// Returns: { "3": [Diego], "4": [Aisha], "5": [Chen], "6": [Fatima] }
+
+// Use $select to project/transform objects
+const summaries = engine.apply({
+  $map: {
+    $select: {
+      name: { $get: "name" },
+      averageScore: { $pipe: [{ $get: "scores" }, { $mean: null }] },
+      isActive: { $get: "active" }
+    }
+  }
+}, students);
+// Returns: [
+//   { name: "Aisha", averageScore: 87.67, isActive: true },
+//   { name: "Chen", averageScore: 91.33, isActive: true },
+//   ...
+// ]
+
+// Use $has to check for property existence
+const hasScores = engine.apply({ $has: "scores" }, students[0]);
+// Returns: true
+
+// Use $flatten for nested arrays
+const allScores = engine.apply({
+  $pipe: [
+    { $pluck: "scores" },
+    { $flatten: null }
+  ]
+}, students);
+// Returns: [85, 90, 88, 92, 87, 95, 78, 84, 91, 88, 92, 85]
+
+// Use $unique to remove duplicates
+const uniqueAges = engine.apply({
+  $pipe: [
+    { $pluck: "age" },
+    { $unique: null }
+  ]
+}, students);
+// Returns: [4, 5, 3, 6]
+```
+
+## TypeScript Support
+
+JSON Expressions includes comprehensive TypeScript definitions for type safety and better developer experience.
+
+### Basic Usage
+
+```typescript
+import { createExpressionEngine, Expression } from "json-expressions";
+
+const engine = createExpressionEngine();
+
+// Type-safe expression definition
+const expression: Expression = { $gt: 18 };
+
+// Apply with typed input and output
+const result: unknown = engine.apply(expression, 25);
+
+// Type guards for expressions
+if (engine.isExpression(someValue)) {
+  // someValue is now typed as Expression
+  const result = engine.apply(someValue, data);
+}
+```
+
+### Custom Engine Types
+
+```typescript
+import { createExpressionEngine, ExpressionEngine } from "json-expressions";
+
+// Create typed engine
+const engine: ExpressionEngine = createExpressionEngine({
+  custom: {
+    $myExpression: {
+      apply: (operand: string, inputData: any) => inputData + operand,
+      evaluate: (operand: string) => operand.toUpperCase()
+    }
+  }
+});
+```
+
+### Expression Types
+
+The library provides specific interfaces for each expression type:
+
+```typescript
+import { 
+  GetExpression, 
+  PipeExpression, 
+  FilterExpression 
+} from "json-expressions";
+
+const getExpr: GetExpression = { $get: "name" };
+const pipeExpr: PipeExpression = { 
+  $pipe: [
+    { $get: "children" },
+    { $filter: { $gte: 5 } }
+  ] 
+};
 ```
 
 ## Installation

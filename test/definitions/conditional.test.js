@@ -320,8 +320,8 @@ describe("$case - literal mode (unified behavior)", () => {
       ).toEqual("Child is playing");
     });
 
-    it("handles expressions in when", () => {
-      expect(
+    it("doesn't allow non-boolean expressions in when", () => {
+      expect(() =>
         apply(
           {
             $case: {
@@ -335,7 +335,9 @@ describe("$case - literal mode (unified behavior)", () => {
           },
           { activity: "playing", playStatus: "playing" },
         ),
-      ).toEqual("Child is playing");
+      ).toThrow(
+        "only expressions that return true of false may be used in when clauses",
+      );
     });
 
     it("handles expressions in then", () => {
