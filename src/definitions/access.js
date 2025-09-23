@@ -17,16 +17,21 @@ const $get = {
       ? inputData
       : get(inputData, resolvedOperand);
   },
-  evaluate: (operand, { evaluate }) => {
-    if (Array.isArray(operand)) {
-      const [objectExpr, path] = operand;
-      const evaluatedObject = evaluate(objectExpr);
-      return get(evaluatedObject, path);
+  evaluate: (operand, { apply, evaluate }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$get evaluate form requires object operand: { object, path }",
+      );
     }
 
-    throw new Error(
-      "$get evaluate form requires array operand: [object, path]",
-    );
+    const { object, path } = operand;
+    if (object === undefined || path === undefined) {
+      throw new Error(
+        "$get evaluate form requires 'object' and 'path' properties",
+      );
+    }
+
+    return apply({ $get: path }, object);
   },
 };
 
@@ -38,28 +43,24 @@ const $isDefined = {
 
 const $prop = {
   apply: (operand, inputData, { apply }) => {
-    if (Array.isArray(operand)) {
-      const [objectExpr, propName] = operand;
-      const resolvedObject = apply(objectExpr, inputData);
-      const resolvedProp = apply(propName, inputData);
-      return resolvedObject?.[resolvedProp];
-    }
-
     const resolvedOperand = apply(operand, inputData);
     return inputData?.[resolvedOperand];
   },
   evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$prop evaluate form requires array operand: [object, property]",
+        "$prop evaluate form requires object operand: { object, property }",
       );
     }
 
-    const [object, property] = operand;
-    const evaluatedObject = evaluate(object);
-    const evaluatedProperty = evaluate(property);
+    const { object, property } = operand;
+    if (object === undefined || property === undefined) {
+      throw new Error(
+        "$prop evaluate form requires 'object' and 'property' properties",
+      );
+    }
 
-    return apply({ $prop: evaluatedProperty }, evaluatedObject);
+    return apply({ $prop: property }, object);
   },
 };
 
@@ -92,18 +93,21 @@ const $select = {
       "$select operand must be array of paths or object with key mappings",
     );
   },
-  evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+  evaluate: (operand, { apply }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$select evaluate form requires array operand: [object, selection]",
+        "$select evaluate form requires object operand: { object, selection }",
       );
     }
 
-    const [object, selection] = operand;
-    const evaluatedObject = evaluate(object);
-    const evaluatedSelection = evaluate(selection);
+    const { object, selection } = operand;
+    if (object === undefined || selection === undefined) {
+      throw new Error(
+        "$select evaluate form requires 'object' and 'selection' properties",
+      );
+    }
 
-    return apply({ $select: evaluatedSelection }, evaluatedObject);
+    return apply({ $select: selection }, object);
   },
 };
 
@@ -120,28 +124,21 @@ const $where = {
       return apply(condition, value);
     });
   },
-  evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+  evaluate: (operand, { apply }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$where evaluate form requires array operand: [data, conditions]",
+        "$where evaluate form requires object operand: { data, conditions }",
       );
     }
 
-    const [data, conditions] = operand;
-    const evaluatedData = evaluate(data);
-    const evaluatedConditions = evaluate(conditions);
-
-    if (
-      !evaluatedConditions ||
-      typeof evaluatedConditions !== "object" ||
-      Array.isArray(evaluatedConditions)
-    ) {
+    const { data, conditions } = operand;
+    if (data === undefined || conditions === undefined) {
       throw new Error(
-        "$where conditions must be an object with property conditions",
+        "$where evaluate form requires 'data' and 'conditions' properties",
       );
     }
 
-    return apply({ $where: evaluatedConditions }, evaluatedData);
+    return apply({ $where: conditions }, data);
   },
 };
 

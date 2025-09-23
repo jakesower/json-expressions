@@ -464,7 +464,11 @@ describe("$first", () => {
 
     it("works with expressions that return arrays", () => {
       const scores = [85, 92, 78, 96];
-      expect(evaluate({ $first: { $filter: [{ $gt: 80 }, scores] } })).toBe(85);
+      expect(
+        evaluate({
+          $first: { $filter: { expression: { $gt: 80 }, array: scores } },
+        }),
+      ).toBe(85);
     });
   });
 });
@@ -503,7 +507,11 @@ describe("$last", () => {
 
     it("works with expressions that return arrays", () => {
       const ages = [3, 4, 5, 6];
-      expect(evaluate({ $last: { $filter: [{ $lt: 6 }, ages] } })).toBe(5);
+      expect(
+        evaluate({
+          $last: { $filter: { expression: { $lt: 6 }, array: ages } },
+        }),
+      ).toBe(5);
     });
   });
 });
@@ -512,7 +520,9 @@ describe("$count", () => {
   describe("apply form", () => {
     it("counts elements in array", () => {
       expect(apply({ $count: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(5);
-      expect(apply({ $count: { $literal: ["Amara", "Kenji", "Yuki"] } }, {})).toBe(3);
+      expect(
+        apply({ $count: { $literal: ["Amara", "Kenji", "Yuki"] } }, {}),
+      ).toBe(3);
       expect(apply({ $count: { $literal: [] } }, {})).toBe(0);
     });
 

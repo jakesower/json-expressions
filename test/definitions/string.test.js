@@ -60,29 +60,41 @@ describe("String Expressions", () => {
 
     describe("evaluate form", () => {
       it("should match patterns for student registration validation", () => {
-        expect(evaluate({ $matchesRegex: ["^[A-Z][a-z]+$", "Yuki"] })).toBe(
-          true,
-        );
-        expect(evaluate({ $matchesRegex: ["^[A-Z][a-z]+$", "yuki"] })).toBe(
-          false,
-        );
-        expect(evaluate({ $matchesRegex: ["\\d{4}", "Room1234"] })).toBe(true);
-        expect(evaluate({ $matchesRegex: ["\\d{4}", "RoomA"] })).toBe(false);
+        expect(
+          evaluate({
+            $matchesRegex: { pattern: "^[A-Z][a-z]+$", text: "Yuki" },
+          }),
+        ).toBe(true);
+        expect(
+          evaluate({
+            $matchesRegex: { pattern: "^[A-Z][a-z]+$", text: "yuki" },
+          }),
+        ).toBe(false);
+        expect(
+          evaluate({ $matchesRegex: { pattern: "\\d{4}", text: "Room1234" } }),
+        ).toBe(true);
+        expect(
+          evaluate({ $matchesRegex: { pattern: "\\d{4}", text: "RoomA" } }),
+        ).toBe(false);
       });
 
       it("should handle case-insensitive matching for names", () => {
-        expect(evaluate({ $matchesRegex: ["(?i)^elena.*", "ELENA"] })).toBe(
-          true,
-        );
-        expect(evaluate({ $matchesRegex: ["(?i)^diego.*", "Diego"] })).toBe(
-          true,
-        );
+        expect(
+          evaluate({
+            $matchesRegex: { pattern: "(?i)^elena.*", text: "ELENA" },
+          }),
+        ).toBe(true);
+        expect(
+          evaluate({
+            $matchesRegex: { pattern: "(?i)^diego.*", text: "Diego" },
+          }),
+        ).toBe(true);
       });
 
       it("should throw error for non-string input in evaluate form", () => {
-        expect(() => evaluate({ $matchesRegex: ["test", 123] })).toThrow(
-          "$matchesRegex requires string input",
-        );
+        expect(() =>
+          evaluate({ $matchesRegex: { pattern: "test", text: 123 } }),
+        ).toThrow("$matchesRegex requires string input");
       });
     });
   });

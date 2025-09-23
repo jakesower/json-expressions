@@ -382,6 +382,39 @@ evaluate({ $filter: [{ $gt: 3 }, [2, 4, 1, 5, 3, 6]] })
 // Returns: [4, 5, 6]
 ```
 
+## $filterBy
+
+Filters arrays by object property conditions (shorthand for $filter + $where).
+
+**Apply Form:**
+```javascript
+// Find active children ready for kindergarten
+const children = [
+  { name: "Aria", age: 4, active: true },
+  { name: "Kai", age: 5, active: true },
+  { name: "Zara", age: 3, active: false },
+  { name: "Leo", age: 6, active: true }
+];
+apply({ $filterBy: { age: { $gte: 5 }, active: { $eq: true } } }, children)
+// Returns: [{ name: "Kai", age: 5, active: true }, { name: "Leo", age: 6, active: true }]
+```
+
+**Evaluate Form:**
+```javascript
+// Filter students by multiple criteria
+evaluate({
+  $filterBy: [
+    [
+      { name: "Alice", score: 85, grade: "A" },
+      { name: "Bob", score: 65, grade: "C" },
+      { name: "Carol", score: 95, grade: "A" }
+    ],
+    { score: { $gte: 80 }, grade: { $eq: "A" } }
+  ]
+})
+// Returns: [{ name: "Alice", score: 85, grade: "A" }, { name: "Carol", score: 95, grade: "A" }]
+```
+
 ## $find
 
 Returns the first element that satisfies a predicate.
@@ -1429,20 +1462,3 @@ evaluate({ $uppercase: "sunshine daycare" })
 // Returns: "SUNSHINE DAYCARE"
 ```
 
-## $uuid
-
-Generates a UUID (Universally Unique Identifier).
-
-**Apply Form:**
-```javascript
-// Generate unique child ID
-apply({ $uuid: null }, anyInput)
-// Returns: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-```
-
-**Evaluate Form:**
-```javascript
-// Generate UUID
-evaluate({ $uuid: null })
-// Returns: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-```

@@ -119,75 +119,14 @@ describe("$random", () => {
       const result = evaluate({
         $if: {
           if: true,
-          then: { $uuid: null },
+          then: { $random: { min: 100, max: 200 } },
           else: "no",
         },
       });
 
-      expect(typeof result).toBe("string");
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      expect(result).toMatch(uuidRegex);
-    });
-  });
-});
-
-describe("$uuid", () => {
-  describe("apply form", () => {
-    it("generates valid UUID v4 strings", () => {
-      const result1 = apply({ $uuid: null }, {});
-      const result2 = apply({ $uuid: null }, {});
-
-      expect(typeof result1).toBe("string");
-      expect(typeof result2).toBe("string");
-
-      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      expect(result1).toMatch(uuidRegex);
-      expect(result2).toMatch(uuidRegex);
-
-      // Should be different UUIDs
-      expect(result1).not.toBe(result2);
-    });
-
-    it("ignores operand and input data", () => {
-      const result1 = apply({ $uuid: "ignored" }, { also: "ignored" });
-      const result2 = apply({ $uuid: [1, 2, 3] }, null);
-
-      expect(typeof result1).toBe("string");
-      expect(typeof result2).toBe("string");
-
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      expect(result1).toMatch(uuidRegex);
-      expect(result2).toMatch(uuidRegex);
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("generates UUID directly", () => {
-      const result = evaluate({ $uuid: null });
-      expect(typeof result).toBe("string");
-      expect(result).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-      );
-    });
-
-    it("can be evaluated statically", () => {
-      const result1 = evaluate({ $uuid: null });
-      const result2 = evaluate({ $uuid: null });
-
-      expect(typeof result1).toBe("string");
-      expect(typeof result2).toBe("string");
-
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      expect(result1).toMatch(uuidRegex);
-      expect(result2).toMatch(uuidRegex);
-
-      // Non-deterministic but valid
-      expect(result1).not.toBe(result2);
+      expect(typeof result).toBe("number");
+      expect(result).toBeGreaterThanOrEqual(100);
+      expect(result).toBeLessThan(200);
     });
   });
 });

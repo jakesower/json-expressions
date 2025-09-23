@@ -27,6 +27,12 @@ describe("$eq", () => {
       expect(evaluate({ $eq: [5, 10] })).toBe(false);
       expect(evaluate({ $eq: [{ a: 1 }, { a: 1 }] })).toBe(true);
     });
+
+    it("evaluates using object format", () => {
+      expect(evaluate({ $eq: { left: 5, right: 5 } })).toBe(true);
+      expect(evaluate({ $eq: { left: 5, right: 10 } })).toBe(false);
+      expect(evaluate({ $eq: { left: { a: 1 }, right: { a: 1 } } })).toBe(true);
+    });
   });
 });
 
@@ -46,6 +52,12 @@ describe("$gt", () => {
       expect(evaluate({ $gt: [10, 5] })).toBe(true);
       expect(evaluate({ $gt: [5, 10] })).toBe(false);
       expect(evaluate({ $gt: [5, 5] })).toBe(false);
+    });
+
+    it("evaluates using object format", () => {
+      expect(evaluate({ $gt: { left: 10, right: 5 } })).toBe(true);
+      expect(evaluate({ $gt: { left: 5, right: 10 } })).toBe(false);
+      expect(evaluate({ $gt: { left: 5, right: 5 } })).toBe(false);
     });
   });
 });
@@ -142,13 +154,24 @@ describe("$in", () => {
 
   describe("evaluate form", () => {
     it("evaluates static array membership", () => {
-      expect(evaluate({ $in: [[1, 2, 3], 2] })).toBe(true);
-      expect(evaluate({ $in: [[1, 2, 3], 5] })).toBe(false);
+      expect(evaluate({ $in: { array: [1, 2, 3], value: 2 } })).toBe(true);
+      expect(evaluate({ $in: { array: [1, 2, 3], value: 5 } })).toBe(false);
+    });
+
+    it("evaluates using object format", () => {
+      expect(evaluate({ $in: { array: [1, 2, 3], value: 2 } })).toBe(true);
+      expect(evaluate({ $in: { array: [1, 2, 3], value: 5 } })).toBe(false);
     });
 
     it("throws error for non-array parameter in evaluate", () => {
-      expect(() => evaluate({ $in: ["not-array", 2] })).toThrow(
+      expect(() => evaluate({ $in: { array: "not-array", value: 2 } })).toThrow(
         "$in parameter must be an array",
+      );
+    });
+
+    it("throws error for invalid object format", () => {
+      expect(() => evaluate({ $in: "not an object" })).toThrow(
+        "$in evaluate form requires object operand: { array, value }",
       );
     });
   });
@@ -167,8 +190,8 @@ describe("$nin", () => {
 
   describe("evaluate form", () => {
     it("evaluates static array membership", () => {
-      expect(evaluate({ $nin: [[1, 2, 3], 5] })).toBe(true);
-      expect(evaluate({ $nin: [[1, 2, 3], 2] })).toBe(false);
+      expect(evaluate({ $nin: { array: [1, 2, 3], value: 5 } })).toBe(true);
+      expect(evaluate({ $nin: { array: [1, 2, 3], value: 2 } })).toBe(false);
     });
 
     it("throws error for non-array operand in evaluate", () => {
@@ -176,9 +199,9 @@ describe("$nin", () => {
     });
 
     it("throws error for non-array parameter in evaluate", () => {
-      expect(() => evaluate({ $nin: ["not-array", 2] })).toThrow(
-        "$nin parameter must be an array",
-      );
+      expect(() =>
+        evaluate({ $nin: { array: "not-array", value: 2 } }),
+      ).toThrow("$nin parameter must be an array");
     });
   });
 });
@@ -268,25 +291,33 @@ describe("$matchesRegex", () => {
 
   describe("evaluate form", () => {
     it("should work with evaluate form", () => {
-      expect(evaluate({ $matchesRegex: ["hello", "hello world"] })).toBe(true);
-      expect(evaluate({ $matchesRegex: ["hello", "goodbye world"] })).toBe(
-        false,
-      );
+      expect(
+        evaluate({ $matchesRegex: { pattern: "hello", text: "hello world" } }),
+      ).toBe(true);
+      expect(
+        evaluate({
+          $matchesRegex: { pattern: "hello", text: "goodbye world" },
+        }),
+      ).toBe(false);
     });
 
     it("should work with flags in evaluate form", () => {
-      expect(evaluate({ $matchesRegex: ["(?i)hello", "HELLO WORLD"] })).toBe(
-        true,
-      );
-      expect(evaluate({ $matchesRegex: ["(?m)^line2", "line1\nline2"] })).toBe(
-        true,
-      );
+      expect(
+        evaluate({
+          $matchesRegex: { pattern: "(?i)hello", text: "HELLO WORLD" },
+        }),
+      ).toBe(true);
+      expect(
+        evaluate({
+          $matchesRegex: { pattern: "(?m)^line2", text: "line1\nline2" },
+        }),
+      ).toBe(true);
     });
 
     it("should throw with invalid input in evaluate form", () => {
-      expect(() => evaluate({ $matchesRegex: ["pattern", 123] })).toThrow(
-        "$matchesRegex requires string input",
-      );
+      expect(() =>
+        evaluate({ $matchesRegex: { pattern: "pattern", text: 123 } }),
+      ).toThrow("$matchesRegex requires string input");
     });
   });
 
@@ -553,10 +584,12 @@ describe("$isNull", () => {
     });
 
     it("should work with expressions that return null for Diego's attendance", () => {
-      expect(evaluate({ $isNull: { $get: [{}, "missing"] } })).toBe(true);
+      expect(
+        evaluate({ $isNull: { $get: { object: {}, path: "missing" } } }),
+      ).toBe(true);
       expect(
         evaluate({
-          $isNull: { $get: [{ name: "Diego" }, "name"] },
+          $isNull: { $get: { object: { name: "Diego" }, path: "name" } },
         }),
       ).toBe(false);
     });
@@ -565,7 +598,10 @@ describe("$isNull", () => {
       expect(
         evaluate({
           $isNull: {
-            $get: [{ students: [{ name: "Fatima" }] }, "teachers.primary"],
+            $get: {
+              object: { students: [{ name: "Fatima" }] },
+              path: "teachers.primary",
+            },
           },
         }),
       ).toBe(true);
@@ -634,13 +670,13 @@ describe("$isNotNull", () => {
       expect(
         evaluate({
           $isNotNull: {
-            $get: [{ pickupPerson: "dad" }, "pickupPerson"],
+            $get: { object: { pickupPerson: "dad" }, path: "pickupPerson" },
           },
         }),
       ).toBe(true);
       expect(
         evaluate({
-          $isNotNull: { $get: [{}, "pickupPerson"] },
+          $isNotNull: { $get: { object: {}, path: "pickupPerson" } },
         }),
       ).toBe(false);
     });
@@ -655,21 +691,21 @@ describe("$isNotNull", () => {
 
       expect(
         evaluate({
-          $isNotNull: { $get: [enrollment, "studentName"] },
+          $isNotNull: { $get: { object: enrollment, path: "studentName" } },
         }),
       ).toBe(true);
 
       expect(
         evaluate({
           $isNotNull: {
-            $get: [enrollment, "emergencyContact"],
+            $get: { object: enrollment, path: "emergencyContact" },
           },
         }),
       ).toBe(false);
 
       expect(
         evaluate({
-          $isNotNull: { $get: [enrollment, "medicalInfo"] },
+          $isNotNull: { $get: { object: enrollment, path: "medicalInfo" } },
         }),
       ).toBe(true); // Empty string is not null
     });
@@ -713,7 +749,9 @@ describe("$has", () => {
 
     it("works with expression operands", () => {
       expect(apply({ $has: { $literal: "name" } }, childProfile)).toBe(true);
-      expect(apply({ $has: { $literal: "missing" } }, childProfile)).toBe(false);
+      expect(apply({ $has: { $literal: "missing" } }, childProfile)).toBe(
+        false,
+      );
     });
 
     it("throws error for non-string resolved operand", () => {
@@ -732,17 +770,29 @@ describe("$has", () => {
           },
         },
       };
-      expect(apply({ $has: "level1.level2.level3.value" }, deepNested)).toBe(true);
-      expect(apply({ $has: "level1.level2.level3.missing" }, deepNested)).toBe(false);
-      expect(apply({ $has: "level1.level2.missing.value" }, deepNested)).toBe(false);
+      expect(apply({ $has: "level1.level2.level3.value" }, deepNested)).toBe(
+        true,
+      );
+      expect(apply({ $has: "level1.level2.level3.missing" }, deepNested)).toBe(
+        false,
+      );
+      expect(apply({ $has: "level1.level2.missing.value" }, deepNested)).toBe(
+        false,
+      );
     });
   });
 
   describe("evaluate form", () => {
     it("checks properties in static objects", () => {
-      expect(evaluate({ $has: [childProfile, "name"] })).toBe(true);
-      expect(evaluate({ $has: [childProfile, "missing"] })).toBe(false);
-      expect(evaluate({ $has: [childProfile, "guardian.name"] })).toBe(true);
+      expect(evaluate({ $has: { object: childProfile, path: "name" } })).toBe(
+        true,
+      );
+      expect(
+        evaluate({ $has: { object: childProfile, path: "missing" } }),
+      ).toBe(false);
+      expect(
+        evaluate({ $has: { object: childProfile, path: "guardian.name" } }),
+      ).toBe(true);
     });
 
     it("works with complex nested objects", () => {
@@ -758,18 +808,28 @@ describe("$has", () => {
         },
       };
 
-      expect(evaluate({ $has: [classroomData, "teacher"] })).toBe(true);
-      expect(evaluate({ $has: [classroomData, "students"] })).toBe(true);
-      expect(evaluate({ $has: [classroomData, "schedule.morning.activity"] })).toBe(true);
-      expect(evaluate({ $has: [classroomData, "schedule.evening"] })).toBe(false);
+      expect(
+        evaluate({ $has: { object: classroomData, path: "teacher" } }),
+      ).toBe(true);
+      expect(
+        evaluate({ $has: { object: classroomData, path: "students" } }),
+      ).toBe(true);
+      expect(
+        evaluate({
+          $has: { object: classroomData, path: "schedule.morning.activity" },
+        }),
+      ).toBe(true);
+      expect(
+        evaluate({ $has: { object: classroomData, path: "schedule.evening" } }),
+      ).toBe(false);
     });
 
     it("throws error for invalid operand", () => {
-      expect(() => evaluate({ $has: "not an array" })).toThrow(
-        "$has evaluate form requires array operand: [object, path]",
+      expect(() => evaluate({ $has: "not an object" })).toThrow(
+        "$has evaluate form requires object operand: { object, path }",
       );
-      expect(() => evaluate({ $has: [childProfile] })).toThrow(
-        "$has evaluate form requires array operand: [object, path]",
+      expect(() => evaluate({ $has: { object: childProfile } })).toThrow(
+        "$has evaluate form requires 'object' and 'path' properties",
       );
     });
 
@@ -782,9 +842,15 @@ describe("$has", () => {
         ],
       };
 
-      expect(evaluate({ $has: [daycare, "children.0"] })).toBe(true); // first child
-      expect(evaluate({ $has: [daycare, "children.5"] })).toBe(false); // no sixth child
-      expect(evaluate({ $has: [daycare, "activities.1.name"] })).toBe(true); // second activity name
+      expect(evaluate({ $has: { object: daycare, path: "children.0" } })).toBe(
+        true,
+      ); // first child
+      expect(evaluate({ $has: { object: daycare, path: "children.5" } })).toBe(
+        false,
+      ); // no sixth child
+      expect(
+        evaluate({ $has: { object: daycare, path: "activities.1.name" } }),
+      ).toBe(true); // second activity name
     });
   });
 });

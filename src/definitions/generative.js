@@ -26,7 +26,5 @@ const $random = createGenerativeExpression((operand = {}) => {
   }
 });
 
-const $uuid = createGenerativeExpression(() => crypto.randomUUID());
-
 // Individual exports for tree shaking
-export { $random, $uuid };
+export { $random };

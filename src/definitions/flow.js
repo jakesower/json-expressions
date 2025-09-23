@@ -57,18 +57,21 @@ const $pipe = {
 
     return operand.reduce((data, expr) => apply(expr, data), inputData);
   },
-  evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+  evaluate: (operand, { apply }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$pipe evaluate form requires array operand: [expressions, inputData]",
+        "$pipe evaluate form requires object operand: { expressions, inputData }",
       );
     }
 
-    const [expressions, inputData] = operand;
-    const evaluatedExpressions = evaluate(expressions);
-    const evaluatedInputData = evaluate(inputData);
+    const { expressions, inputData } = operand;
+    if (expressions === undefined || inputData === undefined) {
+      throw new Error(
+        "$pipe evaluate form requires 'expressions' and 'inputData' properties",
+      );
+    }
 
-    return apply({ $pipe: evaluatedExpressions }, evaluatedInputData);
+    return apply({ $pipe: expressions }, inputData);
   },
 };
 
@@ -111,13 +114,19 @@ const $sort = {
     });
   },
   evaluate: (operand, { apply }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$sort evaluate form requires array operand: [array, sortCriteria]",
+        "$sort evaluate form requires object operand: { array, sortCriteria }",
       );
     }
 
-    const [array, sortCriteria] = operand;
+    const { array, sortCriteria } = operand;
+    if (array === undefined || sortCriteria === undefined) {
+      throw new Error(
+        "$sort evaluate form requires 'array' and 'sortCriteria' properties",
+      );
+    }
+
     return apply({ $sort: sortCriteria }, array);
   },
 };

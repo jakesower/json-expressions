@@ -45,7 +45,7 @@ export interface ExpressionEngine {
 // === CORE EXPRESSIONS ===
 
 export interface GetExpression {
-	$get: string | [string, unknown] | [unknown, string] | [unknown, string, unknown];
+	$get: string | { object: unknown; path: string };
 }
 
 export interface LiteralExpression {
@@ -53,7 +53,7 @@ export interface LiteralExpression {
 }
 
 export interface PropExpression {
-	$prop: string | number | symbol | [unknown, string | number | symbol];
+	$prop: string | number | symbol | { object: unknown; property: string | number | symbol };
 }
 
 export interface IsDefined {
@@ -66,19 +66,19 @@ export interface DebugExpression {
 }
 
 export interface PipeExpression {
-	$pipe: Expression[] | [Expression[], unknown];
+	$pipe: Expression[] | { expressions: Expression[]; inputData: unknown };
 }
 
 export interface WhereExpression {
-	$where: { [path: string]: Expression } | [unknown, { [path: string]: Expression }];
+	$where: { [path: string]: Expression } | { data: unknown; conditions: { [path: string]: Expression } };
 }
 
 export interface SelectExpression {
-	$select: string[] | { [newKey: string]: Expression } | [unknown, string[] | { [newKey: string]: Expression }];
+	$select: string[] | { [newKey: string]: Expression } | { object: unknown; selection: string[] | { [newKey: string]: Expression } };
 }
 
 export interface SortExpression {
-	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | [unknown[], string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }>];
+	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | { array: unknown[]; sortCriteria: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> };
 }
 
 export interface MergeExpression {
@@ -86,11 +86,11 @@ export interface MergeExpression {
 }
 
 export interface PickExpression {
-	$pick: string[] | [unknown, string[]];
+	$pick: string[] | { object: unknown; properties: string[] };
 }
 
 export interface OmitExpression {
-	$omit: string[] | [unknown, string[]];
+	$omit: string[] | { object: unknown; properties: string[] };
 }
 
 export interface KeysExpression {
@@ -110,7 +110,7 @@ export interface FromPairsExpression {
 }
 
 export interface PluckExpression {
-	$pluck: string | Expression | [unknown[], string | Expression];
+	$pluck: string | Expression | { array: unknown[]; property: string | Expression };
 }
 
 export interface DefaultExpression {
@@ -122,7 +122,7 @@ export interface WhereExpression {
 }
 
 export interface HasExpression {
-	$has: string | [unknown, string];
+	$has: string | { object: unknown; path: string };
 }
 
 export interface UniqueExpression {
@@ -134,46 +134,46 @@ export interface FlattenExpression {
 }
 
 export interface GroupByExpression {
-	$groupBy: string | Expression | [unknown[], string | Expression];
+	$groupBy: string | Expression | { array: unknown[]; groupBy: string | Expression };
 }
 
 
 // === COMPARATIVE EXPRESSIONS ===
 
 export interface EqualExpression {
-	$eq: unknown | [unknown, unknown];
+	$eq: unknown | { left: unknown; right: unknown };
 }
 
 export interface NotEqualExpression {
-	$ne: unknown | [unknown, unknown];
+	$ne: unknown | { left: unknown; right: unknown };
 }
 
 export interface GreaterThanExpression {
-	$gt: number | [number, number];
+	$gt: number | { left: number; right: number };
 }
 
 export interface GreaterThanOrEqualExpression {
-	$gte: number | [number, number];
+	$gte: number | { left: number; right: number };
 }
 
 export interface LessThanExpression {
-	$lt: number | [number, number];
+	$lt: number | { left: number; right: number };
 }
 
 export interface LessThanOrEqualExpression {
-	$lte: number | [number, number];
+	$lte: number | { left: number; right: number };
 }
 
 export interface InExpression {
-	$in: unknown[] | [unknown[], unknown];
+	$in: { array: unknown[]; value: unknown };
 }
 
 export interface NotInExpression {
-	$nin: unknown[] | [unknown[], unknown];
+	$nin: { array: unknown[]; value: unknown };
 }
 
 export interface MatchesRegexExpression {
-	$matchesRegex: string | [string, string];
+	$matchesRegex: string | { pattern: string; text: string };
 }
 
 export interface MatchesLikeExpression {
@@ -260,27 +260,31 @@ export interface ModeExpression {
 // === ITERATIVE EXPRESSIONS ===
 
 export interface FilterExpression {
-	$filter: Expression | [Expression, unknown[]];
+	$filter: Expression | { expression: Expression; array: unknown[] };
+}
+
+export interface FilterByExpression {
+	$filterBy: { [path: string]: Expression } | [unknown[], { [path: string]: Expression }] | { array: unknown[]; conditions: { [path: string]: Expression } };
 }
 
 export interface MapExpression {
-	$map: Expression | [Expression, unknown[]];
+	$map: Expression | { expression: Expression; array: unknown[] };
 }
 
 export interface FlatMapExpression {
-	$flatMap: Expression | [Expression, unknown[]];
+	$flatMap: Expression | { expression: Expression; array: unknown[] };
 }
 
 export interface FindExpression {
-	$find: Expression | [Expression, unknown[]];
+	$find: Expression | { expression: Expression; array: unknown[] };
 }
 
 export interface AllExpression {
-	$all: Expression | [Expression, unknown[]];
+	$all: Expression | { expression: Expression; array: unknown[] };
 }
 
 export interface AnyExpression {
-	$any: Expression | [Expression, unknown[]];
+	$any: Expression | { expression: Expression; array: unknown[] };
 }
 
 export interface ConcatExpression {
@@ -288,7 +292,7 @@ export interface ConcatExpression {
 }
 
 export interface JoinExpression {
-	$join: string | [string, unknown[]];
+	$join: string | { separator: string; array: unknown[] };
 }
 
 export interface ReverseExpression {
@@ -327,9 +331,6 @@ export interface RandomExpression {
 	} | {};
 }
 
-export interface UuidExpression {
-	$uuid: unknown;
-}
 
 // === TEMPORAL EXPRESSIONS ===
 
@@ -398,6 +399,7 @@ export type AnyExpression =
 	| MeanExpression
 	// Iterative
 	| FilterExpression
+	| FilterByExpression
 	| MapExpression
 	| FlatMapExpression
 	| FindExpression
@@ -414,7 +416,6 @@ export type AnyExpression =
 	| ModuloExpression
 	// Generative
 	| RandomExpression
-	| UuidExpression
 	// Temporal
 	| NowUTCExpression
 	| NowLocalExpression

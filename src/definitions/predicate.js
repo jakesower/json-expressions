@@ -25,7 +25,24 @@ const createComparativeExpression = (compareFn) => ({
     return compareFn(inputData, resolvedOperand);
   },
   evaluate: (operand, { evaluate }) => {
-    const [left, right] = operand;
+    if (Array.isArray(operand) && operand.length === 2) {
+      const [left, right] = operand;
+      return compareFn(evaluate(left), evaluate(right));
+    }
+
+    if (!operand || typeof operand !== "object") {
+      throw new Error(
+        `Comparison evaluate form requires object operand: { left, right }`,
+      );
+    }
+
+    const { left, right } = operand;
+    if (left === undefined || right === undefined) {
+      throw new Error(
+        `Comparison evaluate form requires 'left' and 'right' properties`,
+      );
+    }
+
     return compareFn(evaluate(left), evaluate(right));
   },
 });
@@ -46,11 +63,25 @@ const createInclusionExpression = (expressionName, inclusionFn) => ({
     return inclusionFn(inputData, resolvedOperand);
   },
   evaluate: (operand, { evaluate }) => {
-    const [array, value] = evaluate(operand);
-    if (!Array.isArray(array)) {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        `${expressionName} evaluate form requires object operand: { array, value }`,
+      );
+    }
+
+    const { array, value } = operand;
+    if (array === undefined || value === undefined) {
+      throw new Error(
+        `${expressionName} evaluate form requires 'array' and 'value' properties`,
+      );
+    }
+
+    const evaluatedArray = evaluate(array);
+    const evaluatedValue = evaluate(value);
+    if (!Array.isArray(evaluatedArray)) {
       throw new Error(`${expressionName} parameter must be an array`);
     }
-    return inclusionFn(value, array);
+    return inclusionFn(evaluatedValue, evaluatedArray);
   },
 });
 
@@ -133,18 +164,26 @@ const $has = {
     }
     return get(inputData, resolvedPath) !== undefined;
   },
-  evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+  evaluate: (operand, { evaluate }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$has evaluate form requires array operand: [object, path]",
+        "$has evaluate form requires object operand: { object, path }",
       );
     }
 
-    const [object, path] = operand;
+    const { object, path } = operand;
+    if (object === undefined || path === undefined) {
+      throw new Error(
+        "$has evaluate form requires 'object' and 'path' properties",
+      );
+    }
+
     const evaluatedObject = evaluate(object);
     const evaluatedPath = evaluate(path);
-
-    return apply({ $has: evaluatedPath }, evaluatedObject);
+    if (typeof evaluatedPath !== "string") {
+      throw new Error("$has path must be a string");
+    }
+    return get(evaluatedObject, evaluatedPath) !== undefined;
   },
 };
 
@@ -172,10 +211,22 @@ const $matchesRegex = {
     return testRegexPattern(resolvedOperand, inputData);
   },
   evaluate: (operand, { evaluate }) => {
-    const [pattern, inputData] = operand;
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$matchesRegex evaluate form requires object operand: { pattern, text }",
+      );
+    }
+
+    const { pattern, text } = operand;
+    if (pattern === undefined || text === undefined) {
+      throw new Error(
+        "$matchesRegex evaluate form requires 'pattern' and 'text' properties",
+      );
+    }
+
     const resolvedPattern = evaluate(pattern);
-    const resolvedInputData = evaluate(inputData);
-    return testRegexPattern(resolvedPattern, resolvedInputData);
+    const resolvedText = evaluate(text);
+    return testRegexPattern(resolvedPattern, resolvedText);
   },
 };
 

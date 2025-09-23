@@ -3,6 +3,7 @@
  *
  * Complete toolkit for WHERE clause logic and data filtering:
  * - Field access ($get, $pipe)
+ * - Object filtering ($where)
  * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Logic operations ($and, $or, $not)
  * - Membership tests ($in, $nin)
@@ -11,7 +12,7 @@
  */
 
 // Import field access expressions
-import { $get } from "../definitions/access.js";
+import { $get, $where } from "../definitions/access.js";
 import { $pipe } from "../definitions/flow.js";
 
 // Import comparison expressions
@@ -37,6 +38,7 @@ export const filtering = {
   // Field access
   $get,
   $pipe,
+  $where,
   // Basic comparisons
   $eq,
   $ne,

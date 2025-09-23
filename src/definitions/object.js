@@ -32,14 +32,20 @@ const createKeyInclusionExpression = (keepFn, expressionName) => ({
     return result;
   },
   evaluate: (operand, { apply }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        `${expressionName} evaluate form requires array operand: [object, propertyNames]`,
+        `${expressionName} evaluate form requires object operand: { object, properties }`,
       );
     }
 
-    const [object, propertyNames] = operand;
-    return apply({ [expressionName]: propertyNames }, object);
+    const { object, properties } = operand;
+    if (object === undefined || properties === undefined) {
+      throw new Error(
+        `${expressionName} evaluate form requires 'object' and 'properties' properties`,
+      );
+    }
+
+    return apply({ [expressionName]: properties }, object);
   },
 });
 
@@ -68,7 +74,7 @@ const $merge = createDualExpression((operand, applyOrEvaluate) => {
     throw new Error("$merge operand must be an array of objects to merge");
   }
 
-  const resolvedObjects = operand.map(op => applyOrEvaluate(op));
+  const resolvedObjects = operand.map((op) => applyOrEvaluate(op));
   return Object.assign({}, ...resolvedObjects);
 });
 

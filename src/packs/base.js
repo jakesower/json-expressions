@@ -5,32 +5,31 @@
  * - Data access ($get, $isDefined)
  * - Basic conditionals ($if, $where)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
+ * - Boolean logic ($and, $or, $not)
  * - Operation chaining ($pipe)
- * - Array operations ($filter, $map, $sort)
- * - Object operations ($select)
- * - Utilities ($debug, $literal, $default)
+ * - Array operations ($filter, $filterBy, $map, $sort)
+ * - Utilities ($literal, $default)
  */
 
 // Import the near universal expressions
 import { $get, $isDefined, $where } from "../definitions/access.js";
 import {
-  $debug,
   $default,
   $literal,
   $pipe,
   $sort,
 } from "../definitions/flow.js";
-import { $select } from "../definitions/access.js";
 import { $if } from "../definitions/conditional.js";
-import { $eq, $gt, $gte, $lt, $lte, $ne } from "../definitions/predicate.js";
-import { $filter, $map } from "../definitions/array.js";
+import { $and, $eq, $gt, $gte, $lt, $lte, $ne, $not, $or } from "../definitions/predicate.js";
+import { $filter, $filterBy, $map } from "../definitions/array.js";
 
 // Export as grouped object (alphabetized)
 export const base = {
-  $debug,
+  $and,
   $default,
   $eq,
   $filter,
+  $filterBy,
   $get,
   $gt,
   $gte,
@@ -41,8 +40,9 @@ export const base = {
   $lte,
   $map,
   $ne,
+  $not,
+  $or,
   $pipe,
-  $select,
   $sort,
   $where,
 };

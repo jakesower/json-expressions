@@ -206,9 +206,7 @@ describe("$default", () => {
     });
 
     it("throws error for missing expression property", () => {
-      expect(() =>
-        apply({ $default: { default: "fallback" } }, {}),
-      ).toThrow(
+      expect(() => apply({ $default: { default: "fallback" } }, {})).toThrow(
         "$default operand must be on object with { expression, default, allowNull? }",
       );
     });
@@ -292,7 +290,9 @@ describe("$default", () => {
       expect(
         evaluate({
           $default: {
-            expression: { $get: [{ missing: null }, "missing"] },
+            expression: {
+              $get: { object: { missing: null }, path: "missing" },
+            },
             default: { $sum: [1, 2, 3] },
           },
         }),
@@ -495,7 +495,7 @@ describe("$sort", () => {
       ];
 
       const result = evaluate({
-        $sort: [data, "age"],
+        $sort: { array: data, sortCriteria: "age" },
       });
 
       expect(result.map((c) => c.name)).toEqual(["Omar", "Lila", "Yuki"]);
@@ -509,15 +509,32 @@ describe("$sort", () => {
       ];
 
       const result = evaluate({
-        $sort: [data, [{ by: "status" }, { by: "score", desc: true }]],
+        $sort: {
+          array: data,
+          sortCriteria: [{ by: "status" }, { by: "score", desc: true }],
+        },
       });
 
       expect(result.map((c) => c.name)).toEqual(["Emma", "Sofia", "Raj"]);
     });
 
+    it("works with object format in evaluate form", () => {
+      const data = [
+        { name: "Chen", age: 5 },
+        { name: "Amira", age: 3 },
+        { name: "Diego", age: 4 },
+      ];
+
+      const result = evaluate({
+        $sort: { array: data, sortCriteria: { by: "age" } },
+      });
+
+      expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
+    });
+
     it("throws error for invalid operand format", () => {
       expect(() => evaluate({ $sort: "not an array" })).toThrow(
-        "$sort evaluate form requires array operand: [array, sortCriteria]",
+        "$sort evaluate form requires object operand: { array, sortCriteria }",
       );
     });
   });

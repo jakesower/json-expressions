@@ -21,11 +21,17 @@ describe("$all", () => {
 
   describe("evaluate form", () => {
     it("evaluates with static arrays", () => {
-      expect(evaluate({ $all: [{ $gt: 3 }, [4, 5, 6]] })).toBe(true);
-      expect(evaluate({ $all: [{ $gt: 5 }, [4, 5, 6]] })).toBe(false);
-      expect(evaluate({ $all: [{ $gt: 0 }, kids.map((k) => k.age)] })).toBe(
-        true,
-      );
+      expect(
+        evaluate({ $all: { expression: { $gt: 3 }, array: [4, 5, 6] } }),
+      ).toBe(true);
+      expect(
+        evaluate({ $all: { expression: { $gt: 5 }, array: [4, 5, 6] } }),
+      ).toBe(false);
+      expect(
+        evaluate({
+          $all: { expression: { $gt: 0 }, array: kids.map((k) => k.age) },
+        }),
+      ).toBe(true);
     });
   });
 });
@@ -40,10 +46,16 @@ describe("$any", () => {
 
   describe("evaluate form", () => {
     it("evaluates with static arrays", () => {
-      expect(evaluate({ $any: [{ $gt: 5 }, [4, 5, 6]] })).toBe(true);
-      expect(evaluate({ $any: [{ $gt: 10 }, [4, 5, 6]] })).toBe(false);
       expect(
-        evaluate({ $any: [{ $eq: "Zoë" }, kids.map((k) => k.name)] }),
+        evaluate({ $any: { expression: { $gt: 5 }, array: [4, 5, 6] } }),
+      ).toBe(true);
+      expect(
+        evaluate({ $any: { expression: { $gt: 10 }, array: [4, 5, 6] } }),
+      ).toBe(false);
+      expect(
+        evaluate({
+          $any: { expression: { $eq: "Zoë" }, array: kids.map((k) => k.name) },
+        }),
       ).toBe(true);
     });
   });
@@ -68,19 +80,21 @@ describe("$append", () => {
     it("appends with static arrays", () => {
       expect(
         evaluate({
-          $append: [
-            [4, 5],
-            [1, 2, 3],
-          ],
+          $append: {
+            arrayToAppend: [4, 5],
+            baseArray: [1, 2, 3],
+          },
         }),
       ).toEqual([1, 2, 3, 4, 5]);
-      expect(evaluate({ $append: [[], [1, 2]] })).toEqual([1, 2]);
+      expect(
+        evaluate({ $append: { arrayToAppend: [], baseArray: [1, 2] } }),
+      ).toEqual([1, 2]);
       expect(
         evaluate({
-          $append: [
-            ["d", "e"],
-            ["a", "b", "c"],
-          ],
+          $append: {
+            arrayToAppend: ["d", "e"],
+            baseArray: ["a", "b", "c"],
+          },
         }),
       ).toEqual(["a", "b", "c", "d", "e"]);
     });
@@ -186,7 +200,155 @@ describe("$filter", () => {
 
   describe("evaluate form", () => {
     it("filters static arrays", () => {
-      expect(evaluate({ $filter: [{ $eq: 2 }, [1, 2, 3]] })).toEqual([2]);
+      expect(
+        evaluate({ $filter: { expression: { $eq: 2 }, array: [1, 2, 3] } }),
+      ).toEqual([2]);
+    });
+  });
+});
+
+describe("$filterBy", () => {
+  const students = [
+    { name: "Aisha", age: 4, active: true, status: "enrolled" },
+    { name: "Chen", age: 5, active: true, status: "enrolled" },
+    { name: "Diego", age: 3, active: false, status: "waitlist" },
+    { name: "Fatima", age: 6, active: true, status: "enrolled" },
+  ];
+
+  describe("apply form", () => {
+    it("filters arrays by object property conditions", () => {
+      const result = apply(
+        { $filterBy: { age: { $gte: 5 }, active: { $eq: true } } },
+        students,
+      );
+      expect(result).toEqual([
+        { name: "Chen", age: 5, active: true, status: "enrolled" },
+        { name: "Fatima", age: 6, active: true, status: "enrolled" },
+      ]);
+    });
+
+    it("filters by single condition", () => {
+      const result = apply({ $filterBy: { active: { $eq: false } } }, students);
+      expect(result).toEqual([
+        { name: "Diego", age: 3, active: false, status: "waitlist" },
+      ]);
+    });
+
+    it("filters by nested property paths", () => {
+      const data = [
+        { profile: { settings: { theme: "dark" } }, active: true },
+        { profile: { settings: { theme: "light" } }, active: true },
+        { profile: { settings: { theme: "dark" } }, active: false },
+      ];
+      const result = apply(
+        { $filterBy: { "profile.settings.theme": { $eq: "dark" } } },
+        data,
+      );
+      expect(result).toHaveLength(2);
+      expect(result[0].profile.settings.theme).toBe("dark");
+      expect(result[1].profile.settings.theme).toBe("dark");
+    });
+
+    it("filters with complex expressions", () => {
+      const result = apply(
+        {
+          $filterBy: {
+            age: { $and: [{ $gte: 4 }, { $lte: 5 }] },
+            status: { $eq: "enrolled" },
+          },
+        },
+        students,
+      );
+      expect(result).toEqual([
+        { name: "Aisha", age: 4, active: true, status: "enrolled" },
+        { name: "Chen", age: 5, active: true, status: "enrolled" },
+      ]);
+    });
+
+    it("returns empty array when no items match", () => {
+      const result = apply({ $filterBy: { age: { $gt: 10 } } }, students);
+      expect(result).toEqual([]);
+    });
+
+    it("returns all items when all match", () => {
+      const result = apply(
+        { $filterBy: { name: { $isDefined: null } } },
+        students,
+      );
+      expect(result).toEqual(students);
+    });
+
+    it("throws error when applied to non-array", () => {
+      expect(() =>
+        apply({ $filterBy: { age: { $gt: 5 } } }, "not an array"),
+      ).toThrow("$filterBy can only be applied to arrays");
+    });
+
+    it("throws error with invalid operand", () => {
+      expect(() => apply({ $filterBy: "invalid" }, students)).toThrow(
+        "$filterBy operand must be an object with property conditions",
+      );
+      expect(() => apply({ $filterBy: ["invalid"] }, students)).toThrow(
+        "$filterBy operand must be an object with property conditions",
+      );
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("evaluates with static data and simple conditions", () => {
+      const testData = [
+        { name: "Alice", active: true },
+        { name: "Bob", active: false },
+        { name: "Carol", active: true },
+      ];
+      const result = evaluate({
+        $filterBy: [
+          testData,
+          { active: true }, // Simple literal comparison
+        ],
+      });
+      expect(result).toEqual([
+        { name: "Alice", active: true },
+        { name: "Carol", active: true },
+      ]);
+    });
+
+    it("works with literal conditions in evaluate form", () => {
+      const result = evaluate({
+        $filterBy: [
+          [
+            { name: "Alice", status: "active" },
+            { name: "Bob", status: "inactive" },
+            { name: "Carol", status: "active" },
+          ],
+          { status: "active" }, // Literal string comparison
+        ],
+      });
+      expect(result).toEqual([
+        { name: "Alice", status: "active" },
+        { name: "Carol", status: "active" },
+      ]);
+    });
+
+    it("throws error with invalid evaluate operand", () => {
+      expect(() => evaluate({ $filterBy: "invalid" })).toThrow(
+        "$filterBy evaluate form requires array operand: [data, conditions]",
+      );
+      expect(() => evaluate({ $filterBy: [students] })).toThrow(
+        "$filterBy evaluate form requires array operand: [data, conditions]",
+      );
+    });
+
+    it("throws error when first argument is not array", () => {
+      expect(() =>
+        evaluate({ $filterBy: [{ not: "array" }, { age: { $gt: 5 } }] }),
+      ).toThrow();
+    });
+
+    it("throws error when conditions are not object", () => {
+      expect(() => evaluate({ $filterBy: [students, "invalid"] })).toThrow(
+        "$filterBy conditions must be an object with property conditions",
+      );
     });
   });
 });
@@ -201,10 +363,16 @@ describe("$find", () => {
 
   describe("evaluate form", () => {
     it("finds elements in static arrays", () => {
-      expect(evaluate({ $find: [{ $eq: 5 }, [4, 5, 6]] })).toBe(5);
-      expect(evaluate({ $find: [{ $gt: 10 }, [4, 5, 6]] })).toBe(undefined);
       expect(
-        evaluate({ $find: [{ $eq: "Zoë" }, kids.map((k) => k.name)] }),
+        evaluate({ $find: { expression: { $eq: 5 }, array: [4, 5, 6] } }),
+      ).toBe(5);
+      expect(
+        evaluate({ $find: { expression: { $gt: 10 }, array: [4, 5, 6] } }),
+      ).toBe(undefined);
+      expect(
+        evaluate({
+          $find: { expression: { $eq: "Zoë" }, array: kids.map((k) => k.name) },
+        }),
       ).toBe("Zoë");
     });
   });
@@ -214,7 +382,9 @@ describe("$flatMap", () => {
   describe("evaluate form", () => {
     it("flattens mapped arrays", () => {
       expect(
-        evaluate({ $flatMap: [{ $literal: [1, 2] }, [[1], [2]]] }),
+        evaluate({
+          $flatMap: { expression: { $literal: [1, 2] }, array: [[1], [2]] },
+        }),
       ).toEqual([1, 2, 1, 2]);
     });
 
@@ -224,17 +394,19 @@ describe("$flatMap", () => {
         { name: "Priya", subjects: ["history", "art"] },
         { name: "Zhang", subjects: ["literature"] },
       ];
-      expect(evaluate({ $flatMap: [{ $get: "subjects" }, students] })).toEqual([
-        "math",
-        "science",
-        "history",
-        "art",
-        "literature",
-      ]);
+      expect(
+        evaluate({
+          $flatMap: { expression: { $get: "subjects" }, array: students },
+        }),
+      ).toEqual(["math", "science", "history", "art", "literature"]);
     });
 
     it("handles empty arrays", () => {
-      expect(evaluate({ $flatMap: [{ $literal: [] }, [1, 2, 3]] })).toEqual([]);
+      expect(
+        evaluate({
+          $flatMap: { expression: { $literal: [] }, array: [1, 2, 3] },
+        }),
+      ).toEqual([]);
     });
 
     it("flattens nested data structures", () => {
@@ -242,12 +414,11 @@ describe("$flatMap", () => {
         { members: ["Kwame", "Serafina"] },
         { members: ["Yuki", "Elena"] },
       ];
-      expect(evaluate({ $flatMap: [{ $get: "members" }, groups] })).toEqual([
-        "Kwame",
-        "Serafina",
-        "Yuki",
-        "Elena",
-      ]);
+      expect(
+        evaluate({
+          $flatMap: { expression: { $get: "members" }, array: groups },
+        }),
+      ).toEqual(["Kwame", "Serafina", "Yuki", "Elena"]);
     });
   });
 });
@@ -413,7 +584,7 @@ describe("$groupBy", () => {
 
   describe("evaluate form", () => {
     it("groups static arrays", () => {
-      const result = evaluate({ $groupBy: [daycare, "age"] });
+      const result = evaluate({ $groupBy: { array: daycare, groupBy: "age" } });
       expect(result["3"]).toHaveLength(2);
       expect(result["4"]).toHaveLength(2);
       expect(result["5"]).toHaveLength(1);
@@ -421,7 +592,7 @@ describe("$groupBy", () => {
 
     it("throws error for invalid operand", () => {
       expect(() => evaluate({ $groupBy: "not an array" })).toThrow(
-        "$groupBy evaluate form requires array operand: [array, keyStringOrExpression]",
+        "$groupBy evaluate form requires object operand: { array, groupBy }",
       );
     });
   });
@@ -437,9 +608,15 @@ describe("$join", () => {
 
   describe("evaluate form", () => {
     it("joins with static arrays", () => {
-      expect(evaluate({ $join: [", ", [1, 2, 3]] })).toBe("1, 2, 3");
-      expect(evaluate({ $join: ["-", ["a", "b", "c"]] })).toBe("a-b-c");
-      expect(evaluate({ $join: ["", [1, 2, 3]] })).toBe("123");
+      expect(evaluate({ $join: { separator: ", ", array: [1, 2, 3] } })).toBe(
+        "1, 2, 3",
+      );
+      expect(
+        evaluate({ $join: { separator: "-", array: ["a", "b", "c"] } }),
+      ).toBe("a-b-c");
+      expect(evaluate({ $join: { separator: "", array: [1, 2, 3] } })).toBe(
+        "123",
+      );
     });
   });
 });
@@ -457,7 +634,9 @@ describe("$map", () => {
 
   describe("evaluate form", () => {
     it("maps over static arrays", () => {
-      expect(evaluate({ $map: [{ $get: "age" }, kids] })).toEqual([4, 5, 6]);
+      expect(
+        evaluate({ $map: { expression: { $get: "age" }, array: kids } }),
+      ).toEqual([4, 5, 6]);
     });
   });
 });
@@ -548,7 +727,7 @@ describe("$pluck", () => {
 
       expect(
         evaluate({
-          $pluck: [activities, "name"],
+          $pluck: { array: activities, property: "name" },
         }),
       ).toEqual(["reading", "art", "music"]);
     });
@@ -562,7 +741,7 @@ describe("$pluck", () => {
 
       expect(
         evaluate({
-          $pluck: [schedule, "activity.name"],
+          $pluck: { array: schedule, property: "activity.name" },
         }),
       ).toEqual(["circle time", "free play", "snack"]);
     });
@@ -575,20 +754,20 @@ describe("$pluck", () => {
 
       expect(
         evaluate({
-          $pluck: [data, { $get: "details.code" }],
+          $pluck: { array: data, property: { $get: "details.code" } },
         }),
       ).toEqual(["A1", "B2"]);
     });
 
     it("throws error for invalid operand format", () => {
       expect(() => evaluate({ $pluck: "not an array" })).toThrow(
-        "$pluck evaluate form requires array operand: [array, pathOrExpression]",
+        "$pluck evaluate form requires object operand: { array, property }",
       );
     });
 
     it("throws error for wrong array length", () => {
       expect(() => evaluate({ $pluck: [[], "name", "extra"] })).toThrow(
-        "$pluck evaluate form requires array operand: [array, pathOrExpression]",
+        "$pluck evaluate form requires object operand: { array, property }",
       );
     });
   });
@@ -629,19 +808,21 @@ describe("$prepend", () => {
     it("prepends with static arrays", () => {
       expect(
         evaluate({
-          $prepend: [
-            [4, 5],
-            [1, 2, 3],
-          ],
+          $prepend: {
+            arrayToPrepend: [4, 5],
+            baseArray: [1, 2, 3],
+          },
         }),
       ).toEqual([4, 5, 1, 2, 3]);
-      expect(evaluate({ $prepend: [[], [1, 2]] })).toEqual([1, 2]);
+      expect(
+        evaluate({ $prepend: { arrayToPrepend: [], baseArray: [1, 2] } }),
+      ).toEqual([1, 2]);
       expect(
         evaluate({
-          $prepend: [
-            ["a", "b"],
-            ["c", "d", "e"],
-          ],
+          $prepend: {
+            arrayToPrepend: ["a", "b"],
+            baseArray: ["c", "d", "e"],
+          },
         }),
       ).toEqual(["a", "b", "c", "d", "e"]);
     });
@@ -685,11 +866,12 @@ describe("$skip", () => {
 
   describe("evaluate form", () => {
     it("skips with static arrays", () => {
-      expect(evaluate({ $skip: [2, [1, 2, 3, 4, 5]] })).toEqual([3, 4, 5]);
-      expect(evaluate({ $skip: [1, ["Dao", "Elena", "Yuki"]] })).toEqual([
-        "Elena",
-        "Yuki",
-      ]);
+      expect(evaluate({ $skip: { count: 2, array: [1, 2, 3, 4, 5] } })).toEqual(
+        [3, 4, 5],
+      );
+      expect(
+        evaluate({ $skip: { count: 1, array: ["Dao", "Elena", "Yuki"] } }),
+      ).toEqual(["Elena", "Yuki"]);
     });
   });
 });
@@ -715,11 +897,12 @@ describe("$take", () => {
 
   describe("evaluate form", () => {
     it("takes with static arrays", () => {
-      expect(evaluate({ $take: [3, [1, 2, 3, 4, 5]] })).toEqual([1, 2, 3]);
-      expect(evaluate({ $take: [2, ["Dao", "Elena", "Yuki"]] })).toEqual([
-        "Dao",
-        "Elena",
-      ]);
+      expect(evaluate({ $take: { count: 3, array: [1, 2, 3, 4, 5] } })).toEqual(
+        [1, 2, 3],
+      );
+      expect(
+        evaluate({ $take: { count: 2, array: ["Dao", "Elena", "Yuki"] } }),
+      ).toEqual(["Dao", "Elena"]);
     });
   });
 });

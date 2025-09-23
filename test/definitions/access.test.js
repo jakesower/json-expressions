@@ -5,15 +5,14 @@ import { all } from "../../src/packs/all.js";
 const testEngine = createExpressionEngine({ packs: [all] });
 const { apply, evaluate } = testEngine;
 
-
 describe("$get", () => {
   describe("evaluate form", () => {
     const { evaluate } = testEngine;
 
-    it("gets value from object using array syntax", () => {
+    it("gets value from object using object syntax", () => {
       expect(
         evaluate({
-          $get: [{ name: "Arnar", age: 30 }, "name"],
+          $get: { object: { name: "Arnar", age: 30 }, path: "name" },
         }),
       ).toEqual("Arnar");
     });
@@ -21,7 +20,7 @@ describe("$get", () => {
     it("gets nested value from object", () => {
       expect(
         evaluate({
-          $get: [{ user: { name: "Arnar" } }, "user.name"],
+          $get: { object: { user: { name: "Arnar" } }, path: "user.name" },
         }),
       ).toEqual("Arnar");
     });
@@ -30,16 +29,14 @@ describe("$get", () => {
       expect(() => {
         evaluate({ $get: "name" });
       }).toThrowError(
-        "$get evaluate form requires array operand: [object, path]",
+        "$get evaluate form requires object operand: { object, path }",
       );
     });
 
-    it("throws with object operand", () => {
-      expect(() => {
-        evaluate({ $get: { object: {}, path: "name" } });
-      }).toThrowError(
-        "$get evaluate form requires array operand: [object, path]",
-      );
+    it("works with object operand", () => {
+      expect(
+        evaluate({ $get: { object: { name: "Asha" }, path: "name" } }),
+      ).toBe("Asha");
     });
   });
 
@@ -81,8 +78,6 @@ describe("$isDefined", () => {
   });
 });
 
-
-
 describe("$prop", () => {
   describe("apply form", () => {
     it("gets simple property", () => {
@@ -123,47 +118,62 @@ describe("$prop", () => {
 
   describe("evaluate form", () => {
     it("gets property from object", () => {
-      expect(evaluate({ $prop: [{ name: "Chen", age: 28 }, "name"] })).toEqual(
-        "Chen",
-      );
+      expect(
+        evaluate({
+          $prop: { object: { name: "Chen", age: 28 }, property: "name" },
+        }),
+      ).toEqual("Chen");
     });
 
     it("gets numeric property", () => {
-      expect(evaluate({ $prop: [["zero", "one", "two"], 1] })).toEqual("one");
+      expect(
+        evaluate({ $prop: { object: ["zero", "one", "two"], property: 1 } }),
+      ).toEqual("one");
     });
 
     it("returns undefined for missing property", () => {
-      expect(evaluate({ $prop: [{ age: 25 }, "name"] })).toBeUndefined();
+      expect(
+        evaluate({ $prop: { object: { age: 25 }, property: "name" } }),
+      ).toBeUndefined();
     });
 
     it("returns undefined when object is null", () => {
-      expect(evaluate({ $prop: [null, "name"] })).toBeUndefined();
+      expect(
+        evaluate({ $prop: { object: null, property: "name" } }),
+      ).toBeUndefined();
     });
 
     it("returns undefined when object is undefined", () => {
-      expect(evaluate({ $prop: [undefined, "name"] })).toBeUndefined();
+      expect(
+        evaluate({
+          $prop: { object: { $literal: undefined }, property: "name" },
+        }),
+      ).toBeUndefined();
     });
 
     it("throws with non-array operand", () => {
       expect(() => {
         evaluate({ $prop: "name" });
       }).toThrowError(
-        "$prop evaluate form requires array operand: [object, property]",
+        "$prop evaluate form requires object operand: { object, property }",
       );
     });
 
-    it("throws with single element array", () => {
+    it("throws with incomplete object", () => {
       expect(() => {
-        evaluate({ $prop: [{ someKey: "value" }] });
+        evaluate({ $prop: { object: { someKey: "value" } } });
       }).toThrowError(
-        "$prop evaluate form requires array operand: [object, property]",
+        "$prop evaluate form requires 'object' and 'property' properties",
       );
     });
 
     it("works with computed property names", () => {
       expect(
         evaluate({
-          $prop: [{ a: "value-a", b: "value-b" }, { $literal: "a" }],
+          $prop: {
+            object: { a: "value-a", b: "value-b" },
+            property: { $literal: "a" },
+          },
         }),
       ).toEqual("value-a");
     });
@@ -252,7 +262,7 @@ describe("$select", () => {
 
       expect(
         evaluate({
-          $select: [child, ["name", "age"]],
+          $select: { object: child, selection: ["name", "age"] },
         }),
       ).toEqual({
         name: "Kenji",
@@ -265,7 +275,7 @@ describe("$select", () => {
 
       expect(
         evaluate({
-          $select: [child, ["name", "age"]],
+          $select: { object: child, selection: ["name", "age"] },
         }),
       ).toEqual({
         name: "Zara",
@@ -275,12 +285,11 @@ describe("$select", () => {
 
     it("throws error for invalid operand format", () => {
       expect(() => evaluate({ $select: "not an array" })).toThrow(
-        "$select evaluate form requires array operand: [object, selection]",
+        "$select evaluate form requires object operand: { object, selection }",
       );
     });
   });
 });
-
 
 describe("$where", () => {
   const children = [
@@ -419,19 +428,19 @@ describe("$where", () => {
 
     it("throws error for invalid operand format", () => {
       expect(() => evaluate({ $where: "not an array" })).toThrow(
-        "$where evaluate form requires array operand: [data, conditions]",
+        "$where evaluate form requires object operand: { data, conditions }",
       );
     });
 
-    it("throws error for wrong array length", () => {
-      expect(() => evaluate({ $where: [{}] })).toThrow(
-        "$where evaluate form requires array operand: [data, conditions]",
+    it("throws error for incomplete object", () => {
+      expect(() => evaluate({ $where: { data: {} } })).toThrow(
+        "$where evaluate form requires 'data' and 'conditions' properties",
       );
     });
 
-    it("throws error for non-object conditions", () => {
-      expect(() => evaluate({ $where: [{}, "not an object"] })).toThrow(
-        "$where conditions must be an object with property conditions",
+    it("throws error for non-object input", () => {
+      expect(() => evaluate({ $where: "not an object" })).toThrow(
+        "$where evaluate form requires object operand: { data, conditions }",
       );
     });
   });

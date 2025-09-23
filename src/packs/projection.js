@@ -7,6 +7,7 @@
  * - String/value operations ($concat, $substring, $uppercase, $lowercase, $join)
  * - Conditionals for computed fields ($if, $case)
  * - Field access ($get, $pipe)
+ * - Object projection ($select)
  */
 
 // Import aggregation expressions
@@ -30,7 +31,7 @@ import { $substring, $uppercase, $lowercase } from "../definitions/string.js";
 import { $if, $case } from "../definitions/conditional.js";
 
 // Import field access
-import { $get, $where } from "../definitions/access.js";
+import { $get, $where, $select } from "../definitions/access.js";
 
 // Import flow control
 import { $pipe } from "../definitions/flow.js";
@@ -52,6 +53,7 @@ export const projection = {
   // Field access and chaining
   $get,
   $pipe,
+  $select,
   $where,
   // Aggregation functions
   $count,
@@ -86,4 +88,4 @@ export const projection = {
 };
 
 // Individual exports for tree shaking
-export { $pluck };
+export { $pluck, $select };

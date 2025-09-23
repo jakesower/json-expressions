@@ -6,7 +6,7 @@
  * - Array operations (transformations, predicates, manipulations)
  * - Conditional expressions (control flow)
  * - Flow expressions (pipeline control and utilities)
- * - Generative operations (random values, UUIDs)
+ * - Generative operations (random values)
  * - Math operations (arithmetic, statistics)
  * - Object operations (key-value manipulation)
  * - Predicate expressions (boolean logic and comparisons)
