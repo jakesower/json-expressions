@@ -321,30 +321,8 @@ export interface ModuloExpression {
 	$modulo: number | [number, number];
 }
 
-// === GENERATIVE EXPRESSIONS ===
-
-export interface RandomExpression {
-	$random: {
-		min?: number;
-		max?: number;
-		precision?: number | null;
-	} | {};
-}
 
 
-// === TEMPORAL EXPRESSIONS ===
-
-export interface NowUTCExpression {
-	$nowUTC: unknown;
-}
-
-export interface NowLocalExpression {
-	$nowLocal: unknown;
-}
-
-export interface TimestampExpression {
-	$timestamp: unknown;
-}
 
 // === UNION TYPE FOR ALL EXPRESSIONS ===
 
@@ -413,13 +391,7 @@ export type AnyExpression =
 	| SubtractExpression
 	| MultiplyExpression
 	| DivideExpression
-	| ModuloExpression
-	// Generative
-	| RandomExpression
-	// Temporal
-	| NowUTCExpression
-	| NowLocalExpression
-	| TimestampExpression;
+	| ModuloExpression;
 
 // === MAIN EXPORTS ===
 
@@ -467,10 +439,9 @@ export const math: { [k: string]: unknown };
 export const object: { [k: string]: unknown };
 export const projection: { [k: string]: unknown };
 export const string: { [k: string]: unknown };
-export const time: { [k: string]: unknown };
 
 // === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
 
 // All individual expression definitions are exported via export * statements
 // from their respective definition files (access, array, conditional, flow,
-// generative, math, object, predicate, string, temporal, utility)
+// math, object, predicate, string)

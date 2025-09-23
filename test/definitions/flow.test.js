@@ -325,7 +325,7 @@ describe("$default", () => {
 
 describe("$literal", () => {
   it("doesn't apply to expression operands", () => {
-    const expr = { $random: "" };
+    const expr = { $unknownExpr: "" };
     expect(apply({ $literal: expr })).toEqual(expr);
   });
 
@@ -349,7 +349,7 @@ describe("$literal", () => {
   });
 
   it("doesn't evaluate expression operands", () => {
-    const expr = { $random: "" };
+    const expr = { $unknownExpr: "" };
     expect(evaluate({ $literal: expr })).toEqual(expr);
   });
 });

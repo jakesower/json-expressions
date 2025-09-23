@@ -13,14 +13,19 @@
 
 // Import the near universal expressions
 import { $get, $isDefined, $where } from "../definitions/access.js";
-import {
-  $default,
-  $literal,
-  $pipe,
-  $sort,
-} from "../definitions/flow.js";
+import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
 import { $if } from "../definitions/conditional.js";
-import { $and, $eq, $gt, $gte, $lt, $lte, $ne, $not, $or } from "../definitions/predicate.js";
+import {
+  $and,
+  $eq,
+  $gt,
+  $gte,
+  $lt,
+  $lte,
+  $ne,
+  $not,
+  $or,
+} from "../definitions/predicate.js";
 import { $filter, $filterBy, $map } from "../definitions/array.js";
 
 // Export as grouped object (alphabetized)

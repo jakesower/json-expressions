@@ -17,7 +17,7 @@ const $get = {
       ? inputData
       : get(inputData, resolvedOperand);
   },
-  evaluate: (operand, { apply, evaluate }) => {
+  evaluate: (operand, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
         "$get evaluate form requires object operand: { object, path }",
@@ -46,7 +46,7 @@ const $prop = {
     const resolvedOperand = apply(operand, inputData);
     return inputData?.[resolvedOperand];
   },
-  evaluate: (operand, { apply, evaluate }) => {
+  evaluate: (operand, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
         "$prop evaluate form requires object operand: { object, property }",

@@ -32,14 +32,14 @@ const createComparativeExpression = (compareFn) => ({
 
     if (!operand || typeof operand !== "object") {
       throw new Error(
-        `Comparison evaluate form requires object operand: { left, right }`,
+        "Comparison evaluate form requires object operand: { left, right }",
       );
     }
 
     const { left, right } = operand;
     if (left === undefined || right === undefined) {
       throw new Error(
-        `Comparison evaluate form requires 'left' and 'right' properties`,
+        "Comparison evaluate form requires 'left' and 'right' properties",
       );
     }
 

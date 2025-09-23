@@ -9,6 +9,7 @@ Perfect for configuration-driven applications, business rules engines, and anywh
 JSON Expressions is built around several key principles:
 
 - **Serializable Logic**: Express complex computations as JSON that can be stored, transmitted, and versioned
+- **Deterministic**: All expressions produce consistent, predictable results - no randomness or side effects
 - **Composable**: Build complex logic by combining simple expressions using `$pipe`
 - **Extensible**: Easily add custom expressions through packs and custom definitions
 - **Safe Evaluation**: Controlled execution environment without the risks of `eval()`
@@ -637,17 +638,6 @@ String processing and pattern matching:
 - [**$substring**](expressions.md#substring) - Extracts a portion of a string
 - [**$trim**](expressions.md#trim) - Removes whitespace from beginning and end of string
 - [**$uppercase**](expressions.md#uppercase) - Converts string to uppercase
-
-#### Time Pack
-
-Temporal functions for date/time operations:
-
-- [**$formatTime**](expressions.md#formattime) - Formats a timestamp using a format string
-- [**$nowLocal**](expressions.md#nowlocal) - Current date/time as local RFC3339 string with timezone
-- [**$nowUTC**](expressions.md#nowutc) - Current date/time as UTC RFC3339 string
-- [**$timeAdd**](expressions.md#timeadd) - Adds a duration to a timestamp
-- [**$timeDiff**](expressions.md#timediff) - Calculates difference between two timestamps
-- [**$timestamp**](expressions.md#timestamp) - Current timestamp as milliseconds since Unix epoch
 
 ## Individual Expression Imports
 

@@ -480,25 +480,6 @@ evaluate({ $flatMap: [{ $split: "," }, ["a,b", "c,d", "e"]] })
 // Returns: ["a", "b", "c", "d", "e"]
 ```
 
-## $formatTime
-
-Formats a timestamp using a format string.
-
-**Apply Form:**
-```javascript
-// Format pickup time
-const pickupTime = "2023-10-15T15:30:00Z";
-apply({ $formatTime: "time" }, pickupTime)
-// Returns: "03:30:00 PM"
-```
-
-**Evaluate Form:**
-```javascript
-// Format date and time
-evaluate({ $formatTime: { date: "2023-10-15T15:30:00Z", format: "date" } })
-// Returns: "10/15/2023"
-```
-
 ## $get
 
 Retrieves a value from data using dot notation paths with optional defaults.
@@ -1017,42 +998,6 @@ evaluate({ $not: false })
 // Returns: true
 ```
 
-## $nowLocal
-
-Returns current date/time as local RFC3339 string with timezone.
-
-**Apply Form:**
-```javascript
-// Get current local time for attendance
-apply({ $nowLocal: null }, anyInput)
-// Returns: "2023-10-15T09:30:00-05:00"
-```
-
-**Evaluate Form:**
-```javascript
-// Get current local timestamp
-evaluate({ $nowLocal: null })
-// Returns: "2023-10-15T09:30:00-05:00"
-```
-
-## $nowUTC
-
-Returns current date/time as UTC RFC3339 string.
-
-**Apply Form:**
-```javascript
-// Record action timestamp in UTC
-apply({ $nowUTC: null }, anyInput)
-// Returns: "2023-10-15T14:30:00.000Z"
-```
-
-**Evaluate Form:**
-```javascript
-// Get current UTC timestamp
-evaluate({ $nowUTC: null })
-// Returns: "2023-10-15T14:30:00.000Z"
-```
-
 ## $or
 
 Logical OR - returns true if at least one expression is truthy.
@@ -1170,24 +1115,6 @@ apply({ $prop: "group" }, child)
 const daycare = { morning: 12, afternoon: 8, evening: 4 };
 evaluate({ $prop: [daycare, "afternoon"] })
 // Returns: 8
-```
-
-## $random
-
-Generates a random number within specified range and precision.
-
-**Apply Form:**
-```javascript
-// Generate random activity selector
-apply({ $random: { min: 1, max: 5, precision: 0 } }, anyInput)
-// Returns: random integer between 1-5
-```
-
-**Evaluate Form:**
-```javascript
-// Generate random number
-evaluate({ $random: { min: 0, max: 100, precision: 2 } })
-// Returns: random decimal like 42.73
 ```
 
 ## $replace
@@ -1355,75 +1282,6 @@ apply({ $take: 3 }, allChildren)
 // Take first elements
 evaluate({ $take: [2, ["breakfast", "snack", "lunch", "dinner"]] })
 // Returns: ["breakfast", "snack"]
-```
-
-## $timeAdd
-
-Adds a duration to a timestamp.
-
-**Apply Form:**
-```javascript
-// Calculate pickup time (2 hours after drop-off)
-const dropOffTime = "2023-10-15T08:00:00Z";
-apply({ $timeAdd: { amount: 2, unit: "hours" } }, dropOffTime)
-// Returns: Date object for 10:00 AM
-```
-
-**Evaluate Form:**
-```javascript
-// Add time to date
-evaluate({ $timeAdd: { 
-  date: "2023-10-15T08:00:00Z", 
-  amount: 30, 
-  unit: "minutes" 
-} })
-// Returns: Date object for 8:30 AM
-```
-
-## $timeDiff
-
-Calculates difference between two timestamps.
-
-**Apply Form:**
-```javascript
-// Calculate how long child was at daycare
-const arrivalTime = "2023-10-15T08:00:00Z";
-apply({ 
-  $timeDiff: { 
-    endDate: "2023-10-15T17:00:00Z", 
-    unit: "hours" 
-  } 
-}, arrivalTime)
-// Returns: 9
-```
-
-**Evaluate Form:**
-```javascript
-// Calculate time difference
-evaluate({ $timeDiff: { 
-  startDate: "2023-10-15T08:00:00Z",
-  endDate: "2023-10-15T17:00:00Z",
-  unit: "minutes"
-} })
-// Returns: 540
-```
-
-## $timestamp
-
-Returns current timestamp as milliseconds since Unix epoch.
-
-**Apply Form:**
-```javascript
-// Record current time for attendance
-apply({ $timestamp: null }, anyInput)
-// Returns: 1697371800000
-```
-
-**Evaluate Form:**
-```javascript
-// Get current timestamp
-evaluate({ $timestamp: null })
-// Returns: 1697371800000
 ```
 
 ## $trim
