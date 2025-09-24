@@ -281,9 +281,9 @@ describe("Custom Expressions", () => {
 
       // Verify only custom expressions and $literal are in expressionNames
       expect(customOnlyEngine.expressionNames).toEqual([
-        "$literal",
         "$double",
         "$triple",
+        "$literal",
       ]);
       expect(customOnlyEngine.expressionNames).not.toContain("$get");
       expect(customOnlyEngine.expressionNames).not.toContain("$add");

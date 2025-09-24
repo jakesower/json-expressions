@@ -44,7 +44,8 @@ const $isDefined = {
 
 const $identity = {
   apply: (operand, inputData) => inputData,
-  evaluate: (operand, { evaluate }) => evaluate(operand, true),
+  evaluate: (operand, { evaluate, isLiteral }) =>
+    isLiteral(operand) ? operand : evaluate(operand),
 };
 
 const $prop = {

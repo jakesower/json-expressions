@@ -71,7 +71,7 @@ export function createExpressionEngine(config = {}) {
     ...(includeBase ? [base] : []),
     ...packs,
     custom,
-    $literal,
+    { $literal },
   ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
 
   const isExpression = (val) =>

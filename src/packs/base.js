@@ -12,7 +12,12 @@
  */
 
 // Import the near universal expressions
-import { $get, $identity, $isDefined, $matches } from "../definitions/access.js";
+import {
+  $get,
+  $identity,
+  $isDefined,
+  $matches,
+} from "../definitions/access.js";
 import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
 import { $if, $case } from "../definitions/conditional.js";
 import {

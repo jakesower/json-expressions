@@ -643,9 +643,9 @@ describe("$map", () => {
       // Should preserve literal expression in the mapping function
       const result = evaluate({
         $map: {
-          expression: { $literal: { $get: "name" } },  // Should preserve expression object
-          array: [{ name: "Amara" }, { name: "Chen" }]
-        }
+          expression: { $literal: { $get: "name" } }, // Should preserve expression object
+          array: [{ name: "Amara" }, { name: "Chen" }],
+        },
       });
 
       // Should get array of literal expression objects, not names
@@ -656,9 +656,12 @@ describe("$map", () => {
   describe("apply form - literal preservation", () => {
     it("should preserve literal expressions as mapping function", () => {
       // This should preserve the literal expression and use it as data, not execute it
-      const result = apply({
-        $map: { $literal: { $get: "name" } }  // Should map each item to the expression object
-      }, [{ name: "Kenji" }, { name: "Zara" }]);
+      const result = apply(
+        {
+          $map: { $literal: { $get: "name" } }, // Should map each item to the expression object
+        },
+        [{ name: "Kenji" }, { name: "Zara" }],
+      );
 
       // Each array item should become the literal expression object
       expect(result).toEqual([{ $get: "name" }, { $get: "name" }]);

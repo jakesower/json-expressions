@@ -1,0 +1,418 @@
+# Custom Expressions Guide
+
+This guide covers the advanced aspects of creating custom expressions in JSON Expressions, including how to properly handle the execution context and create sophisticated custom behavior.
+
+## Overview
+
+Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the deterministic, serializable nature of the expression system. When creating custom expressions, you define both `apply` and `evaluate` forms and have access to the execution context.
+
+## Basic Custom Expression Structure
+
+Every custom expression must provide both `apply` and `evaluate` methods:
+
+```javascript
+const $myExpression = {
+  apply: (operand, inputData, context) => {
+    // Apply the expression to input data
+    // operand: the expression's operand/parameter
+    // inputData: the data being processed
+    // context: execution context with apply, evaluate, isExpression
+    return result;
+  },
+  evaluate: (operand, context) => {
+    // Evaluate the expression without input data
+    // operand: the expression's operand/parameter
+    // context: execution context with apply, evaluate, isExpression
+    return result;
+  },
+};
+```
+
+## Execution Context
+
+The `context` parameter provides access to the expression engine's core functions:
+
+### `context.apply(expression, data)`
+
+Applies an expression to input data. Use this when you need to evaluate nested expressions against specific data.
+
+```javascript
+const $processChild = {
+  apply: (operand, inputData, { apply }) => {
+    // Get a child's data and apply an expression to it
+    const child = inputData.children[operand.index];
+    return apply(operand.expression, child);
+  },
+  evaluate: (operand, { apply }) => {
+    // In evaluate form, both child and expression are provided
+    return apply(operand.expression, operand.child);
+  },
+};
+```
+
+### `context.evaluate(expression)`
+
+Evaluates an expression independently. Use this for static expressions that don't need input data.
+
+```javascript
+const $computeMetric = {
+  apply: (operand, inputData, { evaluate }) => {
+    // Apply some transformation to input, then compute a static metric
+    const processed = processData(inputData);
+    return evaluate(operand.computation);
+  },
+  evaluate: (operand, { evaluate }) => {
+    // Pure computation
+    return evaluate(operand.computation);
+  },
+};
+```
+
+### `context.isExpression(value)`
+
+Tests if a value is a valid expression. Useful for conditional processing.
+
+```javascript
+const $conditionalProcess = {
+  apply: (operand, inputData, { apply, isExpression }) => {
+    if (isExpression(operand)) {
+      // If operand is an expression, apply it
+      return apply(operand, inputData);
+    } else {
+      // If operand is a literal value, return it directly
+      return operand;
+    }
+  },
+  evaluate: (operand, { evaluate, isExpression }) => {
+    if (isExpression(operand)) {
+      return evaluate(operand);
+    } else {
+      return operand;
+    }
+  },
+};
+```
+
+## Real-World Examples
+
+### Example 1: Daycare Age Group Classification
+
+```javascript
+const $ageGroup = {
+  apply: (operand, inputData, { apply }) => {
+    // Get age from input data
+    const age = apply({ $get: "age" }, inputData);
+
+    if (age < 2) return "infant";
+    if (age < 4) return "toddler";
+    if (age < 6) return "preschool";
+    return "school-age";
+  },
+  evaluate: (operand, { evaluate }) => {
+    // Age is provided directly in evaluate form
+    const age = evaluate(operand);
+
+    if (age < 2) return "infant";
+    if (age < 4) return "toddler";
+    if (age < 6) return "preschool";
+    return "school-age";
+  },
+};
+
+// Usage:
+// Apply form: { $ageGroup: null } - operates on inputData.age
+// Evaluate form: { $ageGroup: 3 } - returns "toddler"
+```
+
+### Example 2: Validation with Context
+
+```javascript
+const $validateChild = {
+  apply: (operand, inputData, { apply }) => {
+    const errors = [];
+
+    // Check each validation rule
+    for (const [field, rule] of Object.entries(operand.rules)) {
+      const value = apply({ $get: field }, inputData);
+      const isValid = apply(rule, value);
+
+      if (!isValid) {
+        errors.push(`${field} validation failed`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors,
+    };
+  },
+  evaluate: (operand, { apply }) => {
+    // In evaluate form, both data and rules are provided
+    return apply({ $validateChild: { rules: operand.rules } }, operand.data);
+  },
+};
+
+// Usage:
+const validationResult = engine.apply(
+  {
+    $validateChild: {
+      rules: {
+        age: { $and: [{ $gte: 2 }, { $lte: 6 }] },
+        name: { $matchesRegex: "^[A-Za-z\\s]+$" },
+      },
+    },
+  },
+  childData,
+);
+```
+
+### Example 3: Complex Data Transformation
+
+```javascript
+const $enrichChild = {
+  apply: (operand, inputData, { apply, evaluate }) => {
+    const child = inputData;
+
+    return {
+      ...child,
+      ageGroup: apply({ $ageGroup: null }, child),
+      displayName: evaluate({ $uppercase: child.name }),
+      isSchoolReady: apply({ $gte: 5 }, child.age),
+      nextBirthday: evaluate({
+        $add: [child.age, 1],
+      }),
+    };
+  },
+  evaluate: (operand, { apply }) => {
+    // Delegate to apply form
+    return apply({ $enrichChild: null }, operand);
+  },
+};
+```
+
+## Advanced Patterns
+
+### Recursive Expression Processing
+
+```javascript
+const $deepTransform = {
+  apply: (operand, inputData, { apply, isExpression }) => {
+    if (Array.isArray(inputData)) {
+      return inputData.map((item) => apply({ $deepTransform: operand }, item));
+    }
+
+    if (typeof inputData === "object" && inputData !== null) {
+      const result = {};
+      for (const [key, value] of Object.entries(inputData)) {
+        if (isExpression(operand[key])) {
+          result[key] = apply(operand[key], value);
+        } else {
+          result[key] = value;
+        }
+      }
+      return result;
+    }
+
+    return inputData;
+  },
+  evaluate: (operand, { apply }) => {
+    return apply({ $deepTransform: operand.transform }, operand.data);
+  },
+};
+```
+
+### Conditional Expression Execution
+
+```javascript
+const $conditional = {
+  apply: (operand, inputData, { apply }) => {
+    const condition = apply(operand.if, inputData);
+
+    if (condition) {
+      return operand.then !== undefined
+        ? apply(operand.then, inputData)
+        : inputData;
+    } else {
+      return operand.else !== undefined
+        ? apply(operand.else, inputData)
+        : inputData;
+    }
+  },
+  evaluate: (operand, { apply, evaluate }) => {
+    const condition = evaluate(operand.if);
+
+    if (condition) {
+      return operand.then !== undefined ? evaluate(operand.then) : null;
+    } else {
+      return operand.else !== undefined ? evaluate(operand.else) : null;
+    }
+  },
+};
+```
+
+## Best Practices
+
+### 1. Handle Both Forms Properly
+
+Always implement both `apply` and `evaluate` forms. The apply form should work with input data, while evaluate should be self-contained.
+
+```javascript
+// Good: Both forms handled appropriately
+const $example = {
+  apply: (operand, inputData, { apply }) => apply(operand, inputData),
+  evaluate: (operand, { evaluate }) => evaluate(operand),
+};
+
+// Bad: Missing evaluate form
+const $badExample = {
+  apply: (operand, inputData, { apply }) => apply(operand, inputData),
+  // Missing evaluate!
+};
+```
+
+### 2. Use Context Functions Appropriately
+
+Use `apply` for expressions that need input data, `evaluate` for static expressions:
+
+```javascript
+const $smartProcess = {
+  apply: (operand, inputData, { apply, evaluate }) => {
+    // Use apply for expressions that operate on inputData
+    const childAge = apply({ $get: "age" }, inputData);
+
+    // Use evaluate for static computations
+    const threshold = evaluate({ $add: [operand.baseAge, 2] });
+
+    return childAge >= threshold;
+  },
+};
+```
+
+### 3. Maintain Determinism
+
+Custom expressions should be deterministic - same inputs always produce same outputs:
+
+```javascript
+// Good: Deterministic
+const $calculateScore = {
+  apply: (operand, inputData, { apply }) => {
+    const base = apply({ $get: "baseScore" }, inputData);
+    return base * operand.multiplier;
+  },
+};
+
+// Bad: Non-deterministic (uses current time)
+const $addTimestamp = {
+  apply: (operand, inputData) => {
+    return { ...inputData, timestamp: Date.now() }; // Don't do this!
+  },
+};
+```
+
+### 4. Error Handling
+
+Provide clear error messages:
+
+```javascript
+const $safeGet = {
+  apply: (operand, inputData, { apply }) => {
+    if (!operand || typeof operand !== "string") {
+      throw new Error("$safeGet operand must be a string path");
+    }
+
+    try {
+      return apply({ $get: operand }, inputData);
+    } catch (error) {
+      return operand.default ?? null;
+    }
+  },
+};
+```
+
+### 5. Leverage Existing Expressions
+
+Build on existing expressions rather than reimplementing logic:
+
+```javascript
+// Good: Reuses existing expressions
+const $isActiveChild = {
+  apply: (operand, inputData, { apply }) => {
+    return apply(
+      {
+        $matches: {
+          active: { $eq: true },
+          age: { $and: [{ $gte: 2 }, { $lte: 6 }] },
+        },
+      },
+      inputData,
+    );
+  },
+};
+
+// Less ideal: Reimplements logic
+const $isActiveChildBad = {
+  apply: (operand, inputData, { apply }) => {
+    const active = apply({ $get: "active" }, inputData);
+    const age = apply({ $get: "age" }, inputData);
+    return active === true && age >= 2 && age <= 6;
+  },
+};
+```
+
+## Integration with Expression Engine
+
+Register custom expressions when creating your engine:
+
+```javascript
+import { createExpressionEngine } from "json-expressions";
+
+const engine = createExpressionEngine({
+  custom: {
+    $ageGroup,
+    $validateChild,
+    $enrichChild,
+    $conditionalProcess,
+  },
+});
+
+// Now use your custom expressions
+const result = engine.apply(
+  {
+    $pipe: [
+      { $enrichChild: null },
+      {
+        $validateChild: {
+          rules: {
+            age: { $gte: 2 },
+          },
+        },
+      },
+    ],
+  },
+  childData,
+);
+```
+
+## Testing Custom Expressions
+
+Always test both forms of your custom expressions:
+
+```javascript
+describe("$ageGroup", () => {
+  it("apply form classifies age correctly", () => {
+    const child = { name: "Zara", age: 3 };
+    expect(engine.apply({ $ageGroup: null }, child)).toBe("toddler");
+  });
+
+  it("evaluate form works with direct age", () => {
+    expect(engine.evaluate({ $ageGroup: 3 })).toBe("toddler");
+  });
+
+  it("handles edge cases", () => {
+    expect(engine.evaluate({ $ageGroup: 2 })).toBe("toddler");
+    expect(engine.evaluate({ $ageGroup: 4 })).toBe("preschool");
+  });
+});
+```
+
+This guide should help you create powerful, maintainable custom expressions that integrate seamlessly with the JSON Expressions ecosystem while maintaining deterministic behavior.

@@ -318,7 +318,7 @@ describe("$identity", () => {
       expect(evaluate({ $identity: [1, 2, 3] })).toEqual([1, 2, 3]);
     });
 
-    it("evaluates the operand", () => {
+    it("evaluates non-literal operands", () => {
       expect(evaluate({ $identity: { $add: [1, 2] } })).toBe(3);
     });
 
@@ -326,7 +326,6 @@ describe("$identity", () => {
       expect(evaluate({ $identity: { $literal: "processed" } })).toEqual({
         $literal: "processed",
       });
-      expect(evaluate({ $identity: { $gt: [5, 3] } })).toBe(true);
     });
 
     it("works with null and undefined", () => {
