@@ -48,6 +48,10 @@ export interface GetExpression {
 	$get: string | { object: unknown; path: string };
 }
 
+export interface IdentityExpression {
+	$identity: unknown;
+}
+
 export interface LiteralExpression {
 	$literal: unknown;
 }
@@ -69,8 +73,8 @@ export interface PipeExpression {
 	$pipe: Expression[] | { expressions: Expression[]; inputData: unknown };
 }
 
-export interface WhereExpression {
-	$where: { [path: string]: Expression } | { data: unknown; conditions: { [path: string]: Expression } };
+export interface MatchesExpression {
+	$matches: { [path: string]: Expression } | { data: unknown; conditions: { [path: string]: Expression } };
 }
 
 export interface SelectExpression {
@@ -117,9 +121,6 @@ export interface DefaultExpression {
 	$default: Expression[];
 }
 
-export interface WhereExpression {
-	$where: { [path: string]: Expression } | [unknown[], { [path: string]: Expression }];
-}
 
 export interface HasExpression {
 	$has: string | { object: unknown; path: string };
@@ -335,7 +336,7 @@ export type AnyExpression =
 	| DebugExpression
 	| PipeExpression
 	| DefaultExpression
-	| WhereExpression
+	| MatchesExpression
 	| SelectExpression
 	| SortExpression
 	// Object

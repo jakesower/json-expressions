@@ -1,6 +1,7 @@
 import didYouMean from "didyoumean";
 import { base } from "./packs/base.js";
 import { mapValues } from "es-toolkit";
+import { $literal } from "./definitions/flow.js";
 
 /**
  * @typedef {object} ApplicativeExpression
@@ -43,6 +44,15 @@ function looksLikeExpression(val) {
   );
 }
 
+function isLiteral(val) {
+  return (
+    val &&
+    typeof val === "object" &&
+    Object.keys(val).length === 1 &&
+    "$literal" in val
+  );
+}
+
 /**
  * @typedef {object} ExpressionEngineConfig
  * @property {object[]} [packs] - Array of expression pack objects to include
@@ -57,10 +67,12 @@ function looksLikeExpression(val) {
 export function createExpressionEngine(config = {}) {
   const { packs = [], custom = {}, includeBase = true } = config;
 
-  const expressions = [...(includeBase ? [base] : []), ...packs, custom].reduce(
-    (acc, pack) => ({ ...acc, ...pack }),
-    {},
-  );
+  const expressions = [
+    ...(includeBase ? [base] : []),
+    ...packs,
+    custom,
+    $literal,
+  ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
 
   const isExpression = (val) =>
     looksLikeExpression(val) && Object.keys(val)[0] in expressions;
@@ -88,7 +100,11 @@ export function createExpressionEngine(config = {}) {
       const [expressionName, operand] = Object.entries(val)[0];
       const expressionDef = expressions[expressionName];
 
-      return expressionDef.apply(operand, inputData, { isExpression, apply });
+      return expressionDef.apply(operand, inputData, {
+        apply,
+        isExpression,
+        isLiteral,
+      });
     }
 
     checkLooksLikeExpression(val);
@@ -105,7 +121,12 @@ export function createExpressionEngine(config = {}) {
       const [expressionName, operand] = Object.entries(val)[0];
       const expressionDef = expressions[expressionName];
 
-      return expressionDef.evaluate(operand, { isExpression, evaluate, apply });
+      return expressionDef.evaluate(operand, {
+        apply,
+        evaluate,
+        isExpression,
+        isLiteral,
+      });
     }
 
     checkLooksLikeExpression(val);

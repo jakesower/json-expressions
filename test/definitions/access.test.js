@@ -291,7 +291,52 @@ describe("$select", () => {
   });
 });
 
-describe("$where", () => {
+describe("$identity", () => {
+  describe("apply form", () => {
+    it("returns input data unchanged but processes operand", () => {
+      const data = { name: "Amara", age: 4, toys: ["blocks", "dolls"] };
+      expect(apply({ $identity: null }, data)).toEqual(data);
+      expect(apply({ $identity: "ignored" }, data)).toEqual(data);
+    });
+
+    it("works with different input data types", () => {
+      expect(apply({ $identity: null }, "hello")).toBe("hello");
+      expect(apply({ $identity: null }, 42)).toBe(42);
+      expect(apply({ $identity: null }, true)).toBe(true);
+      expect(apply({ $identity: null }, null)).toBe(null);
+      expect(apply({ $identity: null }, [1, 2, 3])).toEqual([1, 2, 3]);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("evaluates and returns the operand", () => {
+      expect(evaluate({ $identity: "test" })).toBe("test");
+      expect(evaluate({ $identity: 123 })).toBe(123);
+      expect(evaluate({ $identity: { name: "Zara" } })).toEqual({
+        name: "Zara",
+      });
+      expect(evaluate({ $identity: [1, 2, 3] })).toEqual([1, 2, 3]);
+    });
+
+    it("evaluates the operand", () => {
+      expect(evaluate({ $identity: { $add: [1, 2] } })).toBe(3);
+    });
+
+    it("preserves literals", () => {
+      expect(evaluate({ $identity: { $literal: "processed" } })).toEqual({
+        $literal: "processed",
+      });
+      expect(evaluate({ $identity: { $gt: [5, 3] } })).toBe(true);
+    });
+
+    it("works with null and undefined", () => {
+      expect(evaluate({ $identity: null })).toBe(null);
+      expect(evaluate({ $identity: undefined })).toBe(undefined);
+    });
+  });
+});
+
+describe("$matches", () => {
   const children = [
     { name: "Chen", age: 5, status: "active", scores: [92, 87, 95] },
     { name: "Amira", age: 3, status: "inactive", scores: [78, 84, 91] },
@@ -301,13 +346,15 @@ describe("$where", () => {
   describe("apply form", () => {
     it("filters by single property condition", () => {
       // Test with single child
-      expect(apply({ $where: { age: { $gt: 4 } } }, children[0])).toBe(true);
-      expect(apply({ $where: { age: { $gt: 16 } } }, children[1])).toBe(false);
+      expect(apply({ $matches: { age: { $gt: 4 } } }, children[0])).toBe(true);
+      expect(apply({ $matches: { age: { $gt: 16 } } }, children[1])).toBe(
+        false,
+      );
     });
 
     it("filters by multiple property conditions", () => {
       const condition = {
-        $where: {
+        $matches: {
           age: { $gte: 4 },
           status: { $eq: "active" },
         },
@@ -320,7 +367,7 @@ describe("$where", () => {
 
     it("filters with nested expressions", () => {
       const condition = {
-        $where: {
+        $matches: {
           age: { $gte: 4 },
           status: { $if: { if: true, then: { $eq: "active" } } },
         },
@@ -342,7 +389,7 @@ describe("$where", () => {
       expect(
         apply(
           {
-            $where: {
+            $matches: {
               "user.profile.age": { $gte: 18 },
               "user.settings.active": { $eq: true },
             },
@@ -354,7 +401,7 @@ describe("$where", () => {
       expect(
         apply(
           {
-            $where: {
+            $matches: {
               "user.profile.age": { $lt: 18 },
             },
           },
@@ -367,7 +414,7 @@ describe("$where", () => {
       const activeToddlers = apply(
         {
           $filter: {
-            $where: {
+            $matches: {
               age: { $gte: 4 },
               status: { $eq: "active" },
             },
@@ -383,14 +430,14 @@ describe("$where", () => {
     });
 
     it("throws error for non-object operand", () => {
-      expect(() => apply({ $where: "not an object" }, {})).toThrow(
-        "$where operand must be an object with property conditions",
+      expect(() => apply({ $matches: "not an object" }, {})).toThrow(
+        "$matches operand must be an object with property conditions",
       );
     });
 
     it("throws error for array operand", () => {
-      expect(() => apply({ $where: ["age", "> 16"] }, {})).toThrow(
-        "$where operand must be an object with property conditions",
+      expect(() => apply({ $matches: ["age", "> 16"] }, {})).toThrow(
+        "$matches operand must be an object with property conditions",
       );
     });
   });
@@ -402,11 +449,11 @@ describe("$where", () => {
       // Test using apply form since evaluate mode doesn't support dynamic expressions in conditions
       expect(
         apply(
-          { $where: { age: { $gte: 5 }, status: { $eq: "active" } } },
+          { $matches: { age: { $gte: 5 }, status: { $eq: "active" } } },
           child,
         ),
       ).toBe(true);
-      expect(apply({ $where: { age: { $gte: 10 } } }, child)).toBe(false);
+      expect(apply({ $matches: { age: { $gte: 10 } } }, child)).toBe(false);
     });
 
     it("handles nested property paths in evaluate form", () => {
@@ -419,28 +466,28 @@ describe("$where", () => {
 
       // Test using apply form since evaluate mode doesn't support dynamic expressions in conditions
       expect(
-        apply({ $where: { "daycare.staff.count": { $gte: 2 } } }, data),
+        apply({ $matches: { "daycare.staff.count": { $gte: 2 } } }, data),
       ).toBe(true);
       expect(
-        apply({ $where: { "daycare.staff.count": { $lt: 2 } } }, data),
+        apply({ $matches: { "daycare.staff.count": { $lt: 2 } } }, data),
       ).toBe(false);
     });
 
     it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $where: "not an array" })).toThrow(
-        "$where evaluate form requires object operand: { data, conditions }",
+      expect(() => evaluate({ $matches: "not an array" })).toThrow(
+        "$matches evaluate form requires object operand: { data, conditions }",
       );
     });
 
     it("throws error for incomplete object", () => {
-      expect(() => evaluate({ $where: { data: {} } })).toThrow(
-        "$where evaluate form requires 'data' and 'conditions' properties",
+      expect(() => evaluate({ $matches: { data: {} } })).toThrow(
+        "$matches evaluate form requires 'data' and 'conditions' properties",
       );
     });
 
     it("throws error for non-object input", () => {
-      expect(() => evaluate({ $where: "not an object" })).toThrow(
-        "$where evaluate form requires object operand: { data, conditions }",
+      expect(() => evaluate({ $matches: "not an object" })).toThrow(
+        "$matches evaluate form requires object operand: { data, conditions }",
       );
     });
   });

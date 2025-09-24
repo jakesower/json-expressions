@@ -26,7 +26,7 @@ const executeConditional = (condition, thenValue, elseValue) => {
  * @param {function} apply - Function to apply expressions with input data
  * @returns {object|undefined} The matching case object or undefined
  */
-const findFlexibleCase = (value, cases, { isExpression, apply }) =>
+const findFlexibleCase = (value, cases, { apply, isExpression, isLiteral }) =>
   cases.find((caseItem) => {
     const { when } = caseItem;
 
@@ -34,11 +34,11 @@ const findFlexibleCase = (value, cases, { isExpression, apply }) =>
       throw new Error("Case item must have 'when' property");
     }
 
-    if (isExpression(when)) {
-      if (Object.keys(when)[0] === "$literal") {
-        return isEqual(value, Object.values(when)[0]);
-      }
+    if (isLiteral(when)) {
+      return isEqual(value, Object.values(when)[0]);
+    }
 
+    if (isExpression(when)) {
       const applied = apply(when, value);
       if (typeof applied !== "boolean") {
         throw new Error(
@@ -53,23 +53,25 @@ const findFlexibleCase = (value, cases, { isExpression, apply }) =>
   });
 
 const $case = {
-  apply(operand, inputData, { apply, isExpression }) {
+  apply(operand, inputData, { apply, isExpression, isLiteral }) {
     const value = apply(operand.value, inputData);
     const found = findFlexibleCase(value, operand.cases, {
       apply,
       isExpression,
+      isLiteral,
     });
     return found
       ? apply(found.then, inputData)
       : apply(operand.default, inputData);
   },
-  evaluate(operand, { apply, evaluate, isExpression }) {
+  evaluate(operand, { apply, evaluate, isExpression, isLiteral }) {
     // Handle array format for evaluate form
     const caseOperand = Array.isArray(operand) ? operand[0] : operand;
     const value = evaluate(caseOperand.value);
     const found = findFlexibleCase(value, caseOperand.cases, {
       apply,
       isExpression,
+      isLiteral,
     });
     return found ? evaluate(found.then) : evaluate(caseOperand.default);
   },

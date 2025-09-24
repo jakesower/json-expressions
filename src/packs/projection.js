@@ -31,7 +31,7 @@ import { $substring, $uppercase, $lowercase } from "../definitions/string.js";
 import { $if, $case } from "../definitions/conditional.js";
 
 // Import field access
-import { $get, $where, $select } from "../definitions/access.js";
+import { $get, $matches, $select } from "../definitions/access.js";
 
 // Import flow control
 import { $pipe } from "../definitions/flow.js";
@@ -54,7 +54,7 @@ export const projection = {
   $get,
   $pipe,
   $select,
-  $where,
+  $matches,
   // Aggregation functions
   $count,
   $sum,

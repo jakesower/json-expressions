@@ -445,6 +445,37 @@ describe("$case - literal mode (unified behavior)", () => {
       ).toEqual("Amara (4 years old)");
     });
 
+    it("should preserve literal expressions in then/else branches", () => {
+      // This should preserve the literal expression and not execute it
+      const result = apply({
+        $if: {
+          if: true,
+          then: { $literal: { $get: "name" } },  // Should return expression object, not execute it
+          else: "fallback"
+        }
+      }, { name: "Kenji" });
+
+      // Should get the literal expression object, not "Kenji"
+      expect(result).toEqual({ $get: "name" });
+    });
+
+    it("should preserve literal expressions in case branches", () => {
+      // This should preserve literal expressions in then branches
+      const result = apply({
+        $case: {
+          value: "active",
+          cases: [
+            { when: "active", then: { $literal: { $get: "name" } } },  // Should preserve expression
+            { when: "inactive", then: "Child is sleeping" }
+          ],
+          default: "Unknown status"
+        }
+      }, { name: "Fatima" });
+
+      // Should get the literal expression object, not "Fatima"
+      expect(result).toEqual({ $get: "name" });
+    });
+
     it("handles deep equality with meal arrays", () => {
       expect(
         apply(

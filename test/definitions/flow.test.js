@@ -403,6 +403,28 @@ describe("$pipe", () => {
       apply({ $pipe: [{ $in: "should be an array" }] }, { name: "Zarina" });
     }).toThrowError();
   });
+
+  it("should preserve literal expressions in pipeline and NOT execute them as data", () => {
+    // This should fail - $literal should preserve the expression objects as data, not execute them
+    const data = { name: "Kenji" };
+    const result = apply({ $pipe: [{ $literal: { $get: "name" } }] }, data);
+
+    expect(result).toEqual({ $get: "name" });
+  });
+
+  it("should preserve literal expressions and not evaluate them", () => {
+    // This should work - literal expression becomes data for next step
+    const result = apply(
+      {
+        $pipe: [
+          { $literal: { expressionType: "$get", path: "name" } }, // Literal object as data
+          { $get: "expressionType" }, // Get field from the literal object
+        ],
+      },
+      { name: "ignored" },
+    );
+    expect(result).toBe("$get");
+  });
 });
 
 describe("$sort", () => {

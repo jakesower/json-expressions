@@ -3,9 +3,10 @@
  *
  * Operations for accessing and extracting data from input:
  * - Basic access ($get, $isDefined)
+ * - Identity access ($identity)
  * - Property access ($prop)
  * - Object selection/projection ($select)
- * - Filtered access ($where)
+ * - Object matching ($matches)
  */
 
 import { get } from "es-toolkit/compat";
@@ -39,6 +40,11 @@ const $isDefined = {
   apply: (operand, inputData, { apply }) =>
     apply(operand, inputData) !== undefined,
   evaluate: (operand, { evaluate }) => evaluate(operand) !== undefined,
+};
+
+const $identity = {
+  apply: (operand, inputData) => inputData,
+  evaluate: (operand, { evaluate }) => evaluate(operand, true),
 };
 
 const $prop = {
@@ -111,11 +117,11 @@ const $select = {
   },
 };
 
-const $where = {
+const $matches = {
   apply: (operand, inputData, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$where operand must be an object with property conditions",
+        "$matches operand must be an object with property conditions",
       );
     }
 
@@ -127,20 +133,20 @@ const $where = {
   evaluate: (operand, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$where evaluate form requires object operand: { data, conditions }",
+        "$matches evaluate form requires object operand: { data, conditions }",
       );
     }
 
     const { data, conditions } = operand;
     if (data === undefined || conditions === undefined) {
       throw new Error(
-        "$where evaluate form requires 'data' and 'conditions' properties",
+        "$matches evaluate form requires 'data' and 'conditions' properties",
       );
     }
 
-    return apply({ $where: conditions }, data);
+    return apply({ $matches: conditions }, data);
   },
 };
 
 // Individual exports for tree shaking (alphabetized)
-export { $get, $isDefined, $prop, $select, $where };
+export { $get, $identity, $isDefined, $matches, $prop, $select };

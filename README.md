@@ -50,13 +50,17 @@ Expressions are JSON objects that describe computations to be performed. Each ex
 **Simple comparison:**
 
 ```javascript
-{ $gt: 18 }
+{
+  $gt: 18;
+}
 ```
 
 **Logical expressions:**
 
 ```javascript
-{ $and: [{ $gte: 18 }, { $lt: 65 }] }
+{
+  $and: [{ $gte: 18 }, { $lt: 65 }];
+}
 ```
 
 **Conditional logic:**
@@ -78,8 +82,8 @@ Expressions are JSON objects that describe computations to be performed. Each ex
   $pipe: [
     { $get: "children" },
     { $filterBy: { age: { $gte: 4 } } },
-    { $map: { $get: "name" } }
-  ]
+    { $map: { $get: "name" } },
+  ];
 }
 ```
 
@@ -108,6 +112,7 @@ const result = engine.apply(expression, inputData);
 In apply mode, expressions receive the input data as context and operate on it:
 
 - `{ $get: "name" }` gets the "name" property from input data
+- `{ $identity: null }` returns the input data unchanged (identity function)
 - `{ $gt: 18 }` tests if input data is greater than 18
 - `{ $filter: { $gte: 4 } }` filters input array for items >= 4
 
@@ -126,6 +131,7 @@ const result = engine.evaluate(expression);
 In evaluate mode, expressions contain all the data they need:
 
 - `{ $get: { object: { "name": "Hadley" }, path: "name" } }` gets property from the provided object
+- `{ $identity: "value" }` returns "value" unchanged
 - `{ $gt: [25, 18] }` tests if 25 > 18
 - `{ $sum: [1, 2, 3] }` calculates sum of the provided numbers
 
@@ -143,12 +149,13 @@ In evaluate mode, expressions contain all the data they need:
 
 **Rule of thumb**: If your expression needs external input data, use `apply`. If it's self-contained, use `evaluate`. If still in doubt, try to use the evaluate form first. If you run into a wall, you probably need to switch over to apply.
 
-| Expression | Apply Mode         | Evaluate Mode                           |
-| ---------- | ------------------ | --------------------------------------- |
-| `$gt`      | `{ $gt: 18 }`      | `{ $gt: [25, 18] }`                     |
-| `$get`     | `{ $get: "name" }` | `{ $get: { object, path: "name" } }`    |
-| `$sum`     | `{ $sum: null }`   | `{ $sum: [1, 2, 3] }`                   |
-| `$mean`    | `{ $mean: null }`  | `{ $mean: [85, 90, 88] }`               |
+| Expression | Apply Mode         | Evaluate Mode                        |
+| ---------- | ------------------ | ------------------------------------ |
+| `$gt`      | `{ $gt: 18 }`      | `{ $gt: [25, 18] }`                  |
+| `$get`     | `{ $get: "name" }` | `{ $get: { object, path: "name" } }` |
+| `$identity`| `{ $identity: null }` | `{ $identity: "value" }`           |
+| `$sum`     | `{ $sum: null }`   | `{ $sum: [1, 2, 3] }`                |
+| `$mean`    | `{ $mean: null }`  | `{ $mean: [85, 90, 88] }`            |
 
 **Key difference**: Apply mode expressions operate **on** the input data, while evaluate mode expressions contain **all** the data they need.
 
@@ -213,7 +220,7 @@ The dual-mode architecture enables the same expressions to run consistently acro
 ```javascript
 // Same rule logic used in multiple contexts
 const eligibilityRule = {
-  $where: {
+  $matches: {
     age: { $gte: 18 },
     status: { $eq: "active" },
     balance: { $gt: 0 },
@@ -289,7 +296,7 @@ const children = [
 const schoolAge = engine.apply(
   {
     $pipe: [
-      { $filter: { $where: { age: { $gte: 5 } } } },
+      { $filter: { $matches: { age: { $gte: 5 } } } },
       { $map: { $get: "name" } },
     ],
   },
@@ -322,7 +329,7 @@ Creates a custom expression engine with specified configuration.
 
 - `config.packs` (Array, optional) - Array of expression pack objects to include
 - `config.custom` (Object, optional) - Custom expression definitions
-- `config.includeBase` (Boolean, default: true) - Whether to include base expressions
+- `config.includeBase` (Boolean, default: true) - Whether to include base expressions. Note that $literal cannot be excluded or overwritten.
 
 ```javascript
 import { createExpressionEngine } from "json-expressions";
@@ -433,29 +440,29 @@ JSON Expressions organizes functionality into packs - curated collections of exp
 
 The base pack contains near-universal expressions used across almost all scenarios. These expressions are included by default in every engine unless explicitly excluded.
 
-- [**$and**](expressions.md#and) - Logical AND operation across multiple expressions
-- [**$default**](expressions.md#default) - Returns first non-null/undefined value from array of expressions
-- [**$filter**](expressions.md#filter) - Filters array items based on a condition
-- [**$filterBy**](expressions.md#filterby) - Filters arrays by object property conditions (combines $filter + $where)
-- [**$get**](expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
-- [**$if**](expressions.md#if) - Conditional expression that evaluates different branches based on a condition
-- [**$isDefined**](expressions.md#isdefined) - Tests if a value is defined (not null or undefined)
-- [**$literal**](expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
-- [**$map**](expressions.md#map) - Transforms each item in an array using an expression
-- [**$not**](expressions.md#not) - Logical NOT operation that inverts a boolean expression
-- [**$or**](expressions.md#or) - Logical OR operation across multiple expressions
-- [**$pipe**](expressions.md#pipe) - Pipes data through multiple expressions in sequence (left-to-right)
-- [**$sort**](expressions.md#sort) - Sorts arrays by property or expression with optional desc flag
-- [**$where**](expressions.md#where) - Filters arrays using object-based property conditions (shorthand for complex filters)
+- [**$and**](docs/expressions.md#and) - Logical AND operation across multiple expressions
+- [**$default**](docs/expressions.md#default) - Returns first non-null/undefined value from array of expressions
+- [**$filter**](docs/expressions.md#filter) - Filters array items based on a condition
+- [**$filterBy**](docs/expressions.md#filterby) - Filters arrays by object property conditions (combines $filter + $matches)
+- [**$get**](docs/expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
+- [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
+- [**$isDefined**](docs/expressions.md#isdefined) - Tests if a value is defined (not null or undefined)
+- [**$literal**](docs/expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
+- [**$map**](docs/expressions.md#map) - Transforms each item in an array using an expression
+- [**$not**](docs/expressions.md#not) - Logical NOT operation that inverts a boolean expression
+- [**$or**](docs/expressions.md#or) - Logical OR operation across multiple expressions
+- [**$pipe**](docs/expressions.md#pipe) - Pipes data through multiple expressions in sequence (left-to-right)
+- [**$sort**](docs/expressions.md#sort) - Sorts arrays by property or expression with optional desc flag
+- [**$matches**](docs/expressions.md#matches) - Filters arrays using object-based property conditions (shorthand for complex filters)
 
 **Comparison expressions:**
 
-- [**$eq**](expressions.md#eq) - Tests equality using deep comparison
-- [**$gt**](expressions.md#gt) - Tests if value is greater than operand
-- [**$gte**](expressions.md#gte) - Tests if value is greater than or equal to operand
-- [**$lt**](expressions.md#lt) - Tests if value is less than operand
-- [**$lte**](expressions.md#lte) - Tests if value is less than or equal to operand
-- [**$ne**](expressions.md#ne) - Tests inequality using deep comparison
+- [**$eq**](docs/expressions.md#eq) - Tests equality using deep comparison
+- [**$gt**](docs/expressions.md#gt) - Tests if value is greater than operand
+- [**$gte**](docs/expressions.md#gte) - Tests if value is greater than or equal to operand
+- [**$lt**](docs/expressions.md#lt) - Tests if value is less than operand
+- [**$lte**](docs/expressions.md#lte) - Tests if value is less than or equal to operand
+- [**$ne**](docs/expressions.md#ne) - Tests inequality using deep comparison
 
 ### Available Packs
 
@@ -473,58 +480,58 @@ const engine = createExpressionEngine({
 
 Statistical and aggregation functions for data analysis:
 
-- [**$count**](expressions.md#count) - Count of items in an array
-- [**$first**](expressions.md#first) - First item in an array
-- [**$last**](expressions.md#last) - Last item in an array
-- [**$max**](expressions.md#max) - Maximum value in an array
-- [**$mean**](expressions.md#mean) - Arithmetic mean (average) of array values
-- [**$min**](expressions.md#min) - Minimum value in an array
-- [**$sum**](expressions.md#sum) - Sum of array values
+- [**$count**](docs/expressions.md#count) - Count of items in an array
+- [**$first**](docs/expressions.md#first) - First item in an array
+- [**$last**](docs/expressions.md#last) - Last item in an array
+- [**$max**](docs/expressions.md#max) - Maximum value in an array
+- [**$mean**](docs/expressions.md#mean) - Arithmetic mean (average) of array values
+- [**$min**](docs/expressions.md#min) - Minimum value in an array
+- [**$sum**](docs/expressions.md#sum) - Sum of array values
 
 #### Array Pack
 
 Complete array manipulation toolkit:
 
-- [**$all**](expressions.md#all) - Tests if all elements in an array satisfy a predicate
-- [**$any**](expressions.md#any) - Tests if any element in an array satisfies a predicate
-- [**$append**](expressions.md#append) - Appends an array to the end of another array
-- [**$coalesce**](expressions.md#coalesce) - Returns the first non-null value from an array
-- [**$concat**](expressions.md#concat) - Concatenates multiple arrays together
-- [**$find**](expressions.md#find) - Returns first element that satisfies a predicate
-- [**$flatMap**](expressions.md#flatmap) - Maps and flattens array items
-- [**$flatten**](expressions.md#flatten) - Flattens nested arrays to specified depth
-- [**$groupBy**](expressions.md#groupby) - Groups array elements by a property or expression
-- [**$join**](expressions.md#join) - Joins array elements into a string with a separator
-- [**$pluck**](expressions.md#pluck) - Extracts property values from array of objects
-- [**$prepend**](expressions.md#prepend) - Prepends an array to the beginning of another array
-- [**$reverse**](expressions.md#reverse) - Returns array with elements in reverse order
-- [**$skip**](expressions.md#skip) - Skips first N elements of an array
-- [**$take**](expressions.md#take) - Takes first N elements of an array
-- [**$unique**](expressions.md#unique) - Returns unique values from an array
+- [**$all**](docs/expressions.md#all) - Tests if all elements in an array satisfy a predicate
+- [**$any**](docs/expressions.md#any) - Tests if any element in an array satisfies a predicate
+- [**$append**](docs/expressions.md#append) - Appends an array to the end of another array
+- [**$coalesce**](docs/expressions.md#coalesce) - Returns the first non-null value from an array
+- [**$concat**](docs/expressions.md#concat) - Concatenates multiple arrays together
+- [**$find**](docs/expressions.md#find) - Returns first element that satisfies a predicate
+- [**$flatMap**](docs/expressions.md#flatmap) - Maps and flattens array items
+- [**$flatten**](docs/expressions.md#flatten) - Flattens nested arrays to specified depth
+- [**$groupBy**](docs/expressions.md#groupby) - Groups array elements by a property or expression
+- [**$join**](docs/expressions.md#join) - Joins array elements into a string with a separator
+- [**$pluck**](docs/expressions.md#pluck) - Extracts property values from array of objects
+- [**$prepend**](docs/expressions.md#prepend) - Prepends an array to the beginning of another array
+- [**$reverse**](docs/expressions.md#reverse) - Returns array with elements in reverse order
+- [**$skip**](docs/expressions.md#skip) - Skips first N elements of an array
+- [**$take**](docs/expressions.md#take) - Takes first N elements of an array
+- [**$unique**](docs/expressions.md#unique) - Returns unique values from an array
 
 #### Comparison Pack
 
 Scalar comparison operations for filtering and validation:
 
-- [**$between**](expressions.md#between) - Tests if value is between two bounds (inclusive)
-- [**$has**](expressions.md#has) - Tests if object has property at specified path (supports dot notation)
-- [**$in**](expressions.md#in) - Tests if value exists in an array
-- [**$isNotNull**](expressions.md#isnotnull) - Tests if value is not null or undefined
-- [**$isNull**](expressions.md#isnull) - Tests if value is null or undefined
-- [**$nin**](expressions.md#nin) - Tests if value does not exist in an array
+- [**$between**](docs/expressions.md#between) - Tests if value is between two bounds (inclusive)
+- [**$has**](docs/expressions.md#has) - Tests if object has property at specified path (supports dot notation)
+- [**$in**](docs/expressions.md#in) - Tests if value exists in an array
+- [**$isNotNull**](docs/expressions.md#isnotnull) - Tests if value is not null or undefined
+- [**$isNull**](docs/expressions.md#isnull) - Tests if value is null or undefined
+- [**$nin**](docs/expressions.md#nin) - Tests if value does not exist in an array
 
 #### Filtering Pack
 
 Complete toolkit for WHERE clause logic and data filtering - combines field access, comparisons, logic, and pattern matching:
 
-- [**$and**](expressions.md#and), [**$or**](expressions.md#or), [**$not**](expressions.md#not) - Boolean logic
-- [**$eq**](expressions.md#eq), [**$ne**](expressions.md#ne), [**$gt**](expressions.md#gt), [**$gte**](expressions.md#gte), [**$lt**](expressions.md#lt), [**$lte**](expressions.md#lte) - Basic comparisons
-- [**$get**](expressions.md#get) - Field access with dot notation paths
-- [**$in**](expressions.md#in), [**$nin**](expressions.md#nin) - Membership tests
-- [**$where**](expressions.md#where) - Object-based property filtering (shorthand for complex conditions)
-- [**$isNull**](expressions.md#isnull), [**$isNotNull**](expressions.md#isnotnull) - Existence checks
-- [**$matchesRegex**](expressions.md#matchesregex), [**$matchesLike**](expressions.md#matcheslike), [**$matchesGlob**](expressions.md#matchesglob) - Pattern matching
-- [**$pipe**](expressions.md#pipe) - Chain multiple filtering operations
+- [**$and**](docs/expressions.md#and), [**$or**](docs/expressions.md#or), [**$not**](docs/expressions.md#not) - Boolean logic
+- [**$eq**](docs/expressions.md#eq), [**$ne**](docs/expressions.md#ne), [**$gt**](docs/expressions.md#gt), [**$gte**](docs/expressions.md#gte), [**$lt**](docs/expressions.md#lt), [**$lte**](docs/expressions.md#lte) - Basic comparisons
+- [**$get**](docs/expressions.md#get) - Field access with dot notation paths
+- [**$in**](docs/expressions.md#in), [**$nin**](docs/expressions.md#nin) - Membership tests
+- [**$matches**](docs/expressions.md#matches) - Object-based property filtering (shorthand for complex conditions)
+- [**$isNull**](docs/expressions.md#isnull), [**$isNotNull**](docs/expressions.md#isnotnull) - Existence checks
+- [**$matchesRegex**](docs/expressions.md#matchesregex), [**$matchesLike**](docs/expressions.md#matcheslike), [**$matchesGlob**](docs/expressions.md#matchesglob) - Pattern matching
+- [**$pipe**](docs/expressions.md#pipe) - Chain multiple filtering operations
 
 Perfect for building complex filters with a single import:
 
@@ -536,7 +543,7 @@ const engine = createExpressionEngine({ packs: [filtering] });
 // Complex daycare filtering
 const activeToddlers = engine.apply(
   {
-    $where: {
+    $matches: {
       age: { $and: [{ $gte: 2 }, { $lte: 4 }] }, // Age between 2 and 4
       status: { $eq: "active" }, // Active status
       activity: { $nin: ["napping", "sick"] }, // Not napping or sick
@@ -550,23 +557,23 @@ const activeToddlers = engine.apply(
 
 Boolean logic and conditional operations:
 
-- [**$and**](expressions.md#and) - Logical AND - all expressions must be truthy
-- [**$case**](expressions.md#case) - Unified conditional expression supporting both literal comparisons and boolean predicates
-- [**$if**](expressions.md#if) - Conditional expression that evaluates different branches based on a condition
-- [**$not**](expressions.md#not) - Logical NOT - inverts the truthiness of an expression
-- [**$or**](expressions.md#or) - Logical OR - at least one expression must be truthy
+- [**$and**](docs/expressions.md#and) - Logical AND - all expressions must be truthy
+- [**$case**](docs/expressions.md#case) - Unified conditional expression supporting both literal comparisons and boolean predicates
+- [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
+- [**$not**](docs/expressions.md#not) - Logical NOT - inverts the truthiness of an expression
+- [**$or**](docs/expressions.md#or) - Logical OR - at least one expression must be truthy
 
 #### Projection Pack
 
 Complete toolkit for SELECT clause operations and data transformation - combines aggregation, array operations, string transforms, and conditionals:
 
-- [**$get**](expressions.md#get) - Field access with dot notation paths
-- [**$pipe**](expressions.md#pipe) - Chain multiple projection operations
-- [**$select**](expressions.md#select) - Projects/selects specific properties from objects
-- [**$count**](expressions.md#count), [**$sum**](expressions.md#sum), [**$min**](expressions.md#min), [**$max**](expressions.md#max), [**$mean**](expressions.md#mean) - Aggregation functions
-- [**$map**](expressions.md#map), [**$filter**](expressions.md#filter), [**$flatMap**](expressions.md#flatmap), [**$distinct**](expressions.md#distinct) - Array transformations
-- [**$concat**](expressions.md#concat), [**$join**](expressions.md#join), [**$substring**](expressions.md#substring), [**$uppercase**](expressions.md#uppercase), [**$lowercase**](expressions.md#lowercase) - String/value operations
-- [**$if**](expressions.md#if), [**$case**](expressions.md#case) - Conditionals for computed fields
+- [**$get**](docs/expressions.md#get) - Field access with dot notation paths
+- [**$pipe**](docs/expressions.md#pipe) - Chain multiple projection operations
+- [**$select**](docs/expressions.md#select) - Projects/selects specific properties from objects
+- [**$count**](docs/expressions.md#count), [**$sum**](docs/expressions.md#sum), [**$min**](docs/expressions.md#min), [**$max**](docs/expressions.md#max), [**$mean**](docs/expressions.md#mean) - Aggregation functions
+- [**$map**](docs/expressions.md#map), [**$filter**](docs/expressions.md#filter), [**$flatMap**](docs/expressions.md#flatmap), [**$distinct**](docs/expressions.md#distinct) - Array transformations
+- [**$concat**](docs/expressions.md#concat), [**$join**](docs/expressions.md#join), [**$substring**](docs/expressions.md#substring), [**$uppercase**](docs/expressions.md#uppercase), [**$lowercase**](docs/expressions.md#lowercase) - String/value operations
+- [**$if**](docs/expressions.md#if), [**$case**](docs/expressions.md#case) - Conditionals for computed fields
 
 Perfect for transforming and projecting data with a single import:
 
@@ -586,7 +593,7 @@ const report = engine.apply(
           displayName: { $uppercase: { $get: "name" } },
           ageGroup: {
             $if: {
-              if: { $gte: 4 },
+              if: { $matches: { age: { $gte: 4 } } },
               then: "Pre-K",
               else: "Toddler",
             },
@@ -605,39 +612,39 @@ const report = engine.apply(
 
 Key-value manipulation and object operations:
 
-- [**$fromPairs**](expressions.md#frompairs) - Creates object from array of [key, value] pairs
-- [**$keys**](expressions.md#keys) - Returns array of object property names
-- [**$merge**](expressions.md#merge) - Merges multiple objects together
-- [**$omit**](expressions.md#omit) - Creates object excluding specified properties
-- [**$pairs**](expressions.md#pairs) - Returns array of [key, value] pairs from object
-- [**$pick**](expressions.md#pick) - Creates object with only specified properties
-- [**$prop**](expressions.md#prop) - Gets property value from object by dynamic key
-- [**$values**](expressions.md#values) - Returns array of object property values
+- [**$fromPairs**](docs/expressions.md#frompairs) - Creates object from array of [key, value] pairs
+- [**$keys**](docs/expressions.md#keys) - Returns array of object property names
+- [**$merge**](docs/expressions.md#merge) - Merges multiple objects together
+- [**$omit**](docs/expressions.md#omit) - Creates object excluding specified properties
+- [**$pairs**](docs/expressions.md#pairs) - Returns array of [key, value] pairs from object
+- [**$pick**](docs/expressions.md#pick) - Creates object with only specified properties
+- [**$prop**](docs/expressions.md#prop) - Gets property value from object by dynamic key
+- [**$values**](docs/expressions.md#values) - Returns array of object property values
 
 #### Math Pack
 
 Arithmetic operations and mathematical functions:
 
-- [**$abs**](expressions.md#abs) - Absolute value of a number
-- [**$add**](expressions.md#add) - Addition operation
-- [**$divide**](expressions.md#divide) - Division operation
-- [**$modulo**](expressions.md#modulo) - Modulo (remainder) operation
-- [**$multiply**](expressions.md#multiply) - Multiplication operation
-- [**$pow**](expressions.md#pow) - Power/exponentiation operation
-- [**$sqrt**](expressions.md#sqrt) - Square root operation
-- [**$subtract**](expressions.md#subtract) - Subtraction operation
+- [**$abs**](docs/expressions.md#abs) - Absolute value of a number
+- [**$add**](docs/expressions.md#add) - Addition operation
+- [**$divide**](docs/expressions.md#divide) - Division operation
+- [**$modulo**](docs/expressions.md#modulo) - Modulo (remainder) operation
+- [**$multiply**](docs/expressions.md#multiply) - Multiplication operation
+- [**$pow**](docs/expressions.md#pow) - Power/exponentiation operation
+- [**$sqrt**](docs/expressions.md#sqrt) - Square root operation
+- [**$subtract**](docs/expressions.md#subtract) - Subtraction operation
 
 #### String Pack
 
 String processing and pattern matching:
 
-- [**$lowercase**](expressions.md#lowercase) - Converts string to lowercase
-- [**$matchesRegex**](expressions.md#matchesregex) - Tests if string matches a regular expression
-- [**$replace**](expressions.md#replace) - Replaces occurrences of a pattern in a string
-- [**$split**](expressions.md#split) - Splits a string into an array using a separator
-- [**$substring**](expressions.md#substring) - Extracts a portion of a string
-- [**$trim**](expressions.md#trim) - Removes whitespace from beginning and end of string
-- [**$uppercase**](expressions.md#uppercase) - Converts string to uppercase
+- [**$lowercase**](docs/expressions.md#lowercase) - Converts string to lowercase
+- [**$matchesRegex**](docs/expressions.md#matchesregex) - Tests if string matches a regular expression
+- [**$replace**](docs/expressions.md#replace) - Replaces occurrences of a pattern in a string
+- [**$split**](docs/expressions.md#split) - Splits a string into an array using a separator
+- [**$substring**](docs/expressions.md#substring) - Extracts a portion of a string
+- [**$trim**](docs/expressions.md#trim) - Removes whitespace from beginning and end of string
+- [**$uppercase**](docs/expressions.md#uppercase) - Converts string to uppercase
 
 ## Individual Expression Imports
 
@@ -652,19 +659,22 @@ import { createExpressionEngine } from "json-expressions";
 import { $debug } from "json-expressions/src/definitions/flow";
 
 const engine = createExpressionEngine({
-  custom: { $debug }
+  custom: { $debug },
 });
 
 // Use in pipelines to inspect intermediate values
-const result = engine.apply({
-  $pipe: [
-    { $get: "users" },
-    { $debug: "After getting users" },  // Logs to console
-    { $filter: { active: true } },
-    { $debug: "After filtering active" }, // Logs to console
-    { $map: { $get: "name" } }
-  ]
-}, data);
+const result = engine.apply(
+  {
+    $pipe: [
+      { $get: "users" },
+      { $debug: "After getting users" }, // Logs to console
+      { $filter: { active: true } },
+      { $debug: "After filtering active" }, // Logs to console
+      { $map: { $get: "name" } },
+    ],
+  },
+  data,
+);
 ```
 
 **Any** expression can be included with this method. Use it if you don't want the overhead of an entire pack.
@@ -678,17 +688,17 @@ JSON Expressions excel at composing simple operations into complex logic:
 ```javascript
 // Start simple: basic comparison
 {
-  $gt: 5
+  $gt: 5;
 }
 
 // Add logic: combine conditions
 {
-  $and: [{ $gt: 5 }, { $lt: 10 }]
+  $and: [{ $gt: 5 }, { $lt: 10 }];
 }
 
 // Add data access: work with objects
 {
-  $pipe: [{ $get: "age" }, { $and: [{ $gt: 5 }, { $lt: 10 }] }]
+  $pipe: [{ $get: "age" }, { $and: [{ $gt: 5 }, { $lt: 10 }] }];
 }
 
 // Add transformation: complex pipeline
@@ -697,7 +707,7 @@ JSON Expressions excel at composing simple operations into complex logic:
     { $filter: { $gte: 4 } }, // Filter items >= 4
     { $map: { $multiply: 2 } }, // Double each value
     { $sum: null }, // Sum the results
-  ]
+  ];
 }
 // Input: [1, 2, 4, 6, 8] → Output: 36
 ```
@@ -706,14 +716,20 @@ JSON Expressions excel at composing simple operations into complex logic:
 
 ```javascript
 // Conditional values
-{ $if: { if: { $gt: 18 }, then: "adult", else: "minor" } }
+{
+  $if: {
+    if: { $matches: { age: { $gt: 18 } } },
+    then: "adult",
+    else: "minor",
+  }
+}
 
 // Complex filtering with multiple conditions
 {
   $filter: {
     $and: [
       { $get: "active" },
-      { $pipe: [{ $get: "age" }, { $gte: 18 }] }
+      { $pipe: [{ $get: "age" }, { $gte: 18 }] },
     ]
   }
 }
@@ -731,7 +747,7 @@ JSON Expressions excel at composing simple operations into complex logic:
         value: { $get: "age" },
         cases: [
           { when: { $lt: 13 }, then: "child" },
-          { when: { $lt: 20 }, then: "teen" }
+          { when: { $lt: 20 }, then: "teen" },
         ],
         default: "adult"
       }
@@ -748,7 +764,7 @@ import { createExpressionEngine } from "json-expressions";
 const engine = createExpressionEngine();
 
 const daycareData = {
-  teacher: { name: "James", age: 38 },
+  teacher: { name: "James", age: 46 },
   children: [
     { name: "Chen", age: 4, activity: "playing" },
     { name: "Serafina", age: 5, activity: "reading" },
@@ -757,7 +773,7 @@ const daycareData = {
 };
 
 // Get teacher name
-const teacherName = engine.apply({ $get: "name" }, daycareData.teacher);
+const teacherName = engine.apply({ $get: "teacher.name" }, daycareData);
 // Returns: "James"
 
 // Find children ready for kindergarten (age 5+)
@@ -870,14 +886,12 @@ const students = [
   { name: "Serafina", age: 6, scores: [88, 92, 85], active: true },
 ];
 
-// Use $where for elegant filtering
+// Use $filterBy for elegant filtering
 const activeOlderStudents = engine.apply(
   {
-    $filter: {
-      $where: {
-        active: { $eq: true },
-        age: { $lt: 6 },
-      },
+    $filterBy: {
+      active: { $eq: true },
+      age: { $lt: 6 },
     },
   },
   students,
@@ -935,7 +949,7 @@ const uniqueAges = engine.apply(
   },
   students,
 );
-// Returns: [4, 5, 3, 6]
+// Returns: [3, 5, 6]
 ```
 
 ## TypeScript Support
@@ -1004,7 +1018,3 @@ npm install json-expressions
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.

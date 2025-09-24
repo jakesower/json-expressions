@@ -279,8 +279,12 @@ describe("Custom Expressions", () => {
         /Unknown expression operator: "\$add"/,
       );
 
-      // Verify only custom expressions are in expressionNames
-      expect(customOnlyEngine.expressionNames).toEqual(["$double", "$triple"]);
+      // Verify only custom expressions and $literal are in expressionNames
+      expect(customOnlyEngine.expressionNames).toEqual([
+        "$literal",
+        "$double",
+        "$triple",
+      ]);
       expect(customOnlyEngine.expressionNames).not.toContain("$get");
       expect(customOnlyEngine.expressionNames).not.toContain("$add");
     });
