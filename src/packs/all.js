@@ -1,5 +1,5 @@
 /**
- * All Pack - Complete Expression Library
+ * All Expressions for Testing - Complete Expression Library
  *
  * Comprehensive collection of all available expressions:
  * - Access expressions (data access and filtering)
@@ -11,7 +11,8 @@
  * - Predicate expressions (boolean logic and comparisons)
  * - String operations (text processing)
  *
- * This pack is primarily intended for testing and comprehensive usage scenarios.
+ * ⚠️  This collection is intended for testing only. For production use, import
+ * specific packs to enable tree-shaking and reduce bundle size.
  */
 
 // Import all expressions from all definitions (alphabetized)
@@ -25,7 +26,7 @@ import * as predicate from "../definitions/predicate.js";
 import * as string from "../definitions/string.js";
 
 // Export as grouped object containing all expressions (alphabetized)
-export const all = {
+export const allExpressionsForTesting = {
   ...access,
   ...array,
   ...conditional,

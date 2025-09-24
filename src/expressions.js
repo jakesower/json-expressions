@@ -44,7 +44,7 @@ function looksLikeExpression(val) {
   );
 }
 
-function isLiteral(val) {
+function isWrappedLiteral(val) {
   return (
     val &&
     typeof val === "object" &&
@@ -66,6 +66,7 @@ function isLiteral(val) {
  */
 export function createExpressionEngine(config = {}) {
   const { packs = [], custom = {}, includeBase = true } = config;
+  let evaluate;
 
   const expressions = [
     ...(includeBase ? [base] : []),
@@ -102,8 +103,9 @@ export function createExpressionEngine(config = {}) {
 
       return expressionDef.apply(operand, inputData, {
         apply,
+        evaluate,
         isExpression,
-        isLiteral,
+        isWrappedLiteral,
       });
     }
 
@@ -116,7 +118,7 @@ export function createExpressionEngine(config = {}) {
         : val;
   };
 
-  const evaluate = (val) => {
+  evaluate = (val) => {
     if (isExpression(val)) {
       const [expressionName, operand] = Object.entries(val)[0];
       const expressionDef = expressions[expressionName];
@@ -125,7 +127,7 @@ export function createExpressionEngine(config = {}) {
         apply,
         evaluate,
         isExpression,
-        isLiteral,
+        isWrappedLiteral,
       });
     }
 

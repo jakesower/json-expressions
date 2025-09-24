@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../src/index.js";
-import { all } from "../src/packs/all.js";
+import { allExpressionsForTesting } from "../src/packs/all.js";
 
 // Sample daycare data
 const children = [
@@ -12,7 +12,7 @@ const children = [
 
 // Create custom expression engine with daycare-themed expressions
 const customEngine = createExpressionEngine({
-  packs: [all],
+  packs: [allExpressionsForTesting],
   custom: {
     // Simple case: Convert age from years to months
     $ageInMonths: {
@@ -294,7 +294,7 @@ describe("Custom Expressions", () => {
     it("overrides $add with monkey math (string concatenation)", () => {
       // Create engine that overrides built-in $add with custom implementation
       const monkeyMathEngine = createExpressionEngine({
-        packs: [all],
+        packs: [allExpressionsForTesting],
         custom: {
           // Override $add to do "monkey math" - concatenate numbers as strings
           $add: {
@@ -336,12 +336,12 @@ describe("Custom Expressions", () => {
 
     it("demonstrates function override precedence", () => {
       // First create normal engine
-      const normalEngine = createExpressionEngine({ packs: [all] });
+      const normalEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
       expect(normalEngine.apply({ $add: 5 }, 10)).toBe(15);
 
       // Then create engine with override
       const overrideEngine = createExpressionEngine({
-        packs: [all],
+        packs: [allExpressionsForTesting],
         custom: {
           $add: {
             apply: (operand, inputData) => inputData - operand, // Subtract instead!
@@ -358,7 +358,7 @@ describe("Custom Expressions", () => {
     it("overrides work with daycare custom expressions", () => {
       // Create an engine with both overrides and new custom expressions
       const hybridEngine = createExpressionEngine({
-        packs: [all],
+        packs: [allExpressionsForTesting],
         custom: {
           // Override built-in $count to count in "daycare style" (add 1 for teacher)
           $count: {

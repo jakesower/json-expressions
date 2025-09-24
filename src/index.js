@@ -3,7 +3,7 @@ export { createExpressionEngine } from "./expressions.js";
 
 // Pack exports
 export { aggregation } from "./packs/aggregation.js";
-export { all } from "./packs/all.js";
+export { allExpressionsForTesting } from "./packs/all.js";
 export { array } from "./packs/array.js";
 export { base } from "./packs/base.js";
 export { comparison } from "./packs/comparison.js";

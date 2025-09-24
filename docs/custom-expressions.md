@@ -4,7 +4,7 @@ This guide covers the advanced aspects of creating custom expressions in JSON Ex
 
 ## Overview
 
-Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the deterministic, serializable nature of the expression system. When creating custom expressions, you define both `apply` and `evaluate` forms and have access to the execution context.
+Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the nature of the expression system. When creating custom expressions, you define both `apply` and `evaluate` forms and have access to the execution context.
 
 ## Basic Custom Expression Structure
 
@@ -16,13 +16,13 @@ const $myExpression = {
     // Apply the expression to input data
     // operand: the expression's operand/parameter
     // inputData: the data being processed
-    // context: execution context with apply, evaluate, isExpression
+    // context: execution context with apply, evaluate, isExpression, isWrappedLiteral
     return result;
   },
   evaluate: (operand, context) => {
     // Evaluate the expression without input data
     // operand: the expression's operand/parameter
-    // context: execution context with apply, evaluate, isExpression
+    // context: execution context with apply, evaluate, isExpression, isWrappedLiteral
     return result;
   },
 };
@@ -93,6 +93,39 @@ const $conditionalProcess = {
 };
 ```
 
+### `context.isWrappedLiteral(value)`
+
+Tests if a value is specifically a `$literal` expression. The `$literal` expression is used to wrap values that should be returned as-is without any evaluation, even if they look like expressions. This is seldom used functionality because most expressions want to make use of the wrapped value and not treat it any more specially than that. For examples of when it should be used, check the code definitions of `$identity` and `$case`.
+
+## Nested Expressions
+
+It is important to be aware that your custom expressions may themselves contain expressions.
+
+```javascript
+const $toTheNthWRONG = {
+  apply: (operand, inputData) => Math.pow(inputData, operand),
+  evaluate: (operand) => Math.pow(operand.base, operand.power),
+};
+
+const result = engine.evaluate({
+  $toTheNthWRONG: { base: 10, power: { $double: 1 } },
+});
+// This will CRASH because nothing evaluated the $double expression!
+
+const $toTheNth = {
+  apply: (operand, inputData) => Math.pow(inputData, operand),
+  evaluate: (operand, { evaluate }) =>
+    Math.pow(evaluate(operand.base), evaluate(operand.power)),
+};
+
+const result = engine.evaluate({
+  $toTheNth: { base: 10, power: { $double: 1 } },
+});
+// Returns 100
+```
+
+It is good practice to pass your operands to apply or evaluate as appropriate to ensure nested expressions are handled.
+
 ## Real-World Examples
 
 ### Example 1: Daycare Age Group Classification
@@ -100,8 +133,7 @@ const $conditionalProcess = {
 ```javascript
 const $ageGroup = {
   apply: (operand, inputData, { apply }) => {
-    // Get age from input data
-    const age = apply({ $get: "age" }, inputData);
+    const { age } = inputData;
 
     if (age < 2) return "infant";
     if (age < 4) return "toddler";
@@ -129,17 +161,14 @@ const $ageGroup = {
 ```javascript
 const $validateChild = {
   apply: (operand, inputData, { apply }) => {
-    const errors = [];
-
-    // Check each validation rule
-    for (const [field, rule] of Object.entries(operand.rules)) {
-      const value = apply({ $get: field }, inputData);
-      const isValid = apply(rule, value);
-
-      if (!isValid) {
-        errors.push(`${field} validation failed`);
-      }
-    }
+    // Check each validation rule and collect errors
+    const errors = Object.entries(operand.rules)
+      .map(([field, rule]) => {
+        const value = apply({ $get: field }, inputData);
+        const isValid = apply(rule, value);
+        return isValid ? null : `${field} validation failed`;
+      })
+      .filter((error) => error !== null);
 
     return {
       isValid: errors.length === 0,
@@ -202,15 +231,13 @@ const $deepTransform = {
     }
 
     if (typeof inputData === "object" && inputData !== null) {
-      const result = {};
-      for (const [key, value] of Object.entries(inputData)) {
-        if (isExpression(operand[key])) {
-          result[key] = apply(operand[key], value);
-        } else {
-          result[key] = value;
-        }
-      }
-      return result;
+      return Object.entries(inputData).reduce(
+        (result, [key, value]) =>
+          isExpression(operand[key])
+            ? { ...result, [key]: apply(operand[key], value) }
+            : { ...result, [key]: value },
+        {},
+      );
     }
 
     return inputData;
@@ -290,7 +317,7 @@ const $smartProcess = {
 
 ### 3. Maintain Determinism
 
-Custom expressions should be deterministic - same inputs always produce same outputs:
+Custom expressions should be deterministic whenever possible - same inputs always produce same outputs:
 
 ```javascript
 // Good: Deterministic
@@ -309,6 +336,8 @@ const $addTimestamp = {
 };
 ```
 
+Some expressions have side effects by their nature. A `$random` expression that returns a random number is non-deterministic. Expressions like this should be clearly labeled to preserve user expectations.
+
 ### 4. Error Handling
 
 Provide clear error messages:
@@ -325,36 +354,6 @@ const $safeGet = {
     } catch (error) {
       return operand.default ?? null;
     }
-  },
-};
-```
-
-### 5. Leverage Existing Expressions
-
-Build on existing expressions rather than reimplementing logic:
-
-```javascript
-// Good: Reuses existing expressions
-const $isActiveChild = {
-  apply: (operand, inputData, { apply }) => {
-    return apply(
-      {
-        $matches: {
-          active: { $eq: true },
-          age: { $and: [{ $gte: 2 }, { $lte: 6 }] },
-        },
-      },
-      inputData,
-    );
-  },
-};
-
-// Less ideal: Reimplements logic
-const $isActiveChildBad = {
-  apply: (operand, inputData, { apply }) => {
-    const active = apply({ $get: "active" }, inputData);
-    const age = apply({ $get: "age" }, inputData);
-    return active === true && age >= 2 && age <= 6;
   },
 };
 ```
@@ -393,6 +392,20 @@ const result = engine.apply(
 );
 ```
 
+## Custom Packs
+
+Custom packs are nothing more than collections of expressions.
+
+```javascript
+const daycare = {
+  $ageGroup,
+  $validateChild,
+  $enrichChild,
+  $conditionalProcess,
+};
+const engine = createExpressionEngine({ packs: [daycare] });
+```
+
 ## Testing Custom Expressions
 
 Always test both forms of your custom expressions:
@@ -415,4 +428,4 @@ describe("$ageGroup", () => {
 });
 ```
 
-This guide should help you create powerful, maintainable custom expressions that integrate seamlessly with the JSON Expressions ecosystem while maintaining deterministic behavior.
+This guide should help you create powerful, maintainable custom expressions that integrate seamlessly with the JSON Expressions ecosystem.

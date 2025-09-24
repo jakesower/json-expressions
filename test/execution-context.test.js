@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../src/index.js";
-import { all } from "../src/packs/all.js";
+import { allExpressionsForTesting } from "../src/packs/all.js";
 
 const children = [
   { name: "Zahra", age: 2, napDuration: 120, favoriteToy: "blocks" },
@@ -10,7 +10,7 @@ const children = [
 ];
 
 const customEngine = createExpressionEngine({
-  packs: [all],
+  packs: [allExpressionsForTesting],
   custom: {
     // Simple case: Convert age from years to months
     $ageInMonths: {

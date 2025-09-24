@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
-import { all } from "../../src/packs/all.js";
+import { allExpressionsForTesting } from "../../src/packs/all.js";
 
 const kids = {
   ximena: { name: "Ximena", age: 4 },
@@ -8,7 +8,7 @@ const kids = {
   zoë: { name: "Zoë", age: 6 },
 };
 
-const testEngine = createExpressionEngine({ packs: [all] });
+const testEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
 const { apply, evaluate } = testEngine;
 
 describe("$eq", () => {

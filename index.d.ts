@@ -330,6 +330,7 @@ export interface ModuloExpression {
 export type AnyExpression =
 	// Core
 	| GetExpression
+	| IdentityExpression
 	| LiteralExpression
 	| PropExpression
 	| IsDefined

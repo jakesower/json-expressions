@@ -445,6 +445,7 @@ The base pack contains near-universal expressions used across almost all scenari
 - [**$filter**](docs/expressions.md#filter) - Filters array items based on a condition
 - [**$filterBy**](docs/expressions.md#filterby) - Filters arrays by object property conditions (combines $filter + $matches)
 - [**$get**](docs/expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
+- [**$identity**](docs/expressions.md#identity) - Returns input data unchanged in apply mode, or evaluates/returns the operand in evaluate mode
 - [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
 - [**$isDefined**](docs/expressions.md#isdefined) - Tests if a value is defined (not null or undefined)
 - [**$literal**](docs/expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
@@ -587,6 +588,7 @@ const report = engine.apply(
   {
     $pipe: [
       { $get: "children" },
+      { $filter: { $get: "active" } },
       {
         $map: {
           name: { $get: "name" },
@@ -601,7 +603,6 @@ const report = engine.apply(
           activities: { $join: ", " },
         },
       },
-      { $filter: { $get: "active" } },
     ],
   },
   daycareData,
@@ -824,7 +825,7 @@ const activityRecommendation = engine.apply(
 
 ## Custom Expressions
 
-You can extend JSON Expressions with custom functionality:
+You can extend JSON Expressions with custom functionality. For comprehensive documentation on creating custom expressions, see [Custom Expressions Guide](docs/custom-expressions.md).
 
 ```javascript
 import { createExpressionEngine } from "json-expressions";
