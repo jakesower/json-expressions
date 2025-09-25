@@ -1,9 +1,8 @@
 /**
  * String Pack - String Processing Operations
  *
- * String processing and pattern matching functions:
- * - Pattern matching ($matchesRegex)
- * - String transformations ($split, $trim, $uppercase, $lowercase)
+ * String processing and transformation functions:
+ * - String transformations ($lowercase, $split, $trim, $uppercase)
  * - String operations ($replace, $substring)
  */
 

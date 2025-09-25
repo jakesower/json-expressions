@@ -274,7 +274,7 @@ describe("$filterBy", () => {
 
     it("returns all items when all match", () => {
       const result = apply(
-        { $filterBy: { name: { $hasValue: null } } },
+        { $filterBy: { name: { $isPresent: true } } },
         students,
       );
       expect(result).toEqual(students);

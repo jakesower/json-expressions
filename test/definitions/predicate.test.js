@@ -444,17 +444,17 @@ describe("$between", () => {
   });
 });
 
-describe("$hasValue", () => {
+describe("$isPresent", () => {
   describe("apply form", () => {
     it("should detect meaningful values in Arun's medical records", () => {
-      expect(apply({ $hasValue: null }, null)).toBe(false);
-      expect(apply({ $hasValue: null }, undefined)).toBe(false);
-      expect(apply({ $hasValue: null }, 0)).toBe(true);
-      expect(apply({ $hasValue: null }, "")).toBe(true);
-      expect(apply({ $hasValue: null }, false)).toBe(true);
-      expect(apply({ $hasValue: null }, [])).toBe(true);
-      expect(apply({ $hasValue: null }, {})).toBe(true);
-      expect(apply({ $hasValue: null }, "Arun")).toBe(true);
+      expect(apply({ $isPresent: true }, null)).toBe(false);
+      expect(apply({ $isPresent: true }, undefined)).toBe(false);
+      expect(apply({ $isPresent: true }, 0)).toBe(true);
+      expect(apply({ $isPresent: true }, "")).toBe(true);
+      expect(apply({ $isPresent: true }, false)).toBe(true);
+      expect(apply({ $isPresent: true }, [])).toBe(true);
+      expect(apply({ $isPresent: true }, {})).toBe(true);
+      expect(apply({ $isPresent: true }, "Arun")).toBe(true);
     });
 
     it("should work with object properties for Maria's emergency contact", () => {
@@ -464,49 +464,50 @@ describe("$hasValue", () => {
 
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] },
           student1,
         ),
       ).toBe(true);
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] },
           student2,
         ),
       ).toBe(false);
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] },
           student3,
         ),
       ).toBe(false);
     });
 
-    it("should ignore operand and work with any input", () => {
-      expect(apply({ $hasValue: "ignored" }, "present")).toBe(true);
-      expect(apply({ $hasValue: { complex: "object" } }, null)).toBe(false);
+    it("should require boolean operand", () => {
+      expect(() => apply({ $isPresent: "invalid" }, "present")).toThrow("$isPresent apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isPresent: null }, null)).toThrow("$isPresent apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isPresent: { complex: "object" } }, null)).toThrow("$isPresent apply form requires boolean operand (true/false)");
     });
   });
 
   describe("evaluate form", () => {
     it("should evaluate static value checks for Kenji's allergy information", () => {
-      expect(evaluate({ $hasValue: null })).toBe(false);
-      expect(evaluate({ $hasValue: undefined })).toBe(false);
-      expect(evaluate({ $hasValue: 0 })).toBe(true);
-      expect(evaluate({ $hasValue: "" })).toBe(true);
-      expect(evaluate({ $hasValue: false })).toBe(true);
-      expect(evaluate({ $hasValue: [] })).toBe(true);
-      expect(evaluate({ $hasValue: {} })).toBe(true);
-      expect(evaluate({ $hasValue: "Kenji" })).toBe(true);
+      expect(evaluate({ $isPresent: null })).toBe(false);
+      expect(evaluate({ $isPresent: undefined })).toBe(false);
+      expect(evaluate({ $isPresent: 0 })).toBe(true);
+      expect(evaluate({ $isPresent: "" })).toBe(true);
+      expect(evaluate({ $isPresent: false })).toBe(true);
+      expect(evaluate({ $isPresent: [] })).toBe(true);
+      expect(evaluate({ $isPresent: {} })).toBe(true);
+      expect(evaluate({ $isPresent: "Kenji" })).toBe(true);
     });
 
     it("should work with expressions that return values for Diego's attendance", () => {
       expect(
-        evaluate({ $hasValue: { $get: { object: {}, path: "missing" } } }),
+        evaluate({ $isPresent: { $get: { object: {}, path: "missing" } } }),
       ).toBe(false);
       expect(
         evaluate({
-          $hasValue: { $get: { object: { name: "Diego" }, path: "name" } },
+          $isPresent: { $get: { object: { name: "Diego" }, path: "name" } },
         }),
       ).toBe(true);
     });
@@ -514,7 +515,7 @@ describe("$hasValue", () => {
     it("should handle complex nested structures", () => {
       expect(
         evaluate({
-          $hasValue: {
+          $isPresent: {
             $get: {
               object: { students: [{ name: "Fatima" }] },
               path: "teachers.primary",
@@ -529,14 +530,14 @@ describe("$hasValue", () => {
 describe("$isEmpty", () => {
   describe("apply form", () => {
     it("should detect empty/absent values in Amara's progress tracking", () => {
-      expect(apply({ $isEmpty: null }, null)).toBe(true);
-      expect(apply({ $isEmpty: null }, undefined)).toBe(true);
-      expect(apply({ $isEmpty: null }, 0)).toBe(false);
-      expect(apply({ $isEmpty: null }, "")).toBe(false);
-      expect(apply({ $isEmpty: null }, false)).toBe(false);
-      expect(apply({ $isEmpty: null }, [])).toBe(false);
-      expect(apply({ $isEmpty: null }, {})).toBe(false);
-      expect(apply({ $isEmpty: null }, "Amara")).toBe(false);
+      expect(apply({ $isEmpty: true }, null)).toBe(true);
+      expect(apply({ $isEmpty: true }, undefined)).toBe(true);
+      expect(apply({ $isEmpty: true }, 0)).toBe(false);
+      expect(apply({ $isEmpty: true }, "")).toBe(false);
+      expect(apply({ $isEmpty: true }, false)).toBe(false);
+      expect(apply({ $isEmpty: true }, [])).toBe(false);
+      expect(apply({ $isEmpty: true }, {})).toBe(false);
+      expect(apply({ $isEmpty: true }, "Amara")).toBe(false);
     });
 
     it("should work with object properties for Priya's vaccination records", () => {
@@ -546,28 +547,28 @@ describe("$isEmpty", () => {
 
       expect(
         apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] },
           student1,
         ),
       ).toBe(false);
       expect(
         apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] },
           student2,
         ),
       ).toBe(true);
       expect(
         apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] },
           student3,
         ),
       ).toBe(true);
     });
 
-    it("should ignore operand and work with any input", () => {
-      expect(apply({ $isEmpty: "ignored" }, null)).toBe(true);
-      expect(apply({ $isEmpty: 42 }, "present")).toBe(false);
-      expect(apply({ $isEmpty: { complex: "object" } }, undefined)).toBe(true);
+    it("should require boolean operand", () => {
+      expect(() => apply({ $isEmpty: "invalid" }, null)).toThrow("$isEmpty apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isEmpty: null }, null)).toThrow("$isEmpty apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isEmpty: 42 }, "present")).toThrow("$isEmpty apply form requires boolean operand (true/false)");
     });
   });
 
@@ -636,7 +637,7 @@ describe("$exists", () => {
         name: "Zara",
         age: 4,
         allergies: null,
-        parent: { name: "Amira", phone: "555-0199" }
+        parent: { name: "Amira", phone: "555-0199" },
       };
 
       expect(apply({ $exists: "name" }, student)).toBe(true);
@@ -673,7 +674,7 @@ describe("$exists", () => {
     it("should work with nested paths", () => {
       const daycare = {
         staff: { teacher: "Nour", assistant: null },
-        rooms: { toddler: "Room A" }
+        rooms: { toddler: "Room A" },
       };
 
       expect(evaluate({ $exists: { object: daycare, path: "staff.teacher" } })).toBe(true);
@@ -692,150 +693,88 @@ describe("$exists", () => {
       expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow("$exists path must be a string");
     });
   });
+
 });
 
-describe("$has", () => {
-  const childProfile = {
-    name: "Amara",
-    age: 4,
-    allergies: [],
-    guardian: {
-      name: "Ms. Kenji",
-      phone: "555-0123",
-      email: null,
-    },
-    activities: {
-      art: true,
-      music: false,
-    },
-  };
+describe("$isPresent", () => {
+  // ... existing tests stay the same ...
 
-  describe("apply form", () => {
-    it("checks for top-level properties", () => {
-      expect(apply({ $has: "name" }, childProfile)).toBe(true);
-      expect(apply({ $has: "age" }, childProfile)).toBe(true);
-      expect(apply({ $has: "missing" }, childProfile)).toBe(false);
+  // NEW: Unary boolean operand tests (failing)
+  describe("unary boolean operand", () => {
+    it("should use true/false operands for positive/negative checks", () => {
+      // Positive checks (value must be present)
+      expect(apply({ $isPresent: true }, "Arun")).toBe(true);
+      expect(apply({ $isPresent: true }, 0)).toBe(true);
+      expect(apply({ $isPresent: true }, "")).toBe(true);
+      expect(apply({ $isPresent: true }, null)).toBe(false);
+      expect(apply({ $isPresent: true }, undefined)).toBe(false);
+
+      // Negative checks (value must be absent)
+      expect(apply({ $isPresent: false }, null)).toBe(true);
+      expect(apply({ $isPresent: false }, undefined)).toBe(true);
+      expect(apply({ $isPresent: false }, "present")).toBe(false);
+      expect(apply({ $isPresent: false }, 0)).toBe(false);
     });
 
-    it("checks for nested properties using dot notation", () => {
-      expect(apply({ $has: "guardian.name" }, childProfile)).toBe(true);
-      expect(apply({ $has: "guardian.phone" }, childProfile)).toBe(true);
-      expect(apply({ $has: "guardian.missing" }, childProfile)).toBe(false);
+    it("should work with object properties", () => {
+      const student1 = { name: "Maria", emergencyContact: "555-0123" };
+      const student2 = { name: "Elena", emergencyContact: null };
+
+      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] }, student1)).toBe(true);
+      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] }, student2)).toBe(false);
+      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: false }] }, student2)).toBe(true);
     });
 
-    it("detects properties with falsy values", () => {
-      expect(apply({ $has: "allergies" }, childProfile)).toBe(true); // empty array exists
-      expect(apply({ $has: "guardian.email" }, childProfile)).toBe(true); // null exists
-      expect(apply({ $has: "activities.music" }, childProfile)).toBe(true); // false exists
-    });
-
-    it("works with expression operands", () => {
-      expect(apply({ $has: { $literal: "name" } }, childProfile)).toBe(true);
-      expect(apply({ $has: { $literal: "missing" } }, childProfile)).toBe(
-        false,
-      );
-    });
-
-    it("throws error for non-string resolved operand", () => {
-      expect(() => apply({ $has: { $literal: 123 } }, childProfile)).toThrow(
-        "$has operand must resolve to a string path",
-      );
-    });
-
-    it("handles deeply nested paths", () => {
-      const deepNested = {
-        level1: {
-          level2: {
-            level3: {
-              value: "found",
-            },
-          },
-        },
-      };
-      expect(apply({ $has: "level1.level2.level3.value" }, deepNested)).toBe(
-        true,
-      );
-      expect(apply({ $has: "level1.level2.level3.missing" }, deepNested)).toBe(
-        false,
-      );
-      expect(apply({ $has: "level1.level2.missing.value" }, deepNested)).toBe(
-        false,
-      );
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("checks properties in static objects", () => {
-      expect(evaluate({ $has: { object: childProfile, path: "name" } })).toBe(
-        true,
-      );
-      expect(
-        evaluate({ $has: { object: childProfile, path: "missing" } }),
-      ).toBe(false);
-      expect(
-        evaluate({ $has: { object: childProfile, path: "guardian.name" } }),
-      ).toBe(true);
-    });
-
-    it("works with complex nested objects", () => {
-      const classroomData = {
-        teacher: "Ms. Elena",
-        students: [
-          { name: "Yuki", present: true },
-          { name: "Dao", present: false },
-        ],
-        schedule: {
-          morning: { activity: "circle time" },
-          afternoon: { activity: "outdoor play" },
-        },
-      };
-
-      expect(
-        evaluate({ $has: { object: classroomData, path: "teacher" } }),
-      ).toBe(true);
-      expect(
-        evaluate({ $has: { object: classroomData, path: "students" } }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $has: { object: classroomData, path: "schedule.morning.activity" },
-        }),
-      ).toBe(true);
-      expect(
-        evaluate({ $has: { object: classroomData, path: "schedule.evening" } }),
-      ).toBe(false);
-    });
-
-    it("throws error for invalid operand", () => {
-      expect(() => evaluate({ $has: "not an object" })).toThrow(
-        "$has evaluate form requires object operand: { object, path }",
-      );
-      expect(() => evaluate({ $has: { object: childProfile } })).toThrow(
-        "$has evaluate form requires 'object' and 'path' properties",
-      );
-    });
-
-    it("handles array paths and indices", () => {
-      const daycare = {
-        children: ["Amara", "Kenji", "Yuki"],
-        activities: [
-          { name: "art", time: "9am" },
-          { name: "snack", time: "10am" },
-        ],
-      };
-
-      expect(evaluate({ $has: { object: daycare, path: "children.0" } })).toBe(
-        true,
-      ); // first child
-      expect(evaluate({ $has: { object: daycare, path: "children.5" } })).toBe(
-        false,
-      ); // no sixth child
-      expect(
-        evaluate({ $has: { object: daycare, path: "activities.1.name" } }),
-      ).toBe(true); // second activity name
+    it("should work in evaluate form unchanged", () => {
+      // Original evaluate form - unchanged, checks the operand directly
+      expect(evaluate({ $isPresent: "Kenji" })).toBe(true);
+      expect(evaluate({ $isPresent: null })).toBe(false);
+      expect(evaluate({ $isPresent: undefined })).toBe(false);
+      expect(evaluate({ $isPresent: 0 })).toBe(true);
+      expect(evaluate({ $isPresent: "" })).toBe(true);
     });
   });
 });
+
+describe("$isEmpty", () => {
+  // ... existing tests stay the same ...
+
+  // NEW: Unary boolean operand tests (failing)
+  describe("unary boolean operand", () => {
+    it("should use true/false operands for positive/negative checks", () => {
+      // Positive checks (value must be empty)
+      expect(apply({ $isEmpty: true }, null)).toBe(true);
+      expect(apply({ $isEmpty: true }, undefined)).toBe(true);
+      expect(apply({ $isEmpty: true }, "Amara")).toBe(false);
+      expect(apply({ $isEmpty: true }, 0)).toBe(false);
+
+      // Negative checks (value must not be empty)
+      expect(apply({ $isEmpty: false }, null)).toBe(false);
+      expect(apply({ $isEmpty: false }, undefined)).toBe(false);
+      expect(apply({ $isEmpty: false }, "present")).toBe(true);
+      expect(apply({ $isEmpty: false }, 0)).toBe(true);
+    });
+
+    it("should work with object properties", () => {
+      const student1 = { name: "Priya", vaccinations: ["MMR", "DTaP"] };
+      const student2 = { name: "Sana", vaccinations: null };
+
+      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] }, student2)).toBe(true);
+      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] }, student1)).toBe(false);
+      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: false }] }, student1)).toBe(true);
+    });
+
+    it("should work in evaluate form unchanged", () => {
+      // Original evaluate form - unchanged, checks the operand directly
+      expect(evaluate({ $isEmpty: null })).toBe(true);
+      expect(evaluate({ $isEmpty: undefined })).toBe(true);
+      expect(evaluate({ $isEmpty: "Nina" })).toBe(false);
+      expect(evaluate({ $isEmpty: 0 })).toBe(false);
+      expect(evaluate({ $isEmpty: "" })).toBe(false);
+    });
+  });
+});
+
 
 describe("$and", () => {
   describe("apply form", () => {

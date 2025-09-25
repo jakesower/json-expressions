@@ -4,7 +4,7 @@
  * Operations that return true/false values:
  * - Comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Membership tests ($in, $nin)
- * - Existence checks ($has, $isNull, $isNotNull)
+ * - Existence checks ($exists, $isEmpty, $isPresent)
  * - Range checks ($between)
  * - Logical operations ($and, $or, $not)
  * - Pattern matching ($matchesRegex)
@@ -149,48 +149,30 @@ const $gt = createComparativeExpression((a, b) => a > b);
 
 const $gte = createComparativeExpression((a, b) => a >= b);
 
-const $has = {
-  apply: (operand, inputData, { apply }) => {
-    const resolvedPath = apply(operand, inputData);
-    if (typeof resolvedPath !== "string") {
-      throw new Error("$has operand must resolve to a string path");
-    }
-    return get(inputData, resolvedPath) !== undefined;
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$has evaluate form requires object operand: { object, path }",
-      );
-    }
-
-    const { object, path } = operand;
-    if (object === undefined || path === undefined) {
-      throw new Error(
-        "$has evaluate form requires 'object' and 'path' properties",
-      );
-    }
-
-    const evaluatedObject = evaluate(object);
-    const evaluatedPath = evaluate(path);
-    if (typeof evaluatedPath !== "string") {
-      throw new Error("$has path must be a string");
-    }
-    return get(evaluatedObject, evaluatedPath) !== undefined;
-  },
-};
 
 const $in = createInclusionExpression("$in", (value, array) =>
   array.includes(value),
 );
 
-const $hasValue = {
-  apply: (operand, inputData) => inputData != null, // != catches both null and undefined
+const $isPresent = {
+  apply: (operand, inputData) => {
+    if (typeof operand !== "boolean") {
+      throw new Error("$isPresent apply form requires boolean operand (true/false)");
+    }
+    const isPresent = inputData != null;
+    return operand ? isPresent : !isPresent;
+  },
   evaluate: (operand, { evaluate }) => evaluate(operand) != null,
 };
 
 const $isEmpty = {
-  apply: (operand, inputData) => inputData == null, // == catches both null and undefined
+  apply: (operand, inputData) => {
+    if (typeof operand !== "boolean") {
+      throw new Error("$isEmpty apply form requires boolean operand (true/false)");
+    }
+    const isEmpty = inputData == null;
+    return operand ? isEmpty : !isEmpty;
+  },
   evaluate: (operand, { evaluate }) => evaluate(operand) == null,
 };
 
@@ -287,10 +269,9 @@ export {
   $exists,
   $gt,
   $gte,
-  $has,
-  $hasValue,
   $in,
   $isEmpty,
+  $isPresent,
   $lt,
   $lte,
   $matchesRegex,

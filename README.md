@@ -55,11 +55,15 @@ Expressions are JSON objects that describe computations to be performed. Each ex
 }
 ```
 
-**Logical expressions:**
+**Object-based conditions:**
 
 ```javascript
 {
-  $and: [{ $gte: 18 }, { $lt: 65 }];
+  $matches: {
+    age: { $gte: 18 },
+    status: { $eq: "active" },
+    "profile.verified": true
+  };
 }
 ```
 
@@ -149,13 +153,13 @@ In evaluate mode, expressions contain all the data they need:
 
 **Rule of thumb**: If your expression needs external input data, use `apply`. If it's self-contained, use `evaluate`. If still in doubt, try to use the evaluate form first. If you run into a wall, you probably need to switch over to apply.
 
-| Expression | Apply Mode         | Evaluate Mode                        |
-| ---------- | ------------------ | ------------------------------------ |
-| `$gt`      | `{ $gt: 18 }`      | `{ $gt: [25, 18] }`                  |
-| `$get`     | `{ $get: "name" }` | `{ $get: { object, path: "name" } }` |
-| `$identity`| `{ $identity: null }` | `{ $identity: "value" }`           |
-| `$sum`     | `{ $sum: null }`   | `{ $sum: [1, 2, 3] }`                |
-| `$mean`    | `{ $mean: null }`  | `{ $mean: [85, 90, 88] }`            |
+| Expression  | Apply Mode            | Evaluate Mode                        |
+| ----------- | --------------------- | ------------------------------------ |
+| `$gt`       | `{ $gt: 18 }`         | `{ $gt: [25, 18] }`                  |
+| `$get`      | `{ $get: "name" }`    | `{ $get: { object, path: "name" } }` |
+| `$identity` | `{ $identity: null }` | `{ $identity: "value" }`             |
+| `$sum`      | `{ $sum: null }`      | `{ $sum: [1, 2, 3] }`                |
+| `$mean`     | `{ $mean: null }`     | `{ $mean: [85, 90, 88] }`            |
 
 **Key difference**: Apply mode expressions operate **on** the input data, while evaluate mode expressions contain **all** the data they need.
 
@@ -447,7 +451,7 @@ The base pack contains near-universal expressions used across almost all scenari
 - [**$get**](docs/expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
 - [**$identity**](docs/expressions.md#identity) - Returns input data unchanged in apply mode, or evaluates/returns the operand in evaluate mode
 - [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
-- [**$hasValue**](docs/expressions.md#hasvalue) - Tests if a value is meaningful (not null or undefined)
+- [**$isPresent**](docs/expressions.md#hasvalue) - Tests if a value is meaningful (not null or undefined)
 - [**$isEmpty**](docs/expressions.md#isempty) - Tests if a value is empty/absent (null or undefined)
 - [**$exists**](docs/expressions.md#exists) - Tests if a property or path exists in an object
 - [**$literal**](docs/expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
@@ -456,7 +460,7 @@ The base pack contains near-universal expressions used across almost all scenari
 - [**$or**](docs/expressions.md#or) - Logical OR operation across multiple expressions
 - [**$pipe**](docs/expressions.md#pipe) - Pipes data through multiple expressions in sequence (left-to-right)
 - [**$sort**](docs/expressions.md#sort) - Sorts arrays by property or expression with optional desc flag
-- [**$matches**](docs/expressions.md#matches) - Filters arrays using object-based property conditions (shorthand for complex filters)
+- [**$matches**](docs/expressions.md#matches) - **Primary tool for object-based conditions** - tests objects against property patterns using dot notation and predicates
 
 **Comparison expressions:**
 
@@ -519,7 +523,7 @@ Scalar comparison operations for filtering and validation:
 - [**$between**](docs/expressions.md#between) - Tests if value is between two bounds (inclusive)
 - [**$has**](docs/expressions.md#has) - Tests if object has property at specified path (supports dot notation)
 - [**$in**](docs/expressions.md#in) - Tests if value exists in an array
-- [**$hasValue**](docs/expressions.md#hasvalue) - Tests if value is meaningful (not null or undefined)
+- [**$isPresent**](docs/expressions.md#hasvalue) - Tests if value is meaningful (not null or undefined)
 - [**$isEmpty**](docs/expressions.md#isempty) - Tests if value is empty/absent (null or undefined)
 - [**$exists**](docs/expressions.md#exists) - Tests if property or path exists in an object
 - [**$nin**](docs/expressions.md#nin) - Tests if value does not exist in an array
@@ -532,40 +536,33 @@ Complete toolkit for WHERE clause logic and data filtering - combines field acce
 - [**$eq**](docs/expressions.md#eq), [**$ne**](docs/expressions.md#ne), [**$gt**](docs/expressions.md#gt), [**$gte**](docs/expressions.md#gte), [**$lt**](docs/expressions.md#lt), [**$lte**](docs/expressions.md#lte) - Basic comparisons
 - [**$get**](docs/expressions.md#get) - Field access with dot notation paths
 - [**$in**](docs/expressions.md#in), [**$nin**](docs/expressions.md#nin) - Membership tests
-- [**$matches**](docs/expressions.md#matches) - Object-based property filtering (shorthand for complex conditions)
-- [**$hasValue**](docs/expressions.md#hasvalue), [**$isEmpty**](docs/expressions.md#isempty), [**$exists**](docs/expressions.md#exists) - Value and existence checks
+- [**$matches**](docs/expressions.md#matches) - **Primary tool for object conditions** - handles complex property patterns with dot notation
+- [**$isPresent**](docs/expressions.md#hasvalue), [**$isEmpty**](docs/expressions.md#isempty), [**$exists**](docs/expressions.md#exists) - Value and existence checks
 - [**$matchesRegex**](docs/expressions.md#matchesregex), [**$matchesLike**](docs/expressions.md#matcheslike), [**$matchesGlob**](docs/expressions.md#matchesglob) - Pattern matching
 - [**$pipe**](docs/expressions.md#pipe) - Chain multiple filtering operations
 
-Perfect for building complex filters with a single import:
+Perfect for building complex filters with a single import. Use `$matches` as your primary tool for object-based conditions:
 
 ```javascript
 import { createExpressionEngine, filtering } from "json-expressions";
 
 const engine = createExpressionEngine({ packs: [filtering] });
 
-// Complex daycare filtering
+// Complex daycare filtering with nested properties
 const activeToddlers = engine.apply(
   {
     $matches: {
       age: { $and: [{ $gte: 2 }, { $lte: 4 }] }, // Age between 2 and 4
-      status: { $eq: "active" }, // Active status
-      activity: { $nin: ["napping", "sick"] }, // Not napping or sick
+      status: { $eq: "active" }, // Active enrollment status
+      "guardian.contact.phone": { $isPresent: true }, // Emergency contact required
+      "medical.allergies": { $nin: ["severe-nuts", "severe-dairy"] }, // Safety restrictions
+      activity: { $nin: ["napping", "sick"] }, // Currently available
     },
   },
   children,
 );
 ```
 
-#### Logic Pack
-
-Boolean logic and conditional operations:
-
-- [**$and**](docs/expressions.md#and) - Logical AND - all expressions must be truthy
-- [**$case**](docs/expressions.md#case) - Unified conditional expression supporting both literal comparisons and boolean predicates
-- [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
-- [**$not**](docs/expressions.md#not) - Logical NOT - inverts the truthiness of an expression
-- [**$or**](docs/expressions.md#or) - Logical OR - at least one expression must be truthy
 
 #### Projection Pack
 
@@ -719,27 +716,32 @@ JSON Expressions excel at composing simple operations into complex logic:
 ### Common Patterns
 
 ```javascript
-// Conditional values
+// Object-based conditions (preferred approach)
+{
+  $matches: {
+    age: { $gte: 18 },
+    status: { $eq: "active" },
+    "account.balance": { $gt: 0 }
+  }
+}
+
+// Conditional values based on object properties
 {
   $if: {
-    if: { $matches: { age: { $gt: 18 } } },
-    then: "adult",
-    else: "minor",
+    if: { $matches: { age: { $gte: 18 }, status: "active" } },
+    then: "eligible",
+    else: "not eligible",
   }
 }
 
-// Complex filtering with multiple conditions
+// Complex nested property conditions
 {
-  $filter: {
-    $and: [
-      { $get: "active" },
-      { $pipe: [{ $get: "age" }, { $gte: 18 }] },
-    ]
+  $matches: {
+    "user.plan": { $in: ["pro", "enterprise"] },
+    "user.signupDate": { $gte: "2024-01-01" },
+    "user.riskScore": { $lt: 0.3 }
   }
 }
-
-// Simplified filtering by object properties
-{ $filterBy: { active: { $eq: true }, age: { $gte: 18 } } }
 
 // Nested data transformation
 {
@@ -759,6 +761,37 @@ JSON Expressions excel at composing simple operations into complex logic:
   }
 }
 ```
+
+### $matches: The Object Condition Workhorse
+
+`$matches` is the go-to expression for any daycare-based filtering or validation. It combines property access with predicate evaluation in a clean, readable syntax:
+
+```javascript
+// Instead of complex $and chains with $get and $pipe...
+{
+  $and: [
+    { $pipe: [{ $get: "child.age" }, { $gte: 3 }] },
+    { $pipe: [{ $get: "enrollment.status" }, { $eq: "active" }] },
+    { $pipe: [{ $get: "guardian.emergency.phone" }, { $isPresent: true }] }
+  ]
+}
+
+// Use $matches for clean, readable conditions
+{
+  $matches: {
+    "child.age": { $gte: 3 },
+    "enrollment.status": { $eq: "active" },
+    "guardian.emergency.phone": { $isPresent: true }
+  }
+}
+```
+
+**Key features:**
+
+- **Dot notation paths**: Access nested properties with `"child.medical.allergies"`
+- **Mixed predicates and literals**: Combine `{ $gte: 3 }` with `"active"`
+- **Implicit AND logic**: All conditions must be true
+- **Performance**: More efficient than separate property access + predicate chains
 
 ### Basic Data Transformation
 

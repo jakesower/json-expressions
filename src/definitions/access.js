@@ -2,11 +2,10 @@
  * Access Expressions - Data Access Operations
  *
  * Operations for accessing and extracting data from input:
- * - Basic access ($get, $isDefined)
+ * - Basic access ($get)
  * - Identity access ($identity)
  * - Property access ($prop)
  * - Object selection/projection ($select)
- * - Object matching ($matches)
  */
 
 import { mapValues } from "es-toolkit";
@@ -37,13 +36,14 @@ const $get = {
   },
 };
 
-// Removed $isDefined - replaced with semantic expressions $hasValue/$isEmpty/$exists
+// Removed $isDefined - replaced with semantic expressions $isPresent/$isEmpty/$exists
 
 const $identity = {
-  apply: (operand, inputData) => inputData,
+  apply: (_, inputData) => inputData,
   evaluate: (operand, { evaluate, isWrappedLiteral }) =>
     isWrappedLiteral(operand) ? operand : evaluate(operand),
 };
+
 
 const $prop = {
   apply: (operand, inputData, { apply }) => {
@@ -109,36 +109,5 @@ const $select = {
   },
 };
 
-const $matches = {
-  apply: (operand, inputData, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches operand must be an object with property conditions",
-      );
-    }
-
-    return Object.entries(operand).every(([path, condition]) => {
-      const value = get(inputData, path);
-      return apply(condition, value);
-    });
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-    }
-
-    const { data, conditions } = operand;
-    if (data === undefined || conditions === undefined) {
-      throw new Error(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-    }
-
-    return apply({ $matches: conditions }, data);
-  },
-};
-
 // Individual exports for tree shaking (alphabetized)
-export { $get, $identity, $matches, $prop, $select };
+export { $get, $identity, $prop, $select };

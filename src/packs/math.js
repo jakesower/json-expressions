@@ -2,9 +2,10 @@
  * Math Pack - Arithmetic Operations
  *
  * Pure arithmetic operations for mathematical calculations:
- * - Basic operations ($add, $subtract, $multiply, $divide)
- * - Modulo operation ($modulo)
- * - Mathematical functions ($abs, $pow, $sqrt)
+ * - Basic operations ($add, $subtract, $multiply, $divide, $modulo)
+ * - Mathematical functions ($pow, $sqrt)
+ * - Aggregations ($count, $sum, $max, $min, $mean)
+ * - Array accessors ($first, $last)
  */
 
 // Import arithmetic expressions

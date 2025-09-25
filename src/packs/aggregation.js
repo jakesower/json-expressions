@@ -5,9 +5,11 @@
  * - Basic aggregations ($count, $sum, $max, $min)
  * - Statistical measures ($mean)
  * - Array reduction ($first, $last)
+ * - Grouping operations ($groupBy)
  */
 
 // Import aggregative expressions
+import { $groupBy } from "../definitions/array.js";
 import {
   $count,
   $first,
@@ -22,6 +24,7 @@ import {
 export const aggregation = {
   $count,
   $first,
+  $groupBy,
   $last,
   $max,
   $mean,

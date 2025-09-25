@@ -60,16 +60,16 @@ export interface PropExpression {
 	$prop: string | number | symbol | { object: unknown; property: string | number | symbol };
 }
 
-export interface HasValueExpression {
-	$hasValue: unknown | [unknown];
+export interface IsPresentExpression {
+	$isPresent: unknown | boolean;
 }
 
 export interface IsEmptyExpression {
-	$isEmpty: unknown | [unknown];
+	$isEmpty: unknown | boolean;
 }
 
 export interface ExistsExpression {
-	$exists: string | { object: unknown; path: string };
+	$exists: string;
 }
 
 
@@ -126,20 +126,17 @@ export interface PluckExpression {
 }
 
 export interface DefaultExpression {
-	$default: Expression[];
+	$default: { expression: Expression; default: unknown; allowNull?: boolean };
 }
 
 
-export interface HasExpression {
-	$has: string | { object: unknown; path: string };
-}
 
 export interface UniqueExpression {
 	$unique: null | [unknown[]];
 }
 
 export interface FlattenExpression {
-	$flatten: { depth?: number } | [unknown[], { depth?: number }];
+	$flatten: null | { depth?: number } | unknown[] | { array: unknown[]; depth?: number };
 }
 
 export interface GroupByExpression {
@@ -185,13 +182,6 @@ export interface MatchesRegexExpression {
 	$matchesRegex: string | { pattern: string; text: string };
 }
 
-export interface MatchesLikeExpression {
-	$matchesLike: string | [string, string];
-}
-
-export interface MatchesGlobExpression {
-	$matchesGlob: string | [string, string];
-}
 
 // === LOGICAL EXPRESSIONS ===
 
@@ -258,13 +248,7 @@ export interface MeanExpression {
 	$mean: number[];
 }
 
-export interface MedianExpression {
-	$median: number[];
-}
 
-export interface ModeExpression {
-	$mode: unknown[];
-}
 
 // === ITERATIVE EXPRESSIONS ===
 
@@ -341,7 +325,7 @@ export type AnyExpression =
 	| IdentityExpression
 	| LiteralExpression
 	| PropExpression
-	| HasValueExpression
+	| IsPresentExpression
 	| IsEmptyExpression
 	| ExistsExpression
 	| DebugExpression
@@ -373,7 +357,6 @@ export type AnyExpression =
 	| InExpression
 	| NotInExpression
 	| MatchesRegexExpression
-	| HasExpression
 	// Logical
 	| AndExpression
 	| OrExpression
@@ -446,7 +429,6 @@ export const array: { [k: string]: unknown };
 export const base: { [k: string]: unknown };
 export const comparison: { [k: string]: unknown };
 export const filtering: { [k: string]: unknown };
-export const logic: { [k: string]: unknown };
 export const math: { [k: string]: unknown };
 export const object: { [k: string]: unknown };
 export const projection: { [k: string]: unknown };

@@ -347,35 +347,38 @@ evaluate({ $debug: "Current meal time: lunch" });
 // Returns: "Current meal time: lunch"
 ```
 
-## $distinct
+## $default
 
-Returns unique values from an array.
+Returns a default value if the expression result is null or undefined.
 
 **Apply Form:**
 
 ```javascript
-// Get unique dietary restrictions
-const children = [
-  { dietary: "none" },
-  { dietary: "nut allergy" },
-  { dietary: "none" },
-  { dietary: "vegetarian" },
-];
+// Provide default pickup time if not specified
+const child = { name: "Amara", pickupTime: null };
 apply(
   {
-    $pipe: [{ $map: { $get: "dietary" } }, { $distinct: null }],
+    $default: {
+      expression: { $get: "pickupTime" },
+      default: "5:00 PM"
+    }
   },
-  children,
+  child
 );
-// Returns: ["none", "nut allergy", "vegetarian"]
+// Returns: "5:00 PM"
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Remove duplicates from array
-evaluate({ $distinct: ["apple", "banana", "apple", "orange", "banana"] });
-// Returns: ["apple", "banana", "orange"]
+// Use default value for missing data
+evaluate({
+  $default: {
+    expression: null,
+    default: "No data available"
+  }
+});
+// Returns: "No data available"
 ```
 
 ## $divide
@@ -415,6 +418,46 @@ apply({ $eq: "reading" }, "reading");
 ```javascript
 // Compare two values
 evaluate({ $eq: ["storytime", "storytime"] });
+// Returns: true
+```
+
+## $exists
+
+Tests if a property or path exists in an object, regardless of its value. Different from $isPresent - this checks existence, not meaningfulness.
+
+**Apply Form:**
+
+```javascript
+// Check if child has allergies field (even if null)
+const student = { name: "Zara", allergies: null, age: 4 };
+apply({ $exists: "allergies" }, student);
+// Returns: true (property exists, even though it's null)
+
+apply({ $exists: "missing" }, student);
+// Returns: false
+
+// Works with nested paths
+apply({ $exists: "parent.phone" }, { parent: { phone: "555-0123" } });
+// Returns: true
+```
+
+**Evaluate Form:**
+
+```javascript
+// Test property existence in provided object
+evaluate({ $exists: { object: { name: "Chen" }, path: "name" } });
+// Returns: true
+
+evaluate({ $exists: { object: {}, path: "missing" } });
+// Returns: false
+
+// Works with nested paths
+evaluate({
+  $exists: {
+    object: { daycare: { rooms: { toddler: "Room A" } } },
+    path: "daycare.rooms.toddler"
+  }
+});
 // Returns: true
 ```
 
@@ -524,6 +567,31 @@ evaluate({ $first: ["Monday", "Tuesday", "Wednesday"] });
 // Returns: "Monday"
 ```
 
+## $fromPairs
+
+Converts an array of [key, value] pairs into an object.
+
+**Apply Form:**
+
+```javascript
+// Convert child data pairs to object
+const childPairs = [
+  ["name", "Zara"],
+  ["age", 4],
+  ["group", "Butterflies"]
+];
+apply({ $fromPairs: null }, childPairs);
+// Returns: { name: "Zara", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Create object from key-value pairs
+evaluate({ $fromPairs: [["room", "A"], ["capacity", 20], ["teacher", "Ms. Chen"]] });
+// Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
+```
+
 ## $flatMap
 
 Maps and flattens array items.
@@ -547,6 +615,39 @@ apply({ $flatMap: { $get: "belongings" } }, children);
 // Flatten mapped results
 evaluate({ $flatMap: [{ $split: "," }, ["a,b", "c,d", "e"]] });
 // Returns: ["a", "b", "c", "d", "e"]
+```
+
+## $flatten
+
+Flattens nested arrays by one level by default, with optional depth control.
+
+**Apply Form:**
+
+```javascript
+// Flatten one level (default)
+const nestedBelongings = [
+  ["teddy", "book"],
+  ["blocks", ["puzzle", "crayons"]],
+  ["doll"]
+];
+apply({ $flatten: null }, nestedBelongings);
+// Returns: ["teddy", "book", "blocks", ["puzzle", "crayons"], "doll"]
+
+// Flatten multiple levels with depth
+apply({ $flatten: { depth: 2 } }, nestedBelongings);
+// Returns: ["teddy", "book", "blocks", "puzzle", "crayons", "doll"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Flatten array operand
+evaluate({ $flatten: [["a", "b"], ["c", ["d", "e"]], "f"] });
+// Returns: ["a", "b", "c", ["d", "e"], "f"]
+
+// Flatten with specific depth
+evaluate({ $flatten: { array: [["a", ["b", "c"]], ["d"]], depth: 2 } });
+// Returns: ["a", "b", "c", "d"]
 ```
 
 ## $get
@@ -573,6 +674,43 @@ apply({ $get: "info.age" }, child);
 const daycare = { name: "Sunshine Daycare", capacity: 24 };
 evaluate({ $get: { object: daycare, path: "capacity" } });
 // Returns: 24
+```
+
+## $groupBy
+
+Groups array elements by a specified key or expression result.
+
+**Apply Form:**
+
+```javascript
+// Group children by age
+const children = [
+  { name: "Aria", age: 4 },
+  { name: "Kai", age: 5 },
+  { name: "Zara", age: 4 },
+  { name: "Chen", age: 5 }
+];
+apply({ $groupBy: { $get: "age" } }, children);
+// Returns: {
+//   "4": [{ name: "Aria", age: 4 }, { name: "Zara", age: 4 }],
+//   "5": [{ name: "Kai", age: 5 }, { name: "Chen", age: 5 }]
+// }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Group items by property
+evaluate({
+  $groupBy: [
+    [{ type: "fruit", name: "apple" }, { type: "vegetable", name: "carrot" }, { type: "fruit", name: "banana" }],
+    { $get: "type" }
+  ]
+});
+// Returns: {
+//   "fruit": [{ type: "fruit", name: "apple" }, { type: "fruit", name: "banana" }],
+//   "vegetable": [{ type: "vegetable", name: "carrot" }]
+// }
 ```
 
 ## $gt
@@ -709,45 +847,9 @@ evaluate({ $in: [["apple", "banana", "orange"], "banana"] });
 // Returns: true
 ```
 
-## $hasValue
-
-Tests if a value is meaningful (not null or undefined). Provides cross-language clarity about value presence.
-
-**Apply Form:**
-
-```javascript
-// Check if emergency contact is provided
-apply({ $hasValue: null }, "555-1234");
-// Returns: true
-
-// Check if child has meaningful data
-apply({ $hasValue: null }, null);
-// Returns: false
-
-apply({ $hasValue: null }, undefined);
-// Returns: false
-
-apply({ $hasValue: null }, 0);
-// Returns: true (zero is meaningful)
-```
-
-**Evaluate Form:**
-
-```javascript
-// Test if value is meaningful
-evaluate({ $hasValue: "some value" });
-// Returns: true
-
-evaluate({ $hasValue: null });
-// Returns: false
-
-evaluate({ $hasValue: undefined });
-// Returns: false
-```
-
 ## $isEmpty
 
-Tests if a value is empty or absent (null or undefined). The semantic inverse of $hasValue.
+Tests if a value is empty or absent (null or undefined). The semantic inverse of $isPresent.
 
 **Apply Form:**
 
@@ -777,44 +879,40 @@ evaluate({ $isEmpty: "some value" });
 // Returns: false
 ```
 
-## $exists
+## $isPresent
 
-Tests if a property or path exists in an object, regardless of its value. Different from $hasValue - this checks existence, not meaningfulness.
+Tests if a value is meaningful (not null or undefined). Provides cross-language clarity about value presence.
 
 **Apply Form:**
 
 ```javascript
-// Check if child has allergies field (even if null)
-const student = { name: "Zara", allergies: null, age: 4 };
-apply({ $exists: "allergies" }, student);
-// Returns: true (property exists, even though it's null)
+// Check if emergency contact is provided
+apply({ $isPresent: null }, "555-1234");
+// Returns: true
 
-apply({ $exists: "missing" }, student);
+// Check if child has meaningful data
+apply({ $isPresent: null }, null);
 // Returns: false
 
-// Works with nested paths
-apply({ $exists: "parent.phone" }, { parent: { phone: "555-0123" } });
-// Returns: true
+apply({ $isPresent: null }, undefined);
+// Returns: false
+
+apply({ $isPresent: null }, 0);
+// Returns: true (zero is meaningful)
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Test property existence in provided object
-evaluate({ $exists: { object: { name: "Chen" }, path: "name" } });
+// Test if value is meaningful
+evaluate({ $isPresent: "some value" });
 // Returns: true
 
-evaluate({ $exists: { object: {}, path: "missing" } });
+evaluate({ $isPresent: null });
 // Returns: false
 
-// Works with nested paths
-evaluate({
-  $exists: {
-    object: { daycare: { rooms: { toddler: "Room A" } } },
-    path: "daycare.rooms.toddler"
-  }
-});
-// Returns: true
+evaluate({ $isPresent: undefined });
+// Returns: false
 ```
 
 ## $join
@@ -836,6 +934,27 @@ apply({ $join: ", " }, names);
 // Join array with separator
 evaluate({ $join: [" | ", ["Morning", "Afternoon", "Evening"]] });
 // Returns: "Morning | Afternoon | Evening"
+```
+
+## $keys
+
+Returns an array of all property names from an object.
+
+**Apply Form:**
+
+```javascript
+// Get all field names from child record
+const child = { name: "Amara", age: 4, group: "Butterflies", present: true };
+apply({ $keys: null }, child);
+// Returns: ["name", "age", "group", "present"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Extract object keys
+evaluate({ $keys: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
+// Returns: ["room", "capacity", "teacher"]
 ```
 
 ## $last
@@ -990,45 +1109,7 @@ evaluate({
 // Returns: true
 ```
 
-## $matchesGlob
 
-Tests if string matches a Unix shell GLOB pattern.
-
-**Apply Form:**
-
-```javascript
-// Check if filename matches pattern
-apply({ $matchesGlob: "child_*.jpg" }, "child_aria.jpg");
-// Returns: true
-```
-
-**Evaluate Form:**
-
-```javascript
-// Pattern matching
-evaluate({ $matchesGlob: ["*.txt", "report.txt"] });
-// Returns: true
-```
-
-## $matchesLike
-
-Tests if string matches a SQL LIKE pattern.
-
-**Apply Form:**
-
-```javascript
-// Check if child's name starts with specific letter
-apply({ $matchesLike: "A%" }, "Amara");
-// Returns: true
-```
-
-**Evaluate Form:**
-
-```javascript
-// SQL LIKE pattern matching
-evaluate({ $matchesLike: ["%@daycare.com", "teacher@daycare.com"] });
-// Returns: true
-```
 
 ## $matchesRegex
 
@@ -1092,25 +1173,25 @@ evaluate({ $mean: [85, 92, 78, 94, 88] });
 // Returns: 87.4
 ```
 
-## $median
+## $merge
 
-Calculates the median (middle value) of array values.
+Merges multiple objects into a single object.
 
 **Apply Form:**
 
 ```javascript
-// Find median age in group
-const ages = [3, 4, 5, 6, 7];
-apply({ $median: null }, ages);
-// Returns: 5
+// Merge child info with additional data
+const baseInfo = { name: "Aria", age: 4 };
+apply({ $merge: [{ group: "Butterflies" }, { present: true }] }, baseInfo);
+// Returns: { name: "Aria", age: 4, group: "Butterflies", present: true }
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Find median value
-evaluate({ $median: [12, 8, 15, 9, 11] });
-// Returns: 11
+// Combine multiple objects
+evaluate({ $merge: [{ room: "A" }, { capacity: 20 }, { teacher: "Ms. Chen" }] });
+// Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
 ```
 
 ## $min
@@ -1259,6 +1340,109 @@ apply(
 // Test multiple conditions
 evaluate({ $or: [false, false, true] });
 // Returns: true
+```
+
+## $omit
+
+Returns a new object excluding the specified properties.
+
+**Apply Form:**
+
+```javascript
+// Remove sensitive data from child record
+const child = { name: "Aria", age: 4, ssn: "123-45-6789", group: "Butterflies" };
+apply({ $omit: ["ssn"] }, child);
+// Returns: { name: "Aria", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Exclude multiple properties
+evaluate({
+  $omit: {
+    object: { id: 1, name: "Chen", password: "secret", email: "chen@daycare.com" },
+    properties: ["password", "id"]
+  }
+});
+// Returns: { name: "Chen", email: "chen@daycare.com" }
+```
+
+## $pairs
+
+Converts an object into an array of [key, value] pairs.
+
+**Apply Form:**
+
+```javascript
+// Convert child data to key-value pairs
+const child = { name: "Zara", age: 4, group: "Butterflies" };
+apply({ $pairs: null }, child);
+// Returns: [["name", "Zara"], ["age", 4], ["group", "Butterflies"]]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Extract object entries
+evaluate({ $pairs: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
+// Returns: [["room", "A"], ["capacity", 20], ["teacher", "Ms. Chen"]]
+```
+
+## $pick
+
+Returns a new object containing only the specified properties.
+
+**Apply Form:**
+
+```javascript
+// Extract only essential child info
+const child = { name: "Aria", age: 4, ssn: "123-45-6789", group: "Butterflies", allergies: "none" };
+apply({ $pick: ["name", "age", "group"] }, child);
+// Returns: { name: "Aria", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Select specific properties
+evaluate({
+  $pick: {
+    object: { id: 1, name: "Chen", password: "secret", email: "chen@daycare.com" },
+    properties: ["name", "email"]
+  }
+});
+// Returns: { name: "Chen", email: "chen@daycare.com" }
+```
+
+## $pluck
+
+Extracts a specific property from each object in an array (shorthand for $map + $get).
+
+**Apply Form:**
+
+```javascript
+// Get all children's names
+const children = [
+  { name: "Aria", age: 4 },
+  { name: "Kai", age: 5 },
+  { name: "Zara", age: 3 }
+];
+apply({ $pluck: "name" }, children);
+// Returns: ["Aria", "Kai", "Zara"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Extract property from array of objects
+evaluate({
+  $pluck: [
+    [{ room: "A", teacher: "Ms. Chen" }, { room: "B", teacher: "Mr. Ali" }],
+    "teacher"
+  ]
+});
+// Returns: ["Ms. Chen", "Mr. Ali"]
 ```
 
 ## $pipe
@@ -1437,6 +1621,75 @@ evaluate({ $skip: [3, ["Mon", "Tue", "Wed", "Thu", "Fri"]] });
 // Returns: ["Thu", "Fri"]
 ```
 
+## $select
+
+Creates a new object by selecting and optionally transforming properties.
+
+**Apply Form:**
+
+```javascript
+// Select and transform child data
+const child = { name: "Aria", age: 4, birthDate: "2020-03-15", group: "Butterflies" };
+apply({
+  $select: {
+    childName: { $get: "name" },
+    ageInMonths: { $pipe: [{ $get: "age" }, { $multiply: 12 }] },
+    group: { $get: "group" }
+  }
+}, child);
+// Returns: { childName: "Aria", ageInMonths: 48, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Transform object structure
+evaluate({
+  $select: {
+    object: { firstName: "Chen", lastName: "Li", age: 5 },
+    selection: {
+      fullName: { $join: [" ", [{ $get: "firstName" }, { $get: "lastName" }]] },
+      isSchoolAge: { $pipe: [{ $get: "age" }, { $gte: 5 }] }
+    }
+  }
+});
+// Returns: { fullName: "Chen Li", isSchoolAge: true }
+```
+
+## $sort
+
+Sorts an array based on specified criteria.
+
+**Apply Form:**
+
+```javascript
+// Sort children by age
+const children = [
+  { name: "Zara", age: 3 },
+  { name: "Aria", age: 4 },
+  { name: "Kai", age: 5 }
+];
+apply({ $sort: { by: "age" } }, children);
+// Returns: [{ name: "Zara", age: 3 }, { name: "Aria", age: 4 }, { name: "Kai", age: 5 }]
+
+// Sort descending by name
+apply({ $sort: { by: "name", desc: true } }, children);
+// Returns: [{ name: "Zara", age: 3 }, { name: "Kai", age: 5 }, { name: "Aria", age: 4 }]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Sort with multiple criteria
+evaluate({
+  $sort: {
+    array: [{ group: "A", score: 85 }, { group: "B", score: 90 }, { group: "A", score: 95 }],
+    sortCriteria: [{ by: "group" }, { by: "score", desc: true }]
+  }
+});
+// Returns: [{ group: "A", score: 95 }, { group: "A", score: 85 }, { group: "B", score: 90 }]
+```
+
 ## $split
 
 Splits a string into an array using a separator.
@@ -1597,4 +1850,46 @@ apply({ $uppercase: null }, "amara");
 // Convert to uppercase
 evaluate({ $uppercase: "sunshine daycare" });
 // Returns: "SUNSHINE DAYCARE"
+```
+
+## $unique
+
+Returns an array with duplicate values removed.
+
+**Apply Form:**
+
+```javascript
+// Get unique dietary restrictions
+const restrictions = ["none", "nut allergy", "none", "vegetarian", "nut allergy"];
+apply({ $unique: null }, restrictions);
+// Returns: ["none", "nut allergy", "vegetarian"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Remove duplicates from array
+evaluate({ $unique: ["apple", "banana", "apple", "orange", "banana"] });
+// Returns: ["apple", "banana", "orange"]
+```
+
+## $values
+
+Returns an array of all property values from an object.
+
+**Apply Form:**
+
+```javascript
+// Get all values from child record
+const child = { name: "Amara", age: 4, group: "Butterflies", present: true };
+apply({ $values: null }, child);
+// Returns: ["Amara", 4, "Butterflies", true]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Extract object values
+evaluate({ $values: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
+// Returns: ["A", 20, "Ms. Chen"]
 ```

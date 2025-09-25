@@ -8,7 +8,6 @@ export { array } from "./packs/array.js";
 export { base } from "./packs/base.js";
 export { comparison } from "./packs/comparison.js";
 export { filtering } from "./packs/filtering.js";
-export { logic } from "./packs/logic.js";
 export { math } from "./packs/math.js";
 export { object } from "./packs/object.js";
 export { projection } from "./packs/projection.js";

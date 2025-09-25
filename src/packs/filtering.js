@@ -2,18 +2,18 @@
  * Filtering Pack - Comprehensive Data Filtering Toolkit
  *
  * Complete toolkit for WHERE clause logic and data filtering:
- * - Field access ($get, $pipe)
  * - Object filtering ($matches)
- * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
+ * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte, $between)
  * - Logic operations ($and, $or, $not)
  * - Membership tests ($in, $nin)
- * - Value and existence checks ($hasValue, $isEmpty, $exists)
+ * - Value and existence checks ($isPresent, $isEmpty, $exists)
  * - Pattern matching ($matchesRegex)
+ * - Array filtering ($all, $any, $filter, $filterBy, $find)
  */
 
-// Import field access expressions
-import { $get, $matches } from "../definitions/access.js";
-import { $pipe } from "../definitions/flow.js";
+// Import conditional expressions
+import { $matches } from "../definitions/conditional.js";
+import { $all, $any, $filter, $filterBy, $find } from "../definitions/array.js";
 
 // Import comparison expressions
 import {
@@ -25,22 +25,20 @@ import {
   $lte,
   $in,
   $nin,
-  $hasValue,
   $isEmpty,
+  $isPresent,
   $exists,
   $and,
   $or,
   $not,
   $matchesRegex,
+  $between,
 } from "../definitions/predicate.js";
 
 // Export as grouped object
 export const filtering = {
-  // Field access
-  $get,
-  $pipe,
-  $matches,
   // Basic comparisons
+  $between,
   $eq,
   $ne,
   $gt,
@@ -51,12 +49,19 @@ export const filtering = {
   $and,
   $or,
   $not,
+  // Applications
+  $all,
+  $any,
+  $filter,
+  $filterBy,
+  $find,
+  $matches,
   // Membership tests
   $in,
   $nin,
   // Value and existence checks
-  $hasValue,
   $isEmpty,
+  $isPresent,
   $exists,
   // Pattern matching
   $matchesRegex,

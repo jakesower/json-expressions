@@ -57,7 +57,7 @@ describe("$get", () => {
   });
 });
 
-// $isDefined removed - replaced with semantic expressions $hasValue/$isEmpty/$exists
+// $isDefined removed - replaced with semantic expressions $isPresent/$isEmpty/$exists
 
 describe("$prop", () => {
   describe("apply form", () => {

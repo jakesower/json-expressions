@@ -2,13 +2,14 @@
  * Array Pack - Complete Array Manipulation Toolkit
  *
  * All array operations for data transformation and processing:
- * - Core transformations ($map, $filter, $find)
+ * - Core transformations ($map, $filter, $filterBy, $find)
  * - Predicates ($all, $any)
- * - Advanced operations ($flatMap)
+ * - Advanced operations ($flatMap, $flatten)
  * - Array modifications ($append, $prepend, $reverse, $join)
  * - Array slicing ($take, $skip)
- * - Array operations ($concat, $distinct)
+ * - Array operations ($concat, $unique, $pluck)
  * - Utility ($coalesce)
+ * - Grouping ($groupBy)
  */
 
 // Import array expressions

@@ -2,8 +2,8 @@
  * Base Pack - Near Universal Expressions
  *
  * Essential expressions used across almost all scenarios:
- * - Data access ($get, $hasValue, $isEmpty)
- * - Basic conditionals ($if, $matches)
+ * - Data access ($get, $identity, $exists, $isPresent, $isEmpty)
+ * - Basic conditionals ($if, $case, $matches)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Boolean logic ($and, $or, $not)
  * - Operation chaining ($pipe)
@@ -15,17 +15,17 @@
 import {
   $get,
   $identity,
-  $matches,
 } from "../definitions/access.js";
 import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
-import { $if, $case } from "../definitions/conditional.js";
+import { $if, $case, $matches } from "../definitions/conditional.js";
 import {
   $and,
   $eq,
+  $exists,
   $gt,
   $gte,
-  $hasValue,
   $isEmpty,
+  $isPresent,
   $lt,
   $lte,
   $ne,
@@ -40,15 +40,16 @@ export const base = {
   $case,
   $default,
   $eq,
+  $exists,
   $filter,
   $filterBy,
   $get,
   $gt,
   $gte,
-  $hasValue,
   $identity,
   $if,
   $isEmpty,
+  $isPresent,
   $literal,
   $lt,
   $lte,

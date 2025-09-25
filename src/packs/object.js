@@ -11,28 +11,11 @@
 
 // Import existing object-focused expressions
 import { $prop, $select } from "../definitions/access.js";
-import {
-  $merge,
-  $pick,
-  $omit,
-  $keys,
-  $values,
-  $pairs,
-  $fromPairs,
-} from "../definitions/object.js";
+import * as objectExpressions from "../definitions/object.js";
 
 // Export as grouped object
 export const object = {
   $select,
   $prop,
-  $merge,
-  $pick,
-  $omit,
-  $keys,
-  $values,
-  $pairs,
-  $fromPairs,
+  ...objectExpressions,
 };
-
-// Individual exports for tree shaking
-export { $merge, $pick, $omit, $keys, $values, $pairs, $fromPairs };
