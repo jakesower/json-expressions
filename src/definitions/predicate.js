@@ -149,15 +149,8 @@ const $gt = createComparativeExpression((a, b) => a > b);
 
 const $gte = createComparativeExpression((a, b) => a >= b);
 
-// TODO: Review Claude implementation
 const $has = {
   apply: (operand, inputData, { apply }) => {
-    if (typeof operand === "string") {
-      // Simple path check using get - returns true if path exists (even if value is falsy)
-      return get(inputData, operand) !== undefined;
-    }
-
-    // Expression operand - resolve it first
     const resolvedPath = apply(operand, inputData);
     if (typeof resolvedPath !== "string") {
       throw new Error("$has operand must resolve to a string path");
@@ -191,14 +184,45 @@ const $in = createInclusionExpression("$in", (value, array) =>
   array.includes(value),
 );
 
-const $isNotNull = {
-  apply: (operand, inputData) => inputData != null,
+const $hasValue = {
+  apply: (operand, inputData) => inputData != null, // != catches both null and undefined
   evaluate: (operand, { evaluate }) => evaluate(operand) != null,
 };
 
-const $isNull = {
-  apply: (operand, inputData) => inputData == null,
+const $isEmpty = {
+  apply: (operand, inputData) => inputData == null, // == catches both null and undefined
   evaluate: (operand, { evaluate }) => evaluate(operand) == null,
+};
+
+const $exists = {
+  apply: (operand, inputData, { apply }) => {
+    const resolvedPath = apply(operand, inputData);
+    if (typeof resolvedPath !== "string") {
+      throw new Error("$exists operand must resolve to a string path");
+    }
+    return get(inputData, resolvedPath) !== undefined;
+  },
+  evaluate: (operand, { evaluate }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$exists evaluate form requires object operand: { object, path }",
+      );
+    }
+
+    const { object, path } = operand;
+    if (object === undefined || path === undefined) {
+      throw new Error(
+        "$exists evaluate form requires 'object' and 'path' properties",
+      );
+    }
+
+    const evaluatedObject = evaluate(object);
+    const evaluatedPath = evaluate(path);
+    if (typeof evaluatedPath !== "string") {
+      throw new Error("$exists path must be a string");
+    }
+    return get(evaluatedObject, evaluatedPath) !== undefined;
+  },
 };
 
 const $lt = createComparativeExpression((a, b) => a < b);
@@ -260,12 +284,13 @@ export {
   $and,
   $between,
   $eq,
+  $exists,
   $gt,
   $gte,
   $has,
+  $hasValue,
   $in,
-  $isNotNull,
-  $isNull,
+  $isEmpty,
   $lt,
   $lte,
   $matchesRegex,

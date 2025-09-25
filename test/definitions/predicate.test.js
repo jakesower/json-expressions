@@ -8,7 +8,9 @@ const kids = {
   zoë: { name: "Zoë", age: 6 },
 };
 
-const testEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
+const testEngine = createExpressionEngine({
+  packs: [allExpressionsForTesting],
+});
 const { apply, evaluate } = testEngine;
 
 describe("$eq", () => {
@@ -343,92 +345,6 @@ describe("$matchesRegex", () => {
   });
 });
 
-// describe("$matchesLike", () => {
-//   it("handles basic LIKE patterns", () => {
-//     expect(apply({ $matchesLike: "hello%" }, "hello world")).toBe(true);
-//     expect(apply({ $matchesLike: "hello%" }, "hello")).toBe(true);
-//     expect(apply({ $matchesLike: "hello%" }, "hi")).toBe(false);
-//
-//     expect(apply({ $matchesLike: "%world" }, "hello world")).toBe(true);
-//     expect(apply({ $matchesLike: "%world" }, "world")).toBe(true);
-//     expect(apply({ $matchesLike: "%world" }, "hi")).toBe(false);
-//
-//     expect(apply({ $matchesLike: "h_llo" }, "hello")).toBe(true);
-//     expect(apply({ $matchesLike: "h_llo" }, "hallo")).toBe(true);
-//     expect(apply({ $matchesLike: "h_llo" }, "hxllo")).toBe(true);
-//     expect(apply({ $matchesLike: "h_llo" }, "hllo")).toBe(false);
-//     expect(apply({ $matchesLike: "h_llo" }, "hello world")).toBe(false);
-//   });
-//
-//   it("handles email patterns", () => {
-//     expect(apply({ $matchesLike: "%@gmail.com" }, "test@gmail.com")).toBe(true);
-//     expect(apply({ $matchesLike: "%@gmail.com" }, "user123@gmail.com")).toBe(
-//       true,
-//     );
-//     expect(apply({ $matchesLike: "%@gmail.com" }, "test@yahoo.com")).toBe(
-//       false,
-//     );
-//   });
-//
-//   it("escapes regex special characters", () => {
-//     expect(apply({ $matchesLike: "test.txt" }, "test.txt")).toBe(true);
-//     expect(apply({ $matchesLike: "test.txt" }, "testXtxt")).toBe(false); // . should be literal
-//     expect(apply({ $matchesLike: "a+b" }, "a+b")).toBe(true);
-//     expect(apply({ $matchesLike: "a+b" }, "aab")).toBe(false); // + should be literal
-//   });
-// });
-
-// describe("$matchesGlob", () => {
-//   it("handles basic GLOB patterns", () => {
-//     expect(apply({ $matchesGlob: "hello*" }, "hello world")).toBe(true);
-//     expect(apply({ $matchesGlob: "hello*" }, "hello")).toBe(true);
-//     expect(apply({ $matchesGlob: "hello*" }, "hi")).toBe(false);
-//
-//     expect(apply({ $matchesGlob: "*world" }, "hello world")).toBe(true);
-//     expect(apply({ $matchesGlob: "*world" }, "world")).toBe(true);
-//     expect(apply({ $matchesGlob: "*world" }, "hi")).toBe(false);
-//
-//     expect(apply({ $matchesGlob: "h?llo" }, "hello")).toBe(true);
-//     expect(apply({ $matchesGlob: "h?llo" }, "hallo")).toBe(true);
-//     expect(apply({ $matchesGlob: "h?llo" }, "hxllo")).toBe(true);
-//     expect(apply({ $matchesGlob: "h?llo" }, "hllo")).toBe(false);
-//     expect(apply({ $matchesGlob: "h?llo" }, "hello world")).toBe(false);
-//   });
-//
-//   it("handles character classes", () => {
-//     expect(apply({ $matchesGlob: "[hw]ello" }, "hello")).toBe(true);
-//     expect(apply({ $matchesGlob: "[hw]ello" }, "wello")).toBe(true);
-//     expect(apply({ $matchesGlob: "[hw]ello" }, "bello")).toBe(false);
-//
-//     expect(apply({ $matchesGlob: "[A-Z]*" }, "Hello")).toBe(true);
-//     expect(apply({ $matchesGlob: "[A-Z]*" }, "hello")).toBe(false);
-//
-//     expect(apply({ $matchesGlob: "[!hw]ello" }, "bello")).toBe(true);
-//     expect(apply({ $matchesGlob: "[!hw]ello" }, "hello")).toBe(false);
-//     expect(apply({ $matchesGlob: "[!hw]ello" }, "wello")).toBe(false);
-//   });
-//
-//   it("handles file extensions", () => {
-//     expect(apply({ $matchesGlob: "*.txt" }, "file.txt")).toBe(true);
-//     expect(apply({ $matchesGlob: "*.txt" }, "document.txt")).toBe(true);
-//     expect(apply({ $matchesGlob: "*.txt" }, "file.pdf")).toBe(false);
-//
-//     expect(
-//       apply({ $matchesGlob: "IMG_[0-9][0-9][0-9][0-9]" }, "IMG_1234"),
-//     ).toBe(true);
-//     expect(
-//       apply({ $matchesGlob: "IMG_[0-9][0-9][0-9][0-9]" }, "IMG_abcd"),
-//     ).toBe(false);
-//   });
-//
-//   it("escapes regex special characters", () => {
-//     expect(apply({ $matchesGlob: "test.txt" }, "test.txt")).toBe(true);
-//     expect(apply({ $matchesGlob: "test.txt" }, "testXtxt")).toBe(false); // . should be literal
-//     expect(apply({ $matchesGlob: "a+b" }, "a+b")).toBe(true);
-//     expect(apply({ $matchesGlob: "a+b" }, "aab")).toBe(false); // + should be literal
-//   });
-// });
-
 describe("$between", () => {
   describe("apply form", () => {
     it("should check if student ages are within daycare range", () => {
@@ -528,98 +444,99 @@ describe("$between", () => {
   });
 });
 
-describe("$isNull", () => {
+describe("$hasValue", () => {
   describe("apply form", () => {
-    it("should detect null values in Arun's medical records", () => {
-      expect(apply({ $isNull: null }, null)).toBe(true);
-      expect(apply({ $isNull: null }, undefined)).toBe(true); // null == undefined
-      expect(apply({ $isNull: null }, 0)).toBe(false);
-      expect(apply({ $isNull: null }, "")).toBe(false);
-      expect(apply({ $isNull: null }, false)).toBe(false);
-      expect(apply({ $isNull: null }, [])).toBe(false);
-      expect(apply({ $isNull: null }, {})).toBe(false);
+    it("should detect meaningful values in Arun's medical records", () => {
+      expect(apply({ $hasValue: null }, null)).toBe(false);
+      expect(apply({ $hasValue: null }, undefined)).toBe(false);
+      expect(apply({ $hasValue: null }, 0)).toBe(true);
+      expect(apply({ $hasValue: null }, "")).toBe(true);
+      expect(apply({ $hasValue: null }, false)).toBe(true);
+      expect(apply({ $hasValue: null }, [])).toBe(true);
+      expect(apply({ $hasValue: null }, {})).toBe(true);
+      expect(apply({ $hasValue: null }, "Arun")).toBe(true);
     });
 
     it("should work with object properties for Maria's emergency contact", () => {
-      const student1 = { name: "Maria", emergencyContact: null };
-      const student2 = { name: "Elena", emergencyContact: "mom@example.com" };
+      const student1 = { name: "Maria", emergencyContact: "555-0123" };
+      const student2 = { name: "Elena", emergencyContact: null };
       const student3 = { name: "Yuki" }; // emergencyContact is undefined
 
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $isNull: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
           student1,
         ),
       ).toBe(true);
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $isNull: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
           student2,
         ),
       ).toBe(false);
       expect(
         apply(
-          { $pipe: [{ $get: "emergencyContact" }, { $isNull: null }] },
+          { $pipe: [{ $get: "emergencyContact" }, { $hasValue: null }] },
           student3,
         ),
-      ).toBe(true);
+      ).toBe(false);
     });
 
     it("should ignore operand and work with any input", () => {
-      expect(apply({ $isNull: "ignored" }, null)).toBe(true);
-      expect(apply({ $isNull: 42 }, undefined)).toBe(true);
-      expect(apply({ $isNull: { complex: "object" } }, "not null")).toBe(false);
+      expect(apply({ $hasValue: "ignored" }, "present")).toBe(true);
+      expect(apply({ $hasValue: { complex: "object" } }, null)).toBe(false);
     });
   });
 
   describe("evaluate form", () => {
-    it("should evaluate static null checks for Kenji's allergy information", () => {
-      expect(evaluate({ $isNull: null })).toBe(true);
-      expect(evaluate({ $isNull: undefined })).toBe(true);
-      expect(evaluate({ $isNull: 0 })).toBe(false);
-      expect(evaluate({ $isNull: "" })).toBe(false);
-      expect(evaluate({ $isNull: false })).toBe(false);
-      expect(evaluate({ $isNull: [] })).toBe(false);
-      expect(evaluate({ $isNull: {} })).toBe(false);
+    it("should evaluate static value checks for Kenji's allergy information", () => {
+      expect(evaluate({ $hasValue: null })).toBe(false);
+      expect(evaluate({ $hasValue: undefined })).toBe(false);
+      expect(evaluate({ $hasValue: 0 })).toBe(true);
+      expect(evaluate({ $hasValue: "" })).toBe(true);
+      expect(evaluate({ $hasValue: false })).toBe(true);
+      expect(evaluate({ $hasValue: [] })).toBe(true);
+      expect(evaluate({ $hasValue: {} })).toBe(true);
+      expect(evaluate({ $hasValue: "Kenji" })).toBe(true);
     });
 
-    it("should work with expressions that return null for Diego's attendance", () => {
+    it("should work with expressions that return values for Diego's attendance", () => {
       expect(
-        evaluate({ $isNull: { $get: { object: {}, path: "missing" } } }),
-      ).toBe(true);
+        evaluate({ $hasValue: { $get: { object: {}, path: "missing" } } }),
+      ).toBe(false);
       expect(
         evaluate({
-          $isNull: { $get: { object: { name: "Diego" }, path: "name" } },
+          $hasValue: { $get: { object: { name: "Diego" }, path: "name" } },
         }),
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("should handle complex nested structures", () => {
       expect(
         evaluate({
-          $isNull: {
+          $hasValue: {
             $get: {
               object: { students: [{ name: "Fatima" }] },
               path: "teachers.primary",
             },
           },
         }),
-      ).toBe(true);
+      ).toBe(false);
     });
   });
 });
 
-describe("$isNotNull", () => {
+describe("$isEmpty", () => {
   describe("apply form", () => {
-    it("should detect non-null values in Amara's progress tracking", () => {
-      expect(apply({ $isNotNull: null }, null)).toBe(false);
-      expect(apply({ $isNotNull: null }, undefined)).toBe(false); // null == undefined
-      expect(apply({ $isNotNull: null }, 0)).toBe(true);
-      expect(apply({ $isNotNull: null }, "")).toBe(true);
-      expect(apply({ $isNotNull: null }, false)).toBe(true);
-      expect(apply({ $isNotNull: null }, [])).toBe(true);
-      expect(apply({ $isNotNull: null }, {})).toBe(true);
-      expect(apply({ $isNotNull: null }, "Amara")).toBe(true);
+    it("should detect empty/absent values in Amara's progress tracking", () => {
+      expect(apply({ $isEmpty: null }, null)).toBe(true);
+      expect(apply({ $isEmpty: null }, undefined)).toBe(true);
+      expect(apply({ $isEmpty: null }, 0)).toBe(false);
+      expect(apply({ $isEmpty: null }, "")).toBe(false);
+      expect(apply({ $isEmpty: null }, false)).toBe(false);
+      expect(apply({ $isEmpty: null }, [])).toBe(false);
+      expect(apply({ $isEmpty: null }, {})).toBe(false);
+      expect(apply({ $isEmpty: null }, "Amara")).toBe(false);
     });
 
     it("should work with object properties for Priya's vaccination records", () => {
@@ -629,59 +546,59 @@ describe("$isNotNull", () => {
 
       expect(
         apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isNotNull: null }] },
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
           student1,
+        ),
+      ).toBe(false);
+      expect(
+        apply(
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
+          student2,
         ),
       ).toBe(true);
       expect(
         apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isNotNull: null }] },
-          student2,
-        ),
-      ).toBe(false);
-      expect(
-        apply(
-          { $pipe: [{ $get: "vaccinations" }, { $isNotNull: null }] },
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: null }] },
           student3,
         ),
-      ).toBe(false);
+      ).toBe(true);
     });
 
     it("should ignore operand and work with any input", () => {
-      expect(apply({ $isNotNull: "ignored" }, "present")).toBe(true);
-      expect(apply({ $isNotNull: 42 }, 0)).toBe(true);
-      expect(apply({ $isNotNull: { complex: "object" } }, null)).toBe(false);
+      expect(apply({ $isEmpty: "ignored" }, null)).toBe(true);
+      expect(apply({ $isEmpty: 42 }, "present")).toBe(false);
+      expect(apply({ $isEmpty: { complex: "object" } }, undefined)).toBe(true);
     });
   });
 
   describe("evaluate form", () => {
-    it("should evaluate static non-null checks for Nina's dietary restrictions", () => {
-      expect(evaluate({ $isNotNull: null })).toBe(false);
-      expect(evaluate({ $isNotNull: undefined })).toBe(false);
-      expect(evaluate({ $isNotNull: 0 })).toBe(true);
-      expect(evaluate({ $isNotNull: "" })).toBe(true);
-      expect(evaluate({ $isNotNull: false })).toBe(true);
-      expect(evaluate({ $isNotNull: [] })).toBe(true);
-      expect(evaluate({ $isNotNull: {} })).toBe(true);
-      expect(evaluate({ $isNotNull: "gluten-free" })).toBe(true);
+    it("should evaluate static emptiness checks for Nina's dietary restrictions", () => {
+      expect(evaluate({ $isEmpty: null })).toBe(true);
+      expect(evaluate({ $isEmpty: undefined })).toBe(true);
+      expect(evaluate({ $isEmpty: 0 })).toBe(false);
+      expect(evaluate({ $isEmpty: "" })).toBe(false);
+      expect(evaluate({ $isEmpty: false })).toBe(false);
+      expect(evaluate({ $isEmpty: [] })).toBe(false);
+      expect(evaluate({ $isEmpty: {} })).toBe(false);
+      expect(evaluate({ $isEmpty: "Nina" })).toBe(false);
     });
 
-    it("should work with expressions that may return null for Chen's pickup person", () => {
+    it("should work with expressions for Chen's pickup person", () => {
       expect(
         evaluate({
-          $isNotNull: {
+          $isEmpty: {
             $get: { object: { pickupPerson: "dad" }, path: "pickupPerson" },
           },
         }),
-      ).toBe(true);
+      ).toBe(false);
       expect(
         evaluate({
-          $isNotNull: { $get: { object: {}, path: "pickupPerson" } },
+          $isEmpty: { $get: { object: {}, path: "pickupPerson" } },
         }),
-      ).toBe(false);
+      ).toBe(true);
     });
 
-    it("should validate required fields for Aria's enrollment form", () => {
+    it("should validate empty fields for Aria's enrollment form", () => {
       const enrollment = {
         studentName: "Aria",
         parentEmail: "parent@example.com",
@@ -691,23 +608,88 @@ describe("$isNotNull", () => {
 
       expect(
         evaluate({
-          $isNotNull: { $get: { object: enrollment, path: "studentName" } },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $isNotNull: {
-            $get: { object: enrollment, path: "emergencyContact" },
-          },
+          $isEmpty: { $get: { object: enrollment, path: "studentName" } },
         }),
       ).toBe(false);
 
       expect(
         evaluate({
-          $isNotNull: { $get: { object: enrollment, path: "medicalInfo" } },
+          $isEmpty: {
+            $get: { object: enrollment, path: "emergencyContact" },
+          },
         }),
-      ).toBe(true); // Empty string is not null
+      ).toBe(true);
+
+      expect(
+        evaluate({
+          $isEmpty: { $get: { object: enrollment, path: "medicalInfo" } },
+        }),
+      ).toBe(false); // Empty string is not null/undefined
+    });
+  });
+});
+
+describe("$exists", () => {
+  describe("apply form", () => {
+    it("should check if properties exist in student records", () => {
+      const student = {
+        name: "Zara",
+        age: 4,
+        allergies: null,
+        parent: { name: "Amira", phone: "555-0199" }
+      };
+
+      expect(apply({ $exists: "name" }, student)).toBe(true);
+      expect(apply({ $exists: "age" }, student)).toBe(true);
+      expect(apply({ $exists: "allergies" }, student)).toBe(true); // exists but null
+      expect(apply({ $exists: "missing" }, student)).toBe(false);
+      expect(apply({ $exists: "parent.name" }, student)).toBe(true);
+      expect(apply({ $exists: "parent.missing" }, student)).toBe(false);
+    });
+
+    it("should work with dynamic path resolution", () => {
+      const student = { name: "Omar", skills: { reading: "good" } };
+
+      expect(apply({ $exists: { $literal: "name" } }, student)).toBe(true);
+      expect(apply({ $exists: { $literal: "skills.reading" } }, student)).toBe(true);
+      expect(apply({ $exists: { $literal: "skills.math" } }, student)).toBe(false);
+    });
+
+    it("should throw error for non-string paths", () => {
+      expect(() => apply({ $exists: 123 }, {})).toThrow("$exists operand must resolve to a string path");
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("should check property existence in provided objects", () => {
+      const student = { name: "Layla", activities: ["art", "music"] };
+
+      expect(evaluate({ $exists: { object: student, path: "name" } })).toBe(true);
+      expect(evaluate({ $exists: { object: student, path: "activities" } })).toBe(true);
+      expect(evaluate({ $exists: { object: student, path: "missing" } })).toBe(false);
+      expect(evaluate({ $exists: { object: {}, path: "anything" } })).toBe(false);
+    });
+
+    it("should work with nested paths", () => {
+      const daycare = {
+        staff: { teacher: "Nour", assistant: null },
+        rooms: { toddler: "Room A" }
+      };
+
+      expect(evaluate({ $exists: { object: daycare, path: "staff.teacher" } })).toBe(true);
+      expect(evaluate({ $exists: { object: daycare, path: "staff.assistant" } })).toBe(true); // exists but null
+      expect(evaluate({ $exists: { object: daycare, path: "staff.janitor" } })).toBe(false);
+      expect(evaluate({ $exists: { object: daycare, path: "rooms.toddler" } })).toBe(true);
+    });
+
+    it("should require object and path properties", () => {
+      expect(() => evaluate({ $exists: { object: {} } })).toThrow("$exists evaluate form requires 'object' and 'path' properties");
+      expect(() => evaluate({ $exists: { path: "test" } })).toThrow("$exists evaluate form requires 'object' and 'path' properties");
+      expect(() => evaluate({ $exists: "invalid" })).toThrow("$exists evaluate form requires object operand: { object, path }");
+    });
+
+    it("should require string paths", () => {
+      expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow("$exists path must be a string");
     });
   });
 });

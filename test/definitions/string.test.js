@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
 import { allExpressionsForTesting } from "../../src/packs/all.js";
 
-const { apply, evaluate } = createExpressionEngine({ packs: [allExpressionsForTesting] });
+const { apply, evaluate } = createExpressionEngine({
+  packs: [allExpressionsForTesting],
+});
 
 describe("String Expressions", () => {
   describe("$matchesRegex", () => {

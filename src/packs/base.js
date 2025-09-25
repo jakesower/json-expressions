@@ -2,7 +2,7 @@
  * Base Pack - Near Universal Expressions
  *
  * Essential expressions used across almost all scenarios:
- * - Data access ($get, $isDefined)
+ * - Data access ($get, $hasValue, $isEmpty)
  * - Basic conditionals ($if, $matches)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Boolean logic ($and, $or, $not)
@@ -15,7 +15,6 @@
 import {
   $get,
   $identity,
-  $isDefined,
   $matches,
 } from "../definitions/access.js";
 import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
@@ -25,6 +24,8 @@ import {
   $eq,
   $gt,
   $gte,
+  $hasValue,
+  $isEmpty,
   $lt,
   $lte,
   $ne,
@@ -44,9 +45,10 @@ export const base = {
   $get,
   $gt,
   $gte,
+  $hasValue,
   $identity,
   $if,
-  $isDefined,
+  $isEmpty,
   $literal,
   $lt,
   $lte,

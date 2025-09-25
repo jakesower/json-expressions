@@ -8,7 +8,9 @@ const kids = [
   { name: "Zoë", age: 6 },
 ];
 
-const testEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
+const testEngine = createExpressionEngine({
+  packs: [allExpressionsForTesting],
+});
 const { apply, evaluate } = testEngine;
 
 describe("$all", () => {
@@ -272,7 +274,7 @@ describe("$filterBy", () => {
 
     it("returns all items when all match", () => {
       const result = apply(
-        { $filterBy: { name: { $isDefined: null } } },
+        { $filterBy: { name: { $hasValue: null } } },
         students,
       );
       expect(result).toEqual(students);

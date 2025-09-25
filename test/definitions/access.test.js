@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
 import { allExpressionsForTesting } from "../../src/packs/all.js";
 
-const testEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
+const testEngine = createExpressionEngine({
+  packs: [allExpressionsForTesting],
+});
 const { apply, evaluate } = testEngine;
 
 describe("$get", () => {
@@ -55,28 +57,7 @@ describe("$get", () => {
   });
 });
 
-describe("$isDefined", () => {
-  describe("evaluate form", () => {
-    const { evaluate } = testEngine;
-
-    it("returns true for defined values", () => {
-      expect(evaluate({ $isDefined: ["hello"] })).toBe(true);
-      expect(evaluate({ $isDefined: [0] })).toBe(true);
-      expect(evaluate({ $isDefined: [false] })).toBe(true);
-      expect(evaluate({ $isDefined: [null] })).toBe(true);
-      expect(evaluate({ $isDefined: [undefined] })).toBe(true);
-    });
-
-    it("returns false for undefined values", () => {
-      expect(evaluate({ $isDefined: undefined })).toBe(false);
-    });
-
-    it("works with complex values", () => {
-      expect(evaluate({ $isDefined: [{ name: "test" }] })).toBe(true);
-      expect(evaluate({ $isDefined: [[1, 2, 3]] })).toBe(true);
-    });
-  });
-});
+// $isDefined removed - replaced with semantic expressions $hasValue/$isEmpty/$exists
 
 describe("$prop", () => {
   describe("apply form", () => {

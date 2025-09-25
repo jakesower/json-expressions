@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
 import { allExpressionsForTesting } from "../../src/packs/all.js";
 
-const testEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
+const testEngine = createExpressionEngine({
+  packs: [allExpressionsForTesting],
+});
 const { apply, evaluate } = testEngine;
 
 describe("$add", () => {

@@ -709,69 +709,117 @@ evaluate({ $in: [["apple", "banana", "orange"], "banana"] });
 // Returns: true
 ```
 
-## $isDefined
+## $hasValue
 
-Tests if value is not undefined.
+Tests if a value is meaningful (not null or undefined). Provides cross-language clarity about value presence.
 
 **Apply Form:**
 
 ```javascript
 // Check if emergency contact is provided
-apply({ $isDefined: null }, "555-1234");
+apply({ $hasValue: null }, "555-1234");
 // Returns: true
+
+// Check if child has meaningful data
+apply({ $hasValue: null }, null);
+// Returns: false
+
+apply({ $hasValue: null }, undefined);
+// Returns: false
+
+apply({ $hasValue: null }, 0);
+// Returns: true (zero is meaningful)
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Test if value is defined
-evaluate({ $isDefined: [undefined] });
-// Returns: false
-```
-
-## $isNotNull
-
-Tests if value is not null or undefined.
-
-**Apply Form:**
-
-```javascript
-// Check if child has assigned teacher
-apply({ $isNotNull: null }, "Ms. Rodriguez");
+// Test if value is meaningful
+evaluate({ $hasValue: "some value" });
 // Returns: true
-```
 
-**Evaluate Form:**
+evaluate({ $hasValue: null });
+// Returns: false
 
-```javascript
-// Test if value is not null
-evaluate({ $isNotNull: null });
+evaluate({ $hasValue: undefined });
 // Returns: false
 ```
 
-## $isNull
+## $isEmpty
 
-Tests if value is null or undefined.
+Tests if a value is empty or absent (null or undefined). The semantic inverse of $hasValue.
 
 **Apply Form:**
 
 ```javascript
 // Check if pickup time is not set
-apply({ $isNull: null }, null);
+apply({ $isEmpty: null }, null);
+// Returns: true
+
+apply({ $isEmpty: null }, undefined);
+// Returns: true
+
+apply({ $isEmpty: null }, "");
+// Returns: false (empty string is not null/undefined)
+
+apply({ $isEmpty: null }, 0);
+// Returns: false (zero is not empty)
+```
+
+**Evaluate Form:**
+
+```javascript
+// Test if value is empty/absent
+evaluate({ $isEmpty: null });
+// Returns: true
+
+evaluate({ $isEmpty: "some value" });
+// Returns: false
+```
+
+## $exists
+
+Tests if a property or path exists in an object, regardless of its value. Different from $hasValue - this checks existence, not meaningfulness.
+
+**Apply Form:**
+
+```javascript
+// Check if child has allergies field (even if null)
+const student = { name: "Zara", allergies: null, age: 4 };
+apply({ $exists: "allergies" }, student);
+// Returns: true (property exists, even though it's null)
+
+apply({ $exists: "missing" }, student);
+// Returns: false
+
+// Works with nested paths
+apply({ $exists: "parent.phone" }, { parent: { phone: "555-0123" } });
 // Returns: true
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Test if value is null
-evaluate({ $isNull: "some value" });
+// Test property existence in provided object
+evaluate({ $exists: { object: { name: "Chen" }, path: "name" } });
+// Returns: true
+
+evaluate({ $exists: { object: {}, path: "missing" } });
 // Returns: false
+
+// Works with nested paths
+evaluate({
+  $exists: {
+    object: { daycare: { rooms: { toddler: "Room A" } } },
+    path: "daycare.rooms.toddler"
+  }
+});
+// Returns: true
 ```
 
 ## $join
 
-Joins array elements into a string with a separator.
+Joins array elements into a string with a separator. **Note:** This is intended to join arrays of string values. Attempting to join values of other types may behave differently across different runtimes. Consider overriding this expression if you have use cases more complex than joining arrays of strings.
 
 **Apply Form:**
 

@@ -60,8 +60,16 @@ export interface PropExpression {
 	$prop: string | number | symbol | { object: unknown; property: string | number | symbol };
 }
 
-export interface IsDefined {
-	$isDefined: unknown | [unknown];
+export interface HasValueExpression {
+	$hasValue: unknown | [unknown];
+}
+
+export interface IsEmptyExpression {
+	$isEmpty: unknown | [unknown];
+}
+
+export interface ExistsExpression {
+	$exists: string | { object: unknown; path: string };
 }
 
 
@@ -333,7 +341,9 @@ export type AnyExpression =
 	| IdentityExpression
 	| LiteralExpression
 	| PropExpression
-	| IsDefined
+	| HasValueExpression
+	| IsEmptyExpression
+	| ExistsExpression
 	| DebugExpression
 	| PipeExpression
 	| DefaultExpression

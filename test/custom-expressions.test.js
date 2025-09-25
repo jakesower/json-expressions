@@ -336,7 +336,9 @@ describe("Custom Expressions", () => {
 
     it("demonstrates function override precedence", () => {
       // First create normal engine
-      const normalEngine = createExpressionEngine({ packs: [allExpressionsForTesting] });
+      const normalEngine = createExpressionEngine({
+        packs: [allExpressionsForTesting],
+      });
       expect(normalEngine.apply({ $add: 5 }, 10)).toBe(15);
 
       // Then create engine with override

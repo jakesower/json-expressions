@@ -7,7 +7,7 @@
  * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Logic operations ($and, $or, $not)
  * - Membership tests ($in, $nin)
- * - Existence checks ($isNull, $isNotNull)
+ * - Value and existence checks ($hasValue, $isEmpty, $exists)
  * - Pattern matching ($matchesRegex)
  */
 
@@ -25,8 +25,9 @@ import {
   $lte,
   $in,
   $nin,
-  $isNull,
-  $isNotNull,
+  $hasValue,
+  $isEmpty,
+  $exists,
   $and,
   $or,
   $not,
@@ -53,9 +54,10 @@ export const filtering = {
   // Membership tests
   $in,
   $nin,
-  // Existence checks
-  $isNull,
-  $isNotNull,
+  // Value and existence checks
+  $hasValue,
+  $isEmpty,
+  $exists,
   // Pattern matching
   $matchesRegex,
 };

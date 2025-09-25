@@ -9,6 +9,7 @@
  * - Object matching ($matches)
  */
 
+import { mapValues } from "es-toolkit";
 import { get } from "es-toolkit/compat";
 
 const $get = {
@@ -36,11 +37,7 @@ const $get = {
   },
 };
 
-const $isDefined = {
-  apply: (operand, inputData, { apply }) =>
-    apply(operand, inputData) !== undefined,
-  evaluate: (operand, { evaluate }) => evaluate(operand) !== undefined,
-};
+// Removed $isDefined - replaced with semantic expressions $hasValue/$isEmpty/$exists
 
 const $identity = {
   apply: (operand, inputData) => inputData,
@@ -71,7 +68,6 @@ const $prop = {
   },
 };
 
-// TODO: Review Claude implementation
 const $select = {
   apply: (operand, inputData, { apply }) => {
     if (Array.isArray(operand)) {
@@ -88,12 +84,7 @@ const $select = {
     }
 
     if (typeof operand === "object" && operand !== null) {
-      // Object mapping - return object with computed values
-      const result = {};
-      Object.entries(operand).forEach(([newKey, expr]) => {
-        result[newKey] = apply(expr, inputData);
-      });
-      return result;
+      return mapValues(operand, (expr) => apply(expr, inputData));
     }
 
     throw new Error(
@@ -150,4 +141,4 @@ const $matches = {
 };
 
 // Individual exports for tree shaking (alphabetized)
-export { $get, $identity, $isDefined, $matches, $prop, $select };
+export { $get, $identity, $matches, $prop, $select };

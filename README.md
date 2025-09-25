@@ -447,7 +447,9 @@ The base pack contains near-universal expressions used across almost all scenari
 - [**$get**](docs/expressions.md#get) - Retrieves a value from data using dot notation paths with optional defaults
 - [**$identity**](docs/expressions.md#identity) - Returns input data unchanged in apply mode, or evaluates/returns the operand in evaluate mode
 - [**$if**](docs/expressions.md#if) - Conditional expression that evaluates different branches based on a condition
-- [**$isDefined**](docs/expressions.md#isdefined) - Tests if a value is defined (not null or undefined)
+- [**$hasValue**](docs/expressions.md#hasvalue) - Tests if a value is meaningful (not null or undefined)
+- [**$isEmpty**](docs/expressions.md#isempty) - Tests if a value is empty/absent (null or undefined)
+- [**$exists**](docs/expressions.md#exists) - Tests if a property or path exists in an object
 - [**$literal**](docs/expressions.md#literal) - Returns a literal value (useful when you need to pass values that look like expressions)
 - [**$map**](docs/expressions.md#map) - Transforms each item in an array using an expression
 - [**$not**](docs/expressions.md#not) - Logical NOT operation that inverts a boolean expression
@@ -517,8 +519,9 @@ Scalar comparison operations for filtering and validation:
 - [**$between**](docs/expressions.md#between) - Tests if value is between two bounds (inclusive)
 - [**$has**](docs/expressions.md#has) - Tests if object has property at specified path (supports dot notation)
 - [**$in**](docs/expressions.md#in) - Tests if value exists in an array
-- [**$isNotNull**](docs/expressions.md#isnotnull) - Tests if value is not null or undefined
-- [**$isNull**](docs/expressions.md#isnull) - Tests if value is null or undefined
+- [**$hasValue**](docs/expressions.md#hasvalue) - Tests if value is meaningful (not null or undefined)
+- [**$isEmpty**](docs/expressions.md#isempty) - Tests if value is empty/absent (null or undefined)
+- [**$exists**](docs/expressions.md#exists) - Tests if property or path exists in an object
 - [**$nin**](docs/expressions.md#nin) - Tests if value does not exist in an array
 
 #### Filtering Pack
@@ -530,7 +533,7 @@ Complete toolkit for WHERE clause logic and data filtering - combines field acce
 - [**$get**](docs/expressions.md#get) - Field access with dot notation paths
 - [**$in**](docs/expressions.md#in), [**$nin**](docs/expressions.md#nin) - Membership tests
 - [**$matches**](docs/expressions.md#matches) - Object-based property filtering (shorthand for complex conditions)
-- [**$isNull**](docs/expressions.md#isnull), [**$isNotNull**](docs/expressions.md#isnotnull) - Existence checks
+- [**$hasValue**](docs/expressions.md#hasvalue), [**$isEmpty**](docs/expressions.md#isempty), [**$exists**](docs/expressions.md#exists) - Value and existence checks
 - [**$matchesRegex**](docs/expressions.md#matchesregex), [**$matchesLike**](docs/expressions.md#matcheslike), [**$matchesGlob**](docs/expressions.md#matchesglob) - Pattern matching
 - [**$pipe**](docs/expressions.md#pipe) - Chain multiple filtering operations
 

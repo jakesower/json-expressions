@@ -4,19 +4,20 @@
  * Basic comparison operations for WHERE clause logic:
  * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Membership tests ($in, $nin)
- * - Range and existence checks ($between, $isNull, $isNotNull, $has)
+ * - Range and existence checks ($between, $hasValue, $isEmpty, $exists, $has)
  */
 
 // Import comparative expressions
 import {
   $between,
   $eq,
+  $exists,
   $gt,
   $gte,
   $has,
+  $hasValue,
   $in,
-  $isNotNull,
-  $isNull,
+  $isEmpty,
   $lt,
   $lte,
   $ne,
@@ -27,12 +28,13 @@ import {
 export const comparison = {
   $between,
   $eq,
+  $exists,
   $gt,
   $gte,
   $has,
+  $hasValue,
   $in,
-  $isNotNull,
-  $isNull,
+  $isEmpty,
   $lt,
   $lte,
   $ne,
