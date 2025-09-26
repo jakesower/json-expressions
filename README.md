@@ -780,7 +780,7 @@ JSON Expressions excel at composing simple operations into complex logic:
 {
   $matches: {
     "child.age": { $gte: 3 },
-    "enrollment.status": { $eq: "active" },
+    "enrollment.status": "active",
     "guardian.emergency.phone": { $isPresent: true }
   }
 }

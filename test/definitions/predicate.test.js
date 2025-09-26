@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
 import { allExpressionsForTesting } from "../../src/packs/all.js";
+import { isEqual } from "es-toolkit";
 
 const kids = {
   ximena: { name: "Ximena", age: 4 },
@@ -13,132 +14,87 @@ const testEngine = createExpressionEngine({
 });
 const { apply, evaluate } = testEngine;
 
-describe("$eq", () => {
-  describe("apply form", () => {
-    it("is determined deeply", async () => {
-      const expression = {
-        $eq: [3, { chicken: "butt" }],
-      };
-      expect(apply(expression, [3, { chicken: "butt" }])).toBe(true);
+describe("binary comparitive expressions", () => {
+  const binaryComparisonExpressions = {
+    $eq: isEqual,
+    $ne: (x, y) => !isEqual(x, y),
+    $gt: (x, y) => x > y,
+    $gte: (x, y) => x >= y,
+    $lt: (x, y) => x < y,
+    $lte: (x, y) => x <= y,
+  };
+
+  describe("common features", () => {
+    Object.entries(binaryComparisonExpressions).forEach(([expr, fn]) => {
+      describe(expr, () => {
+        describe("apply", () => {
+          it("applies the comparison to input data in singular value form", () => {
+            const exp = { $pipe: [{ $get: "age" }, { [expr]: 5 }] };
+
+            Object.values(kids).forEach((kid) => {
+              expect(apply(exp, kid)).toBe(fn(kid.age, 5));
+            });
+          });
+
+          it("applies the comparison to input data in array value form", () => {
+            const exp = { [expr]: [{ $get: "age" }, 5] };
+
+            Object.values(kids).forEach((kid) => {
+              expect(apply(exp, kid)).toBe(fn(kid.age, 5));
+            });
+          });
+
+          it("throws with wrong array length", () => {
+            expect(() => apply({ [expr]: [1, 2, 3] }, {})).toThrowError(
+              "Comparitive expressions in array form require exactly 2 elements",
+            );
+          });
+        });
+
+        describe("evaluate", () => {
+          it("evaluates array form", () => {
+            const expFn = (kid) => ({ [expr]: [kid.age, 5] });
+            Object.values(kids).forEach((kid) => {
+              expect(evaluate(expFn(kid))).toBe(fn(kid.age, 5));
+            });
+          });
+
+          it("evaluates object form", () => {
+            const expFn = (kid) => ({ [expr]: { left: kid.age, right: 5 } });
+            Object.values(kids).forEach((kid) => {
+              expect(evaluate(expFn(kid))).toBe(fn(kid.age, 5));
+            });
+          });
+
+          it("throws with wrong array length", () => {
+            expect(() => evaluate({ [expr]: [1, 2, 3] })).toThrowError(
+              "Comparison evaluate form requires either array or object operand: [left, right] or { left, right }",
+            );
+          });
+        });
+      });
     });
   });
 
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $eq: [5, 5] })).toBe(true);
-      expect(evaluate({ $eq: [5, 10] })).toBe(false);
-      expect(evaluate({ $eq: [{ a: 1 }, { a: 1 }] })).toBe(true);
-    });
-
-    it("evaluates using object format", () => {
-      expect(evaluate({ $eq: { left: 5, right: 5 } })).toBe(true);
-      expect(evaluate({ $eq: { left: 5, right: 10 } })).toBe(false);
-      expect(evaluate({ $eq: { left: { a: 1 }, right: { a: 1 } } })).toBe(true);
-    });
-  });
-});
-
-describe("$gt", () => {
-  describe("apply form", () => {
-    it("implements the $gt expression", () => {
-      const exp = { $pipe: [{ $get: "age" }, { $gt: 5 }] };
-
-      expect(apply(exp, kids.ximena)).toBe(false);
-      expect(apply(exp, kids.yousef)).toBe(false);
-      expect(apply(exp, kids.zoë)).toBe(true);
+  describe("$eq", () => {
+    describe("apply form", () => {
+      it("handles deep equality", () => {
+        const expression = {
+          $eq: { $literal: [3, { chicken: "butt" }] },
+        };
+        expect(apply(expression, [3, { chicken: "butt" }])).toBe(true);
+      });
     });
   });
 
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $gt: [10, 5] })).toBe(true);
-      expect(evaluate({ $gt: [5, 10] })).toBe(false);
-      expect(evaluate({ $gt: [5, 5] })).toBe(false);
-    });
-
-    it("evaluates using object format", () => {
-      expect(evaluate({ $gt: { left: 10, right: 5 } })).toBe(true);
-      expect(evaluate({ $gt: { left: 5, right: 10 } })).toBe(false);
-      expect(evaluate({ $gt: { left: 5, right: 5 } })).toBe(false);
-    });
-  });
-});
-
-describe("$gte", () => {
-  describe("apply form", () => {
-    it("implements the $gte expression", () => {
-      const exp = { $pipe: [{ $get: "age" }, { $gte: 5 }] };
-
-      expect(apply(exp, kids.ximena)).toBe(false);
-      expect(apply(exp, kids.yousef)).toBe(true);
-      expect(apply(exp, kids.zoë)).toBe(true);
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $gte: [10, 5] })).toBe(true);
-      expect(evaluate({ $gte: [5, 5] })).toBe(true);
-      expect(evaluate({ $gte: [5, 10] })).toBe(false);
-    });
-  });
-});
-
-describe("$lt", () => {
-  describe("apply form", () => {
-    it("implements the $lt expression", () => {
-      const exp = { $pipe: [{ $get: "age" }, { $lt: 5 }] };
-
-      expect(apply(exp, kids.ximena)).toBe(true);
-      expect(apply(exp, kids.yousef)).toBe(false);
-      expect(apply(exp, kids.zoë)).toBe(false);
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $lt: [5, 10] })).toBe(true);
-      expect(evaluate({ $lt: [10, 5] })).toBe(false);
-      expect(evaluate({ $lt: [5, 5] })).toBe(false);
-    });
-  });
-});
-
-describe("$lte", () => {
-  describe("apply form", () => {
-    it("implements the $lte expression", () => {
-      const exp = { $pipe: [{ $get: "age" }, { $lte: 5 }] };
-
-      expect(apply(exp, kids.ximena)).toBe(true);
-      expect(apply(exp, kids.yousef)).toBe(true);
-      expect(apply(exp, kids.zoë)).toBe(false);
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $lte: [5, 10] })).toBe(true);
-      expect(evaluate({ $lte: [5, 5] })).toBe(true);
-      expect(evaluate({ $lte: [10, 5] })).toBe(false);
-    });
-  });
-});
-
-describe("$ne", () => {
-  describe("apply form", () => {
-    it("implements the $ne expression", () => {
-      const exp = { $pipe: [{ $get: "age" }, { $ne: 5 }] };
-
-      expect(apply(exp, kids.ximena)).toBe(true);
-      expect(apply(exp, kids.yousef)).toBe(false);
-      expect(apply(exp, kids.zoë)).toBe(true);
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("evaluates static comparisons", () => {
-      expect(evaluate({ $ne: [5, 10] })).toBe(true);
-      expect(evaluate({ $ne: [5, 5] })).toBe(false);
+  describe("$ne", () => {
+    describe("apply form", () => {
+      it("handles deep inequality", () => {
+        const expression = {
+          $ne: { $literal: [3, { chicken: "butt" }] },
+        };
+        expect(apply(expression, [3, { chicken: "butt" }])).toBe(false);
+      });
     });
   });
 });
@@ -483,9 +439,15 @@ describe("$isPresent", () => {
     });
 
     it("should require boolean operand", () => {
-      expect(() => apply({ $isPresent: "invalid" }, "present")).toThrow("$isPresent apply form requires boolean operand (true/false)");
-      expect(() => apply({ $isPresent: null }, null)).toThrow("$isPresent apply form requires boolean operand (true/false)");
-      expect(() => apply({ $isPresent: { complex: "object" } }, null)).toThrow("$isPresent apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isPresent: "invalid" }, "present")).toThrow(
+        "$isPresent apply form requires boolean operand (true/false)",
+      );
+      expect(() => apply({ $isPresent: null }, null)).toThrow(
+        "$isPresent apply form requires boolean operand (true/false)",
+      );
+      expect(() => apply({ $isPresent: { complex: "object" } }, null)).toThrow(
+        "$isPresent apply form requires boolean operand (true/false)",
+      );
     });
   });
 
@@ -566,9 +528,15 @@ describe("$isEmpty", () => {
     });
 
     it("should require boolean operand", () => {
-      expect(() => apply({ $isEmpty: "invalid" }, null)).toThrow("$isEmpty apply form requires boolean operand (true/false)");
-      expect(() => apply({ $isEmpty: null }, null)).toThrow("$isEmpty apply form requires boolean operand (true/false)");
-      expect(() => apply({ $isEmpty: 42 }, "present")).toThrow("$isEmpty apply form requires boolean operand (true/false)");
+      expect(() => apply({ $isEmpty: "invalid" }, null)).toThrow(
+        "$isEmpty apply form requires boolean operand (true/false)",
+      );
+      expect(() => apply({ $isEmpty: null }, null)).toThrow(
+        "$isEmpty apply form requires boolean operand (true/false)",
+      );
+      expect(() => apply({ $isEmpty: 42 }, "present")).toThrow(
+        "$isEmpty apply form requires boolean operand (true/false)",
+      );
     });
   });
 
@@ -652,12 +620,18 @@ describe("$exists", () => {
       const student = { name: "Omar", skills: { reading: "good" } };
 
       expect(apply({ $exists: { $literal: "name" } }, student)).toBe(true);
-      expect(apply({ $exists: { $literal: "skills.reading" } }, student)).toBe(true);
-      expect(apply({ $exists: { $literal: "skills.math" } }, student)).toBe(false);
+      expect(apply({ $exists: { $literal: "skills.reading" } }, student)).toBe(
+        true,
+      );
+      expect(apply({ $exists: { $literal: "skills.math" } }, student)).toBe(
+        false,
+      );
     });
 
     it("should throw error for non-string paths", () => {
-      expect(() => apply({ $exists: 123 }, {})).toThrow("$exists operand must resolve to a string path");
+      expect(() => apply({ $exists: 123 }, {})).toThrow(
+        "$exists operand must resolve to a string path",
+      );
     });
   });
 
@@ -665,10 +639,18 @@ describe("$exists", () => {
     it("should check property existence in provided objects", () => {
       const student = { name: "Layla", activities: ["art", "music"] };
 
-      expect(evaluate({ $exists: { object: student, path: "name" } })).toBe(true);
-      expect(evaluate({ $exists: { object: student, path: "activities" } })).toBe(true);
-      expect(evaluate({ $exists: { object: student, path: "missing" } })).toBe(false);
-      expect(evaluate({ $exists: { object: {}, path: "anything" } })).toBe(false);
+      expect(evaluate({ $exists: { object: student, path: "name" } })).toBe(
+        true,
+      );
+      expect(
+        evaluate({ $exists: { object: student, path: "activities" } }),
+      ).toBe(true);
+      expect(evaluate({ $exists: { object: student, path: "missing" } })).toBe(
+        false,
+      );
+      expect(evaluate({ $exists: { object: {}, path: "anything" } })).toBe(
+        false,
+      );
     });
 
     it("should work with nested paths", () => {
@@ -677,23 +659,38 @@ describe("$exists", () => {
         rooms: { toddler: "Room A" },
       };
 
-      expect(evaluate({ $exists: { object: daycare, path: "staff.teacher" } })).toBe(true);
-      expect(evaluate({ $exists: { object: daycare, path: "staff.assistant" } })).toBe(true); // exists but null
-      expect(evaluate({ $exists: { object: daycare, path: "staff.janitor" } })).toBe(false);
-      expect(evaluate({ $exists: { object: daycare, path: "rooms.toddler" } })).toBe(true);
+      expect(
+        evaluate({ $exists: { object: daycare, path: "staff.teacher" } }),
+      ).toBe(true);
+      expect(
+        evaluate({ $exists: { object: daycare, path: "staff.assistant" } }),
+      ).toBe(true); // exists but null
+      expect(
+        evaluate({ $exists: { object: daycare, path: "staff.janitor" } }),
+      ).toBe(false);
+      expect(
+        evaluate({ $exists: { object: daycare, path: "rooms.toddler" } }),
+      ).toBe(true);
     });
 
     it("should require object and path properties", () => {
-      expect(() => evaluate({ $exists: { object: {} } })).toThrow("$exists evaluate form requires 'object' and 'path' properties");
-      expect(() => evaluate({ $exists: { path: "test" } })).toThrow("$exists evaluate form requires 'object' and 'path' properties");
-      expect(() => evaluate({ $exists: "invalid" })).toThrow("$exists evaluate form requires object operand: { object, path }");
+      expect(() => evaluate({ $exists: { object: {} } })).toThrow(
+        "$exists evaluate form requires 'object' and 'path' properties",
+      );
+      expect(() => evaluate({ $exists: { path: "test" } })).toThrow(
+        "$exists evaluate form requires 'object' and 'path' properties",
+      );
+      expect(() => evaluate({ $exists: "invalid" })).toThrow(
+        "$exists evaluate form requires object operand: { object, path }",
+      );
     });
 
     it("should require string paths", () => {
-      expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow("$exists path must be a string");
+      expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow(
+        "$exists path must be a string",
+      );
     });
   });
-
 });
 
 describe("$isPresent", () => {
@@ -720,9 +717,24 @@ describe("$isPresent", () => {
       const student1 = { name: "Maria", emergencyContact: "555-0123" };
       const student2 = { name: "Elena", emergencyContact: null };
 
-      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] }, student1)).toBe(true);
-      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] }, student2)).toBe(false);
-      expect(apply({ $pipe: [{ $get: "emergencyContact" }, { $isPresent: false }] }, student2)).toBe(true);
+      expect(
+        apply(
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] },
+          student1,
+        ),
+      ).toBe(true);
+      expect(
+        apply(
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: true }] },
+          student2,
+        ),
+      ).toBe(false);
+      expect(
+        apply(
+          { $pipe: [{ $get: "emergencyContact" }, { $isPresent: false }] },
+          student2,
+        ),
+      ).toBe(true);
     });
 
     it("should work in evaluate form unchanged", () => {
@@ -759,9 +771,24 @@ describe("$isEmpty", () => {
       const student1 = { name: "Priya", vaccinations: ["MMR", "DTaP"] };
       const student2 = { name: "Sana", vaccinations: null };
 
-      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] }, student2)).toBe(true);
-      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] }, student1)).toBe(false);
-      expect(apply({ $pipe: [{ $get: "vaccinations" }, { $isEmpty: false }] }, student1)).toBe(true);
+      expect(
+        apply(
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] },
+          student2,
+        ),
+      ).toBe(true);
+      expect(
+        apply(
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: true }] },
+          student1,
+        ),
+      ).toBe(false);
+      expect(
+        apply(
+          { $pipe: [{ $get: "vaccinations" }, { $isEmpty: false }] },
+          student1,
+        ),
+      ).toBe(true);
     });
 
     it("should work in evaluate form unchanged", () => {
@@ -774,7 +801,6 @@ describe("$isEmpty", () => {
     });
   });
 });
-
 
 describe("$and", () => {
   describe("apply form", () => {

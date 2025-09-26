@@ -15,9 +15,19 @@
  * @returns {object} Expression object with apply and evaluate methods
  */
 const createMathExpression = (operationFn, validateFn) => ({
-  apply: (operand, inputData) => {
-    if (validateFn) validateFn(inputData, operand);
-    return operationFn(inputData, operand);
+  apply: (operand, inputData, { apply }) => {
+    const resolved = apply(operand, inputData);
+
+    if (validateFn) validateFn(inputData, resolved);
+    if (Array.isArray(resolved) && resolved.length !== 2) {
+      throw new Error(
+        "Math expressions in array form require exactly 2 elements",
+      );
+    }
+
+    return Array.isArray(resolved)
+      ? operationFn(...resolved)
+      : operationFn(inputData, resolved);
   },
   evaluate: (operand, { evaluate }) => {
     if (!Array.isArray(operand) || operand.length !== 2) {
@@ -56,8 +66,8 @@ const $abs = {
 };
 
 const $add = createMathExpression((left, right) => left + right);
-
-const $count = createAggregativeExpression((values) => values.length);
+const $subtract = createMathExpression((left, right) => left - right);
+const $multiply = createMathExpression((left, right) => left * right);
 
 const $divide = createMathExpression(
   (left, right) => left / right,
@@ -67,6 +77,19 @@ const $divide = createMathExpression(
     }
   },
 );
+
+const $modulo = createMathExpression(
+  (left, right) => left % right,
+  (left, right) => {
+    if (right === 0) {
+      throw new Error("Modulo by zero");
+    }
+  },
+);
+
+const $pow = createMathExpression((left, right) => Math.pow(left, right));
+
+const $count = createAggregativeExpression((values) => values.length);
 
 const $first = createAggregativeExpression((values) => {
   return values.length === 0 ? undefined : values[0];
@@ -94,25 +117,10 @@ const $min = createAggregativeExpression((values) => {
     : values.reduce((min, v) => Math.min(min, v));
 });
 
-const $modulo = createMathExpression(
-  (left, right) => left % right,
-  (left, right) => {
-    if (right === 0) {
-      throw new Error("Modulo by zero");
-    }
-  },
-);
-
-const $multiply = createMathExpression((left, right) => left * right);
-
-const $pow = createMathExpression((left, right) => Math.pow(left, right));
-
 const $sqrt = {
   apply: (operand, inputData) => Math.sqrt(inputData),
   evaluate: (operand, { evaluate }) => Math.sqrt(evaluate(operand)),
 };
-
-const $subtract = createMathExpression((left, right) => left - right);
 
 const $sum = createAggregativeExpression((values) => {
   return values.reduce((sum, v) => sum + v, 0);

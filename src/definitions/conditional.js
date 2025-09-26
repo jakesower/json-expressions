@@ -102,16 +102,20 @@ const $if = {
 };
 
 const $matches = {
-  apply: (operand, inputData, { apply }) => {
+  apply: (operand, inputData, { apply, isExpression, isWrappedLiteral }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
         "$matches operand must be an object with property conditions",
       );
     }
-
     return Object.entries(operand).every(([path, condition]) => {
       const value = get(inputData, path);
-      return apply(condition, value);
+
+      if (isWrappedLiteral(condition))
+        {return isEqual(condition.$literal, value);}
+      if (isExpression(condition)) return apply(condition, value);
+
+      return isEqual(value, condition);
     });
   },
   evaluate: (operand, { apply }) => {

@@ -20,9 +20,22 @@ import { get } from "es-toolkit/compat";
  * @returns {object} Expression object with apply and evaluate methods
  */
 const createComparativeExpression = (compareFn) => ({
-  apply(operand, inputData, { apply }) {
-    const resolvedOperand = apply(operand, inputData);
-    return compareFn(inputData, resolvedOperand);
+  apply(operand, inputData, { apply, isWrappedLiteral }) {
+    if (isWrappedLiteral(operand)) {
+      return compareFn(inputData, operand.$literal);
+    }
+
+    const resolved = apply(operand, inputData);
+
+    if (Array.isArray(resolved) && resolved.length !== 2) {
+      throw new Error(
+        "Comparitive expressions in array form require exactly 2 elements",
+      );
+    }
+
+    return Array.isArray(resolved)
+      ? compareFn(...resolved)
+      : compareFn(inputData, resolved);
   },
   evaluate: (operand, { evaluate }) => {
     if (Array.isArray(operand) && operand.length === 2) {
@@ -30,19 +43,18 @@ const createComparativeExpression = (compareFn) => ({
       return compareFn(evaluate(left), evaluate(right));
     }
 
-    if (!operand || typeof operand !== "object") {
+    if (
+      !operand ||
+      typeof operand !== "object" ||
+      operand.left === undefined ||
+      operand.left === undefined
+    ) {
       throw new Error(
-        "Comparison evaluate form requires object operand: { left, right }",
+        "Comparison evaluate form requires either array or object operand: [left, right] or { left, right }",
       );
     }
 
     const { left, right } = operand;
-    if (left === undefined || right === undefined) {
-      throw new Error(
-        "Comparison evaluate form requires 'left' and 'right' properties",
-      );
-    }
-
     return compareFn(evaluate(left), evaluate(right));
   },
 });
@@ -149,7 +161,6 @@ const $gt = createComparativeExpression((a, b) => a > b);
 
 const $gte = createComparativeExpression((a, b) => a >= b);
 
-
 const $in = createInclusionExpression("$in", (value, array) =>
   array.includes(value),
 );
@@ -157,7 +168,9 @@ const $in = createInclusionExpression("$in", (value, array) =>
 const $isPresent = {
   apply: (operand, inputData) => {
     if (typeof operand !== "boolean") {
-      throw new Error("$isPresent apply form requires boolean operand (true/false)");
+      throw new Error(
+        "$isPresent apply form requires boolean operand (true/false)",
+      );
     }
     const isPresent = inputData != null;
     return operand ? isPresent : !isPresent;
@@ -168,7 +181,9 @@ const $isPresent = {
 const $isEmpty = {
   apply: (operand, inputData) => {
     if (typeof operand !== "boolean") {
-      throw new Error("$isEmpty apply form requires boolean operand (true/false)");
+      throw new Error(
+        "$isEmpty apply form requires boolean operand (true/false)",
+      );
     }
     const isEmpty = inputData == null;
     return operand ? isEmpty : !isEmpty;

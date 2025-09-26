@@ -44,7 +44,6 @@ const $identity = {
     isWrappedLiteral(operand) ? operand : evaluate(operand),
 };
 
-
 const $prop = {
   apply: (operand, inputData, { apply }) => {
     const resolvedOperand = apply(operand, inputData);

@@ -360,10 +360,10 @@ apply(
   {
     $default: {
       expression: { $get: "pickupTime" },
-      default: "5:00 PM"
-    }
+      default: "5:00 PM",
+    },
   },
-  child
+  child,
 );
 // Returns: "5:00 PM"
 ```
@@ -375,8 +375,8 @@ apply(
 evaluate({
   $default: {
     expression: null,
-    default: "No data available"
-  }
+    default: "No data available",
+  },
 });
 // Returns: "No data available"
 ```
@@ -455,8 +455,8 @@ evaluate({ $exists: { object: {}, path: "missing" } });
 evaluate({
   $exists: {
     object: { daycare: { rooms: { toddler: "Room A" } } },
-    path: "daycare.rooms.toddler"
-  }
+    path: "daycare.rooms.toddler",
+  },
 });
 // Returns: true
 ```
@@ -578,7 +578,7 @@ Converts an array of [key, value] pairs into an object.
 const childPairs = [
   ["name", "Zara"],
   ["age", 4],
-  ["group", "Butterflies"]
+  ["group", "Butterflies"],
 ];
 apply({ $fromPairs: null }, childPairs);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
@@ -588,7 +588,13 @@ apply({ $fromPairs: null }, childPairs);
 
 ```javascript
 // Create object from key-value pairs
-evaluate({ $fromPairs: [["room", "A"], ["capacity", 20], ["teacher", "Ms. Chen"]] });
+evaluate({
+  $fromPairs: [
+    ["room", "A"],
+    ["capacity", 20],
+    ["teacher", "Ms. Chen"],
+  ],
+});
 // Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
 ```
 
@@ -628,7 +634,7 @@ Flattens nested arrays by one level by default, with optional depth control.
 const nestedBelongings = [
   ["teddy", "book"],
   ["blocks", ["puzzle", "crayons"]],
-  ["doll"]
+  ["doll"],
 ];
 apply({ $flatten: null }, nestedBelongings);
 // Returns: ["teddy", "book", "blocks", ["puzzle", "crayons"], "doll"]
@@ -688,7 +694,7 @@ const children = [
   { name: "Aria", age: 4 },
   { name: "Kai", age: 5 },
   { name: "Zara", age: 4 },
-  { name: "Chen", age: 5 }
+  { name: "Chen", age: 5 },
 ];
 apply({ $groupBy: { $get: "age" } }, children);
 // Returns: {
@@ -703,9 +709,13 @@ apply({ $groupBy: { $get: "age" } }, children);
 // Group items by property
 evaluate({
   $groupBy: [
-    [{ type: "fruit", name: "apple" }, { type: "vegetable", name: "carrot" }, { type: "fruit", name: "banana" }],
-    { $get: "type" }
-  ]
+    [
+      { type: "fruit", name: "apple" },
+      { type: "vegetable", name: "carrot" },
+      { type: "fruit", name: "banana" },
+    ],
+    { $get: "type" },
+  ],
 });
 // Returns: {
 //   "fruit": [{ type: "fruit", name: "apple" }, { type: "fruit", name: "banana" }],
@@ -1085,14 +1095,28 @@ evaluate({ $map: [{ $multiply: 2 }, [1, 2, 3, 4]] });
 
 ## $matches
 
-Tests if an object matches all specified property conditions.
+Tests if an object matches all specified property conditions. Supports literal values, expressions, and $literal-wrapped values for flexible matching.
 
 **Apply Form:**
 
 ```javascript
 // Check if child meets multiple criteria
-const child = { name: "Aria", age: 5, active: true };
-apply({ $matches: { age: { $gte: 4 }, active: { $eq: true } } }, child);
+const child = {
+  name: "Aria",
+  age: 5,
+  active: true,
+  activity: { $get: "current" },
+};
+apply(
+  {
+    $matches: {
+      age: { $gte: 4 }, // match on an expression
+      active: true, // match on a literal value
+      activity: { $literal: { $get: "current" } }, // match the literal object (not as expression)
+    },
+  },
+  child,
+);
 // Returns: true
 ```
 
@@ -1108,8 +1132,6 @@ evaluate({
 });
 // Returns: true
 ```
-
-
 
 ## $matchesRegex
 
@@ -1190,7 +1212,9 @@ apply({ $merge: [{ group: "Butterflies" }, { present: true }] }, baseInfo);
 
 ```javascript
 // Combine multiple objects
-evaluate({ $merge: [{ room: "A" }, { capacity: 20 }, { teacher: "Ms. Chen" }] });
+evaluate({
+  $merge: [{ room: "A" }, { capacity: 20 }, { teacher: "Ms. Chen" }],
+});
 // Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
 ```
 
@@ -1350,7 +1374,12 @@ Returns a new object excluding the specified properties.
 
 ```javascript
 // Remove sensitive data from child record
-const child = { name: "Aria", age: 4, ssn: "123-45-6789", group: "Butterflies" };
+const child = {
+  name: "Aria",
+  age: 4,
+  ssn: "123-45-6789",
+  group: "Butterflies",
+};
 apply({ $omit: ["ssn"] }, child);
 // Returns: { name: "Aria", age: 4, group: "Butterflies" }
 ```
@@ -1361,9 +1390,14 @@ apply({ $omit: ["ssn"] }, child);
 // Exclude multiple properties
 evaluate({
   $omit: {
-    object: { id: 1, name: "Chen", password: "secret", email: "chen@daycare.com" },
-    properties: ["password", "id"]
-  }
+    object: {
+      id: 1,
+      name: "Chen",
+      password: "secret",
+      email: "chen@daycare.com",
+    },
+    properties: ["password", "id"],
+  },
 });
 // Returns: { name: "Chen", email: "chen@daycare.com" }
 ```
@@ -1397,7 +1431,13 @@ Returns a new object containing only the specified properties.
 
 ```javascript
 // Extract only essential child info
-const child = { name: "Aria", age: 4, ssn: "123-45-6789", group: "Butterflies", allergies: "none" };
+const child = {
+  name: "Aria",
+  age: 4,
+  ssn: "123-45-6789",
+  group: "Butterflies",
+  allergies: "none",
+};
 apply({ $pick: ["name", "age", "group"] }, child);
 // Returns: { name: "Aria", age: 4, group: "Butterflies" }
 ```
@@ -1408,9 +1448,14 @@ apply({ $pick: ["name", "age", "group"] }, child);
 // Select specific properties
 evaluate({
   $pick: {
-    object: { id: 1, name: "Chen", password: "secret", email: "chen@daycare.com" },
-    properties: ["name", "email"]
-  }
+    object: {
+      id: 1,
+      name: "Chen",
+      password: "secret",
+      email: "chen@daycare.com",
+    },
+    properties: ["name", "email"],
+  },
 });
 // Returns: { name: "Chen", email: "chen@daycare.com" }
 ```
@@ -1426,7 +1471,7 @@ Extracts a specific property from each object in an array (shorthand for $map + 
 const children = [
   { name: "Aria", age: 4 },
   { name: "Kai", age: 5 },
-  { name: "Zara", age: 3 }
+  { name: "Zara", age: 3 },
 ];
 apply({ $pluck: "name" }, children);
 // Returns: ["Aria", "Kai", "Zara"]
@@ -1438,9 +1483,12 @@ apply({ $pluck: "name" }, children);
 // Extract property from array of objects
 evaluate({
   $pluck: [
-    [{ room: "A", teacher: "Ms. Chen" }, { room: "B", teacher: "Mr. Ali" }],
-    "teacher"
-  ]
+    [
+      { room: "A", teacher: "Ms. Chen" },
+      { room: "B", teacher: "Mr. Ali" },
+    ],
+    "teacher",
+  ],
 });
 // Returns: ["Ms. Chen", "Mr. Ali"]
 ```
@@ -1629,14 +1677,22 @@ Creates a new object by selecting and optionally transforming properties.
 
 ```javascript
 // Select and transform child data
-const child = { name: "Aria", age: 4, birthDate: "2020-03-15", group: "Butterflies" };
-apply({
-  $select: {
-    childName: { $get: "name" },
-    ageInMonths: { $pipe: [{ $get: "age" }, { $multiply: 12 }] },
-    group: { $get: "group" }
-  }
-}, child);
+const child = {
+  name: "Aria",
+  age: 4,
+  birthDate: "2020-03-15",
+  group: "Butterflies",
+};
+apply(
+  {
+    $select: {
+      childName: { $get: "name" },
+      ageInMonths: { $pipe: [{ $get: "age" }, { $multiply: 12 }] },
+      group: { $get: "group" },
+    },
+  },
+  child,
+);
 // Returns: { childName: "Aria", ageInMonths: 48, group: "Butterflies" }
 ```
 
@@ -1649,9 +1705,9 @@ evaluate({
     object: { firstName: "Chen", lastName: "Li", age: 5 },
     selection: {
       fullName: { $join: [" ", [{ $get: "firstName" }, { $get: "lastName" }]] },
-      isSchoolAge: { $pipe: [{ $get: "age" }, { $gte: 5 }] }
-    }
-  }
+      isSchoolAge: { $pipe: [{ $get: "age" }, { $gte: 5 }] },
+    },
+  },
 });
 // Returns: { fullName: "Chen Li", isSchoolAge: true }
 ```
@@ -1667,7 +1723,7 @@ Sorts an array based on specified criteria.
 const children = [
   { name: "Zara", age: 3 },
   { name: "Aria", age: 4 },
-  { name: "Kai", age: 5 }
+  { name: "Kai", age: 5 },
 ];
 apply({ $sort: { by: "age" } }, children);
 // Returns: [{ name: "Zara", age: 3 }, { name: "Aria", age: 4 }, { name: "Kai", age: 5 }]
@@ -1683,9 +1739,13 @@ apply({ $sort: { by: "name", desc: true } }, children);
 // Sort with multiple criteria
 evaluate({
   $sort: {
-    array: [{ group: "A", score: 85 }, { group: "B", score: 90 }, { group: "A", score: 95 }],
-    sortCriteria: [{ by: "group" }, { by: "score", desc: true }]
-  }
+    array: [
+      { group: "A", score: 85 },
+      { group: "B", score: 90 },
+      { group: "A", score: 95 },
+    ],
+    sortCriteria: [{ by: "group" }, { by: "score", desc: true }],
+  },
 });
 // Returns: [{ group: "A", score: 95 }, { group: "A", score: 85 }, { group: "B", score: 90 }]
 ```
@@ -1860,7 +1920,13 @@ Returns an array with duplicate values removed.
 
 ```javascript
 // Get unique dietary restrictions
-const restrictions = ["none", "nut allergy", "none", "vegetarian", "nut allergy"];
+const restrictions = [
+  "none",
+  "nut allergy",
+  "none",
+  "vegetarian",
+  "nut allergy",
+];
 apply({ $unique: null }, restrictions);
 // Returns: ["none", "nut allergy", "vegetarian"]
 ```
