@@ -9,7 +9,7 @@
  */
 
 import { mapValues } from "es-toolkit";
-import { get } from "es-toolkit/compat";
+import { get } from "../helpers.js";
 
 const $get = {
   apply: (operand, inputData, { apply }) => {

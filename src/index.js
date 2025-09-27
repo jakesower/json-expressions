@@ -1,5 +1,5 @@
 // Main engine exports
-export { createExpressionEngine } from "./expressions.js";
+export { createExpressionEngine } from "./expression-engine.js";
 
 // Pack exports
 export { aggregation } from "./packs/aggregation.js";

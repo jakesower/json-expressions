@@ -11,7 +11,7 @@
  */
 
 import { isEqual } from "es-toolkit";
-import { get } from "es-toolkit/compat";
+import { get } from "../helpers.js";
 
 /**
  * Creates a comparative expression that applies a comparison function to resolved operands.

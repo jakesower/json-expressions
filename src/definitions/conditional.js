@@ -1,5 +1,5 @@
 import { isEqual } from "es-toolkit";
-import { get } from "es-toolkit/compat";
+import { get } from "../helpers.js";
 
 /**
  * Internal helper to validate a boolean condition and execute if/else logic.

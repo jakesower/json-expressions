@@ -10,7 +10,7 @@
  * - Utilities ($coalesce)
  */
 
-import { get } from "es-toolkit/compat";
+import { get } from "../helpers.js";
 
 /**
  * Creates an array iteration expression that applies a function to array elements.

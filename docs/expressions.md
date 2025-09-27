@@ -1,17 +1,12 @@
 # JSON Expressions Reference
 
-This document provides comprehensive documentation for all expressions available in the JSON Expressions library. Each expression is documented with both apply and evaluate forms, complete with examples using daycare/childcare themes.
+This document provides comprehensive documentation for all expressions available in the JSON Expressions library. All examples show **apply mode** - expressions that operate on input data.
 
-JSON Expressions support two execution modes:
-
-- **Apply form**: Expression operates on input data (e.g., `{ $gt: 18 }` tests if input > 18)
-- **Evaluate form**: Expression is self-contained (e.g., `{ $gt: [25, 18] }` tests if 25 > 18)
+> **Need dual-mode support?** For advanced scenarios requiring both apply and evaluate modes, see the **[Evaluate Method](evaluate-method.md)** and **[Dual-Mode Expressions](dual-mode-expressions.md)** guides.
 
 ## $abs
 
 Returns the absolute value of a number.
-
-**Apply Form:**
 
 ```javascript
 // Test if child's temperature deviation is concerning
@@ -19,39 +14,30 @@ apply({ $abs: null }, -2.5);
 // Returns: 2.5
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Calculate absolute temperature difference
-evaluate({ $abs: -1.8 });
-// Returns: 1.8
-```
-
 ## $add
 
 Performs addition of two numbers.
 
-**Apply Form:**
-
 ```javascript
-// Add bonus points to child's current score
+// Single operand: add to input data
 apply({ $add: 5 }, 12);
-// Returns: 17
-```
+// Returns: 17 (12 + 5)
 
-**Evaluate Form:**
+// Array form: add two expressions
+apply(
+  { $add: [{ $get: "baseScore" }, { $get: "bonus" }] },
+  { baseScore: 10, bonus: 3 },
+);
+// Returns: 13 (10 + 3)
 
-```javascript
-// Calculate total meal cost
-evaluate({ $add: [8.5, 4.25] });
-// Returns: 12.75
+// Mixed form: expression + literal
+apply({ $add: [{ $get: "age" }, 12] }, { age: 4 });
+// Returns: 16 (4 + 12)
 ```
 
 ## $all
 
 Tests if all elements in an array satisfy a predicate expression.
-
-**Apply Form:**
 
 ```javascript
 // Check if all children are ready for outdoor play
@@ -64,19 +50,9 @@ apply({ $all: { $get: "hasJacket" } }, children);
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Check if all children in array meet age requirement
-evaluate({ $all: [{ $gte: 3 }, [3, 4, 5, 2]] });
-// Returns: false (2 is less than 3)
-```
-
 ## $and
 
 Logical AND operation - returns true if all expressions are truthy.
-
-**Apply Form:**
 
 ```javascript
 // Check if child meets multiple criteria for field trip
@@ -94,19 +70,9 @@ apply(
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Check multiple boolean conditions
-evaluate({ $and: [true, true, false] });
-// Returns: false
-```
-
 ## $any
 
 Tests if any element in an array satisfies a predicate expression.
-
-**Apply Form:**
 
 ```javascript
 // Check if any child needs a nap
@@ -119,19 +85,9 @@ apply({ $any: { $get: "tired" } }, children);
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Check if any age is below minimum
-evaluate({ $any: [{ $lt: 3 }, [4, 5, 2, 6]] });
-// Returns: true (2 is less than 3)
-```
-
 ## $append
 
 Appends an array to the end of the input array.
-
-**Apply Form:**
 
 ```javascript
 // Add new children to existing group
@@ -140,36 +96,13 @@ apply({ $append: ["Nina", "Omar"] }, currentGroup);
 // Returns: ["Amara", "Kenji", "Sofia", "Nina", "Omar"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Combine two arrays
-evaluate({
-  $append: [
-    ["Amara", "Kenji"],
-    ["Sofia", "Nina"],
-  ],
-});
-// Returns: ["Amara", "Kenji", "Sofia", "Nina"]
-```
-
 ## $between
 
 Tests if a value is between two bounds (inclusive).
 
-**Apply Form:**
-
 ```javascript
 // Check if child's age is in preschool range
 apply({ $between: { min: 3, max: 5 } }, 4);
-// Returns: true
-```
-
-**Evaluate Form:**
-
-```javascript
-// Check if temperature is in comfortable range
-evaluate({ $between: { value: 72, min: 68, max: 75 } });
 // Returns: true
 ```
 
@@ -227,29 +160,9 @@ apply(
 // Returns: "High energy games"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Static conditional logic with mixed condition types
-evaluate({
-  $case: {
-    value: 4,
-    cases: [
-      { when: 2, then: "Toddler activities" }, // Literal comparison: 4 === 2? No
-      { when: { $gt: 3 }, then: "Preschool activities" }, // Boolean predicate: 4 > 3? Yes!
-      { when: { $eq: 4 }, then: "Age four activities" }, // Would match but already found one
-    ],
-    default: "Mixed age activities",
-  },
-});
-// Returns: "Preschool activities"
-```
-
 ## $coalesce
 
 Returns the first non-null value from an array.
-
-**Apply Form:**
 
 ```javascript
 // Get first available contact method
@@ -265,19 +178,9 @@ apply(
 // Returns: "parent@example.com"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Find first non-null value
-evaluate({ $coalesce: [null, undefined, "Daycare Center", "Backup Name"] });
-// Returns: "Daycare Center"
-```
-
 ## $concat
 
 Concatenates multiple arrays together.
-
-**Apply Form:**
 
 ```javascript
 // Combine current children with new arrivals
@@ -286,21 +189,9 @@ apply({ $concat: [["Zara"], ["Luna", "Diego"]] }, currentChildren);
 // Returns: ["Aria", "Kai", "Zara", "Luna", "Diego"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Combine multiple groups
-evaluate({
-  $concat: [["Morning group"], ["Afternoon group"], ["Extended care"]],
-});
-// Returns: ["Morning group", "Afternoon group", "Extended care"]
-```
-
 ## $count
 
 Returns the count of items in an array.
-
-**Apply Form:**
 
 ```javascript
 // Count number of children in group
@@ -309,19 +200,9 @@ apply({ $count: null }, children);
 // Returns: 4
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Count items in static array
-evaluate({ $count: ["apple", "banana", "crackers", "juice"] });
-// Returns: 4
-```
-
 ## $debug
 
 Logs a value to console and returns it unchanged (useful for debugging pipelines).
-
-**Apply Form:**
 
 ```javascript
 // Debug intermediate value in pipeline
@@ -338,20 +219,9 @@ apply(
 // Logs the children array and continues processing
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Debug static value
-evaluate({ $debug: "Current meal time: lunch" });
-// Logs: "Current meal time: lunch"
-// Returns: "Current meal time: lunch"
-```
-
 ## $default
 
 Returns a default value if the expression result is null or undefined.
-
-**Apply Form:**
 
 ```javascript
 // Provide default pickup time if not specified
@@ -368,64 +238,51 @@ apply(
 // Returns: "5:00 PM"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Use default value for missing data
-evaluate({
-  $default: {
-    expression: null,
-    default: "No data available",
-  },
-});
-// Returns: "No data available"
-```
-
 ## $divide
 
 Performs division operation.
 
-**Apply Form:**
-
 ```javascript
-// Calculate per-child snack cost
+// Single operand: divide input data
 apply({ $divide: 4 }, 20.0);
-// Returns: 5.00
-```
+// Returns: 5.00 (20.0 / 4)
 
-**Evaluate Form:**
+// Array form: divide two expressions
+apply(
+  { $divide: [{ $get: "total" }, { $get: "children" }] },
+  { total: 24, children: 6 },
+);
+// Returns: 4 (24 / 6)
 
-```javascript
-// Calculate cost per child
-evaluate({ $divide: [24.0, 6] });
-// Returns: 4.00
+// Mixed form: expression / literal
+apply({ $divide: [{ $get: "minutes" }, 60] }, { minutes: 150 });
+// Returns: 2.5 (150 / 60)
 ```
 
 ## $eq
 
 Tests equality using deep comparison.
 
-**Apply Form:**
-
 ```javascript
-// Check if child's current activity matches target
+// Single operand: compare input data
 apply({ $eq: "reading" }, "reading");
-// Returns: true
-```
+// Returns: true ("reading" === "reading")
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply(
+  { $eq: [{ $get: "status" }, { $get: "expectedStatus" }] },
+  { status: "active", expectedStatus: "active" },
+);
+// Returns: true ("active" === "active")
 
-```javascript
-// Compare two values
-evaluate({ $eq: ["storytime", "storytime"] });
-// Returns: true
+// Mixed form: expression === literal
+apply({ $eq: [{ $get: "activity" }, "nap"] }, { activity: "nap" });
+// Returns: true ("nap" === "nap")
 ```
 
 ## $exists
 
 Tests if a property or path exists in an object, regardless of its value. Different from $isPresent - this checks existence, not meaningfulness.
-
-**Apply Form:**
 
 ```javascript
 // Check if child has allergies field (even if null)
@@ -441,31 +298,9 @@ apply({ $exists: "parent.phone" }, { parent: { phone: "555-0123" } });
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Test property existence in provided object
-evaluate({ $exists: { object: { name: "Chen" }, path: "name" } });
-// Returns: true
-
-evaluate({ $exists: { object: {}, path: "missing" } });
-// Returns: false
-
-// Works with nested paths
-evaluate({
-  $exists: {
-    object: { daycare: { rooms: { toddler: "Room A" } } },
-    path: "daycare.rooms.toddler",
-  },
-});
-// Returns: true
-```
-
 ## $filter
 
 Filters array items based on a condition.
-
-**Apply Form:**
 
 ```javascript
 // Find children who need extra help
@@ -478,19 +313,9 @@ apply({ $filter: { $get: "needsHelp" } }, children);
 // Returns: [{ name: "Aria", needsHelp: true, age: 4 }, { name: "Zara", needsHelp: true, age: 3 }]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Filter numbers greater than threshold
-evaluate({ $filter: [{ $gt: 3 }, [2, 4, 1, 5, 3, 6]] });
-// Returns: [4, 5, 6]
-```
-
 ## $filterBy
 
 Filters arrays by object property conditions (shorthand for $filter + $matches).
-
-**Apply Form:**
 
 ```javascript
 // Find active children ready for kindergarten
@@ -504,28 +329,9 @@ apply({ $filterBy: { age: { $gte: 5 }, active: { $eq: true } } }, children);
 // Returns: [{ name: "Kai", age: 5, active: true }, { name: "Leo", age: 6, active: true }]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Filter students by multiple criteria
-evaluate({
-  $filterBy: [
-    [
-      { name: "Alice", score: 85, grade: "A" },
-      { name: "Bob", score: 65, grade: "C" },
-      { name: "Carol", score: 95, grade: "A" },
-    ],
-    { score: { $gte: 80 }, grade: { $eq: "A" } },
-  ],
-});
-// Returns: [{ name: "Alice", score: 85, grade: "A" }, { name: "Carol", score: 95, grade: "A" }]
-```
-
 ## $find
 
 Returns the first element that satisfies a predicate.
-
-**Apply Form:**
 
 ```javascript
 // Find first child ready for kindergarten
@@ -538,19 +344,9 @@ apply({ $find: { $pipe: [{ $get: "age" }, { $gte: 5 }] } }, children);
 // Returns: { name: "Kai", age: 5 }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Find first number greater than threshold
-evaluate({ $find: [{ $gt: 10 }, [5, 8, 12, 15, 3]] });
-// Returns: 12
-```
-
 ## $first
 
 Returns the first item in an array.
-
-**Apply Form:**
 
 ```javascript
 // Get first child in lineup
@@ -559,19 +355,9 @@ apply({ $first: null }, lineup);
 // Returns: "Chen"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Get first item from array
-evaluate({ $first: ["Monday", "Tuesday", "Wednesday"] });
-// Returns: "Monday"
-```
-
 ## $fromPairs
 
 Converts an array of [key, value] pairs into an object.
-
-**Apply Form:**
 
 ```javascript
 // Convert child data pairs to object
@@ -584,25 +370,9 @@ apply({ $fromPairs: null }, childPairs);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Create object from key-value pairs
-evaluate({
-  $fromPairs: [
-    ["room", "A"],
-    ["capacity", 20],
-    ["teacher", "Ms. Chen"],
-  ],
-});
-// Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
-```
-
 ## $flatMap
 
 Maps and flattens array items.
-
-**Apply Form:**
 
 ```javascript
 // Get all toys from all children's belongings
@@ -615,19 +385,9 @@ apply({ $flatMap: { $get: "belongings" } }, children);
 // Returns: ["teddy", "book", "blocks", "puzzle", "crayons", "doll"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Flatten mapped results
-evaluate({ $flatMap: [{ $split: "," }, ["a,b", "c,d", "e"]] });
-// Returns: ["a", "b", "c", "d", "e"]
-```
-
 ## $flatten
 
 Flattens nested arrays by one level by default, with optional depth control.
-
-**Apply Form:**
 
 ```javascript
 // Flatten one level (default)
@@ -644,23 +404,9 @@ apply({ $flatten: { depth: 2 } }, nestedBelongings);
 // Returns: ["teddy", "book", "blocks", "puzzle", "crayons", "doll"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Flatten array operand
-evaluate({ $flatten: [["a", "b"], ["c", ["d", "e"]], "f"] });
-// Returns: ["a", "b", "c", ["d", "e"], "f"]
-
-// Flatten with specific depth
-evaluate({ $flatten: { array: [["a", ["b", "c"]], ["d"]], depth: 2 } });
-// Returns: ["a", "b", "c", "d"]
-```
-
 ## $get
 
 Retrieves a value from data using dot notation paths.
-
-**Apply Form:**
 
 ```javascript
 // Get child's name with default
@@ -673,20 +419,9 @@ apply({ $get: "info.age" }, child);
 // Returns: 4
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Get property from provided object
-const daycare = { name: "Sunshine Daycare", capacity: 24 };
-evaluate({ $get: { object: daycare, path: "capacity" } });
-// Returns: 24
-```
-
 ## $groupBy
 
 Groups array elements by a specified key or expression result.
-
-**Apply Form:**
 
 ```javascript
 // Group children by age
@@ -703,71 +438,48 @@ apply({ $groupBy: { $get: "age" } }, children);
 // }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Group items by property
-evaluate({
-  $groupBy: [
-    [
-      { type: "fruit", name: "apple" },
-      { type: "vegetable", name: "carrot" },
-      { type: "fruit", name: "banana" },
-    ],
-    { $get: "type" },
-  ],
-});
-// Returns: {
-//   "fruit": [{ type: "fruit", name: "apple" }, { type: "fruit", name: "banana" }],
-//   "vegetable": [{ type: "vegetable", name: "carrot" }]
-// }
-```
-
 ## $gt
 
 Tests if value is greater than operand.
 
-**Apply Form:**
-
 ```javascript
-// Check if child is old enough for advanced activities
+// Single operand: compare input data
 apply({ $gt: 4 }, 5);
-// Returns: true
-```
+// Returns: true (5 > 4)
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply({ $gt: [{ $get: "age" }, { $get: "minAge" }] }, { age: 6, minAge: 4 });
+// Returns: true (6 > 4)
 
-```javascript
-// Compare two values
-evaluate({ $gt: [6, 4] });
-// Returns: true
+// Mixed form: expression > literal
+apply({ $gt: [{ $get: "score" }, 80] }, { score: 85 });
+// Returns: true (85 > 80)
 ```
 
 ## $gte
 
 Tests if value is greater than or equal to operand.
 
-**Apply Form:**
-
 ```javascript
-// Check minimum age requirement
+// Single operand: compare input data
 apply({ $gte: 3 }, 3);
-// Returns: true
-```
+// Returns: true (3 >= 3)
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply(
+  { $gte: [{ $get: "currentAge" }, { $get: "requiredAge" }] },
+  { currentAge: 5, requiredAge: 4 },
+);
+// Returns: true (5 >= 4)
 
-```javascript
-// Compare values for minimum threshold
-evaluate({ $gte: [4, 4] });
-// Returns: true
+// Mixed form: expression >= literal
+apply({ $gte: [{ $get: "attendance" }, 90] }, { attendance: 95 });
+// Returns: true (95 >= 90)
 ```
 
 ## $if
 
 Conditional expression that evaluates different branches based on a condition.
-
-**Apply Form:**
 
 ```javascript
 // Assign activity based on weather
@@ -785,25 +497,9 @@ apply(
 // Returns: "Indoor activities"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Simple conditional logic
-evaluate({
-  $if: {
-    if: { $gt: [75, 70] },
-    then: "Air conditioning on",
-    else: "Normal temperature",
-  },
-});
-// Returns: "Air conditioning on"
-```
-
 ## $identity
 
 Returns input data unchanged in apply mode, or evaluates/returns the operand in evaluate mode. This is useful as an identity function in pipelines or when you need to pass through values. `$identity` will evaluate nested expressions except for literals, which will be preserved.
-
-**Apply Form:**
 
 ```javascript
 // Return child data unchanged (identity function)
@@ -820,27 +516,9 @@ apply({ $if: { if: { $identity: null }, then: "yes", else: "no" } }, true);
 // Returns: "yes"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Return the operand as-is for literals
-evaluate({ $identity: "Preschool Room A" });
-// Returns: "Preschool Room A"
-
-// Evaluate expressions in the operand
-evaluate({ $identity: { $add: [2, 3] } });
-// Returns: 5
-
-// Return literal objects unchanged
-evaluate({ $identity: { name: "Amara", age: 5 } });
-// Returns: { name: "Amara", age: 5 }
-```
-
 ## $in
 
 Tests if value exists in an array.
-
-**Apply Form:**
 
 ```javascript
 // Check if child's dietary need is in available options
@@ -849,19 +527,9 @@ apply({ $in: availableOptions }, "vegetarian");
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Check if value is in array
-evaluate({ $in: [["apple", "banana", "orange"], "banana"] });
-// Returns: true
-```
-
 ## $isEmpty
 
 Tests if a value is empty or absent (null or undefined). The semantic inverse of $isPresent.
-
-**Apply Form:**
 
 ```javascript
 // Check if pickup time is not set
@@ -878,22 +546,9 @@ apply({ $isEmpty: null }, 0);
 // Returns: false (zero is not empty)
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Test if value is empty/absent
-evaluate({ $isEmpty: null });
-// Returns: true
-
-evaluate({ $isEmpty: "some value" });
-// Returns: false
-```
-
 ## $isPresent
 
 Tests if a value is meaningful (not null or undefined). Provides cross-language clarity about value presence.
-
-**Apply Form:**
 
 ```javascript
 // Check if emergency contact is provided
@@ -911,25 +566,9 @@ apply({ $isPresent: null }, 0);
 // Returns: true (zero is meaningful)
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Test if value is meaningful
-evaluate({ $isPresent: "some value" });
-// Returns: true
-
-evaluate({ $isPresent: null });
-// Returns: false
-
-evaluate({ $isPresent: undefined });
-// Returns: false
-```
-
 ## $join
 
 Joins array elements into a string with a separator. **Note:** This is intended to join arrays of string values. Attempting to join values of other types may behave differently across different runtimes. Consider overriding this expression if you have use cases more complex than joining arrays of strings.
-
-**Apply Form:**
 
 ```javascript
 // Create list of children's names
@@ -938,19 +577,9 @@ apply({ $join: ", " }, names);
 // Returns: "Aria, Chen, Diego, Luna"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Join array with separator
-evaluate({ $join: [" | ", ["Morning", "Afternoon", "Evening"]] });
-// Returns: "Morning | Afternoon | Evening"
-```
-
 ## $keys
 
 Returns an array of all property names from an object.
-
-**Apply Form:**
 
 ```javascript
 // Get all field names from child record
@@ -959,19 +588,9 @@ apply({ $keys: null }, child);
 // Returns: ["name", "age", "group", "present"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Extract object keys
-evaluate({ $keys: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
-// Returns: ["room", "capacity", "teacher"]
-```
-
 ## $last
 
 Returns the last item in an array.
-
-**Apply Form:**
 
 ```javascript
 // Get last child picked up
@@ -980,19 +599,9 @@ apply({ $last: null }, pickupOrder);
 // Returns: "Chen"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Get last item from array
-evaluate({ $last: ["breakfast", "snack", "lunch", "dinner"] });
-// Returns: "dinner"
-```
-
 ## $literal
 
 Returns a literal value (useful when you need to pass values that look like expressions). **This expression cannot be excluded or overridden.**
-
-**Apply Form:**
 
 ```javascript
 // Return exact object structure
@@ -1000,19 +609,9 @@ apply({ $literal: { $special: "not an expression" } }, anyInput);
 // Returns: { $special: "not an expression" }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Return literal value
-evaluate({ $literal: { $get: "this looks like an expression but isn't" } });
-// Returns: { $get: "this looks like an expression but isn't" }
-```
-
 ## $lowercase
 
 Converts string to lowercase.
-
-**Apply Form:**
 
 ```javascript
 // Normalize child's name input
@@ -1020,59 +619,48 @@ apply({ $lowercase: null }, "AMARA");
 // Returns: "amara"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Convert to lowercase
-evaluate({ $lowercase: "SUNSHINE DAYCARE" });
-// Returns: "sunshine daycare"
-```
-
 ## $lt
 
 Tests if value is less than operand.
 
-**Apply Form:**
-
 ```javascript
-// Check if child needs booster seat
+// Single operand: compare input data
 apply({ $lt: 4 }, 3);
-// Returns: true
-```
+// Returns: true (3 < 4)
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply({ $lt: [{ $get: "age" }, { $get: "maxAge" }] }, { age: 3, maxAge: 5 });
+// Returns: true (3 < 5)
 
-```javascript
-// Compare two values
-evaluate({ $lt: [3, 5] });
-// Returns: true
+// Mixed form: expression < literal
+apply({ $lt: [{ $get: "temperature" }, 75] }, { temperature: 68 });
+// Returns: true (68 < 75)
 ```
 
 ## $lte
 
 Tests if value is less than or equal to operand.
 
-**Apply Form:**
-
 ```javascript
-// Check maximum group size
+// Single operand: compare input data
 apply({ $lte: 6 }, 6);
-// Returns: true
-```
+// Returns: true (6 <= 6)
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply(
+  { $lte: [{ $get: "groupSize" }, { $get: "maxCapacity" }] },
+  { groupSize: 8, maxCapacity: 10 },
+);
+// Returns: true (8 <= 10)
 
-```javascript
-// Test less than or equal
-evaluate({ $lte: [4, 6] });
-// Returns: true
+// Mixed form: expression <= literal
+apply({ $lte: [{ $get: "napTime" }, 120] }, { napTime: 90 });
+// Returns: true (90 <= 120)
 ```
 
 ## $map
 
 Transforms each item in an array using an expression.
-
-**Apply Form:**
 
 ```javascript
 // Get all children's ages
@@ -1085,19 +673,9 @@ apply({ $map: { $get: "age" } }, children);
 // Returns: [4, 5, 3]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Transform array items
-evaluate({ $map: [{ $multiply: 2 }, [1, 2, 3, 4]] });
-// Returns: [2, 4, 6, 8]
-```
-
 ## $matches
 
 Tests if an object matches all specified property conditions. Supports literal values, expressions, and $literal-wrapped values for flexible matching.
-
-**Apply Form:**
 
 ```javascript
 // Check if child meets multiple criteria
@@ -1120,24 +698,9 @@ apply(
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Test object against conditions
-evaluate({
-  $matches: {
-    data: { name: "Chen", age: 3, status: "active" },
-    conditions: { age: { $gte: 3 }, status: { $eq: "active" } },
-  },
-});
-// Returns: true
-```
-
 ## $matchesRegex
 
 Tests if string matches a regular expression.
-
-**Apply Form:**
 
 ```javascript
 // Validate phone number format
@@ -1145,19 +708,9 @@ apply({ $matchesRegex: "^\\d{3}-\\d{3}-\\d{4}$" }, "555-123-4567");
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Regex pattern matching
-evaluate({ $matchesRegex: ["(?i)^child", "Child Development Center"] });
-// Returns: true
-```
-
 ## $max
 
 Returns the maximum value in an array.
-
-**Apply Form:**
 
 ```javascript
 // Find oldest child's age
@@ -1166,19 +719,9 @@ apply({ $max: null }, ages);
 // Returns: 6
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Find maximum value
-evaluate({ $max: [8, 12, 6, 15, 9] });
-// Returns: 15
-```
-
 ## $mean
 
 Calculates the arithmetic mean (average) of array values.
-
-**Apply Form:**
 
 ```javascript
 // Calculate average nap duration
@@ -1187,19 +730,9 @@ apply({ $mean: null }, napTimes);
 // Returns: 52
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Calculate average
-evaluate({ $mean: [85, 92, 78, 94, 88] });
-// Returns: 87.4
-```
-
 ## $merge
 
 Merges multiple objects into a single object.
-
-**Apply Form:**
 
 ```javascript
 // Merge child info with additional data
@@ -1208,21 +741,9 @@ apply({ $merge: [{ group: "Butterflies" }, { present: true }] }, baseInfo);
 // Returns: { name: "Aria", age: 4, group: "Butterflies", present: true }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Combine multiple objects
-evaluate({
-  $merge: [{ room: "A" }, { capacity: 20 }, { teacher: "Ms. Chen" }],
-});
-// Returns: { room: "A", capacity: 20, teacher: "Ms. Chen" }
-```
-
 ## $min
 
 Returns the minimum value in an array.
-
-**Apply Form:**
 
 ```javascript
 // Find youngest child's age
@@ -1231,79 +752,72 @@ apply({ $min: null }, ages);
 // Returns: 2
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Find minimum value
-evaluate({ $min: [8, 12, 6, 15, 9] });
-// Returns: 6
-```
-
 ## $modulo
 
 Performs modulo (remainder) operation.
 
-**Apply Form:**
-
 ```javascript
-// Check if child count is even for pairing activities
+// Single operand: modulo input data
 apply({ $modulo: 2 }, 6);
-// Returns: 0 (even number)
-```
+// Returns: 0 (6 % 2, even number)
 
-**Evaluate Form:**
+// Array form: modulo two expressions
+apply(
+  { $modulo: [{ $get: "total" }, { $get: "groups" }] },
+  { total: 13, groups: 4 },
+);
+// Returns: 1 (13 % 4)
 
-```javascript
-// Calculate remainder
-evaluate({ $modulo: [17, 5] });
-// Returns: 2
+// Mixed form: expression % literal
+apply({ $modulo: [{ $get: "childCount" }, 3] }, { childCount: 10 });
+// Returns: 1 (10 % 3)
 ```
 
 ## $multiply
 
 Performs multiplication operation.
 
-**Apply Form:**
-
 ```javascript
-// Calculate total snack cost for multiple children
+// Single operand: multiply input data
 apply({ $multiply: 4 }, 3.5);
-// Returns: 14.00
-```
+// Returns: 14.00 (3.5 * 4)
 
-**Evaluate Form:**
+// Array form: multiply two expressions
+apply(
+  { $multiply: [{ $get: "price" }, { $get: "quantity" }] },
+  { price: 2.5, quantity: 6 },
+);
+// Returns: 15.0 (2.5 * 6)
 
-```javascript
-// Multiply two numbers
-evaluate({ $multiply: [6, 8] });
-// Returns: 48
+// Mixed form: expression * literal
+apply({ $multiply: [{ $get: "hours" }, 8] }, { hours: 5 });
+// Returns: 40 (5 * 8)
 ```
 
 ## $ne
 
 Tests inequality using deep comparison.
 
-**Apply Form:**
-
 ```javascript
-// Check if child's current activity is different from scheduled
+// Single operand: compare input data
 apply({ $ne: "reading" }, "playing");
-// Returns: true
-```
+// Returns: true ("playing" !== "reading")
 
-**Evaluate Form:**
+// Array form: compare two expressions
+apply(
+  { $ne: [{ $get: "current" }, { $get: "previous" }] },
+  { current: "art", previous: "music" },
+);
+// Returns: true ("art" !== "music")
 
-```javascript
-// Test not equal
-evaluate({ $ne: ["morning", "afternoon"] });
-// Returns: true
+// Mixed form: expression !== literal
+apply({ $ne: [{ $get: "mood" }, "upset"] }, { mood: "happy" });
+// Returns: true ("happy" !== "upset")
 ```
 
 ## $nin
 
 Tests if value does not exist in an array.
-
-**Apply Form:**
 
 ```javascript
 // Check if child doesn't have common allergies
@@ -1312,19 +826,9 @@ apply({ $nin: commonAllergies }, "gluten");
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Check if value not in array
-evaluate({ $nin: [["red", "blue", "green"], "yellow"] });
-// Returns: true
-```
-
 ## $not
 
 Logical NOT - inverts the truthiness of an expression.
-
-**Apply Form:**
 
 ```javascript
 // Check if child is not sleeping
@@ -1332,19 +836,9 @@ apply({ $not: { $get: "isNapping" } }, { isNapping: false });
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Invert boolean value
-evaluate({ $not: false });
-// Returns: true
-```
-
 ## $or
 
 Logical OR - returns true if at least one expression is truthy.
-
-**Apply Form:**
 
 ```javascript
 // Check if child can participate in activity
@@ -1358,19 +852,9 @@ apply(
 // Returns: true
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Test multiple conditions
-evaluate({ $or: [false, false, true] });
-// Returns: true
-```
-
 ## $omit
 
 Returns a new object excluding the specified properties.
-
-**Apply Form:**
 
 ```javascript
 // Remove sensitive data from child record
@@ -1384,29 +868,9 @@ apply({ $omit: ["ssn"] }, child);
 // Returns: { name: "Aria", age: 4, group: "Butterflies" }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Exclude multiple properties
-evaluate({
-  $omit: {
-    object: {
-      id: 1,
-      name: "Chen",
-      password: "secret",
-      email: "chen@daycare.com",
-    },
-    properties: ["password", "id"],
-  },
-});
-// Returns: { name: "Chen", email: "chen@daycare.com" }
-```
-
 ## $pairs
 
 Converts an object into an array of [key, value] pairs.
-
-**Apply Form:**
 
 ```javascript
 // Convert child data to key-value pairs
@@ -1415,19 +879,9 @@ apply({ $pairs: null }, child);
 // Returns: [["name", "Zara"], ["age", 4], ["group", "Butterflies"]]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Extract object entries
-evaluate({ $pairs: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
-// Returns: [["room", "A"], ["capacity", 20], ["teacher", "Ms. Chen"]]
-```
-
 ## $pick
 
 Returns a new object containing only the specified properties.
-
-**Apply Form:**
 
 ```javascript
 // Extract only essential child info
@@ -1442,29 +896,9 @@ apply({ $pick: ["name", "age", "group"] }, child);
 // Returns: { name: "Aria", age: 4, group: "Butterflies" }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Select specific properties
-evaluate({
-  $pick: {
-    object: {
-      id: 1,
-      name: "Chen",
-      password: "secret",
-      email: "chen@daycare.com",
-    },
-    properties: ["name", "email"],
-  },
-});
-// Returns: { name: "Chen", email: "chen@daycare.com" }
-```
-
 ## $pluck
 
 Extracts a specific property from each object in an array (shorthand for $map + $get).
-
-**Apply Form:**
 
 ```javascript
 // Get all children's names
@@ -1477,27 +911,9 @@ apply({ $pluck: "name" }, children);
 // Returns: ["Aria", "Kai", "Zara"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Extract property from array of objects
-evaluate({
-  $pluck: [
-    [
-      { room: "A", teacher: "Ms. Chen" },
-      { room: "B", teacher: "Mr. Ali" },
-    ],
-    "teacher",
-  ],
-});
-// Returns: ["Ms. Chen", "Mr. Ali"]
-```
-
 ## $pipe
 
 Pipes data through multiple expressions in sequence (left-to-right).
-
-**Apply Form:**
 
 ```javascript
 // Process children data through multiple steps
@@ -1522,48 +938,30 @@ apply(
 // Returns: "Aria, Kai"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Chain operations on static data
-evaluate([
-  {
-    $pipe: [
-      { $filter: { $gte: 4 } },
-      { $map: { $multiply: 2 } },
-      { $sum: null },
-    ],
-  },
-  [2, 4, 6, 8, 1],
-]);
-// Returns: 36 (filters [4,6,8], maps to [8,12,16], sums to 36)
-```
-
 ## $pow
 
 Performs power/exponentiation operation.
 
-**Apply Form:**
-
 ```javascript
-// Calculate area of square play area
+// Single operand: raise input data to power
 apply({ $pow: 2 }, 8); // 8 squared
-// Returns: 64
-```
+// Returns: 64 (8^2)
 
-**Evaluate Form:**
+// Array form: power of two expressions
+apply(
+  { $pow: [{ $get: "base" }, { $get: "exponent" }] },
+  { base: 3, exponent: 4 },
+);
+// Returns: 81 (3^4)
 
-```javascript
-// Calculate power
-evaluate({ $pow: [3, 4] }); // 3 to the 4th power
-// Returns: 81
+// Mixed form: expression ^ literal
+apply({ $pow: [{ $get: "side" }, 2] }, { side: 5 });
+// Returns: 25 (5^2)
 ```
 
 ## $prepend
 
 Prepends an array to the beginning of the input array.
-
-**Apply Form:**
 
 ```javascript
 // Add priority children to beginning of list
@@ -1572,24 +970,9 @@ apply({ $prepend: ["Aria", "Kai"] }, regularChildren);
 // Returns: ["Aria", "Kai", "Chen", "Diego"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Prepend to array
-evaluate({
-  $prepend: [
-    ["First", "Second"],
-    ["Third", "Fourth"],
-  ],
-});
-// Returns: ["First", "Second", "Third", "Fourth"]
-```
-
 ## $prop
 
 Retrieves a property from an object using a dynamic property name.
-
-**Apply Form:**
 
 ```javascript
 // Get property using variable name
@@ -1598,20 +981,9 @@ apply({ $prop: "group" }, child);
 // Returns: "Butterflies"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Access object property dynamically
-const daycare = { morning: 12, afternoon: 8, evening: 4 };
-evaluate({ $prop: [daycare, "afternoon"] });
-// Returns: 8
-```
-
 ## $replace
 
 Replaces occurrences of a pattern in a string.
-
-**Apply Form:**
 
 ```javascript
 // Clean up child's name input
@@ -1619,19 +991,9 @@ apply({ $replace: ["\\s+", " "] }, "Amara   Chen");
 // Returns: "Amara Chen"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Replace text in string
-evaluate({ $replace: ["Sunshine Daycare", "Center", "Academy"] });
-// Returns: "Sunshine Academy"
-```
-
 ## $reverse
 
 Returns array with elements in reverse order.
-
-**Apply Form:**
 
 ```javascript
 // Reverse pickup order for dismissal
@@ -1640,19 +1002,9 @@ apply({ $reverse: null }, pickupOrder);
 // Returns: ["Luna", "Diego", "Chen", "Aria"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Reverse array elements
-evaluate({ $reverse: [1, 2, 3, 4, 5] });
-// Returns: [5, 4, 3, 2, 1]
-```
-
 ## $skip
 
 Skips first N elements of an array.
-
-**Apply Form:**
 
 ```javascript
 // Skip first two children in line
@@ -1661,19 +1013,9 @@ apply({ $skip: 2 }, lineup);
 // Returns: ["Diego", "Luna", "Kai"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Skip elements from beginning
-evaluate({ $skip: [3, ["Mon", "Tue", "Wed", "Thu", "Fri"]] });
-// Returns: ["Thu", "Fri"]
-```
-
 ## $select
 
 Creates a new object by selecting and optionally transforming properties.
-
-**Apply Form:**
 
 ```javascript
 // Select and transform child data
@@ -1696,27 +1038,9 @@ apply(
 // Returns: { childName: "Aria", ageInMonths: 48, group: "Butterflies" }
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Transform object structure
-evaluate({
-  $select: {
-    object: { firstName: "Chen", lastName: "Li", age: 5 },
-    selection: {
-      fullName: { $join: [" ", [{ $get: "firstName" }, { $get: "lastName" }]] },
-      isSchoolAge: { $pipe: [{ $get: "age" }, { $gte: 5 }] },
-    },
-  },
-});
-// Returns: { fullName: "Chen Li", isSchoolAge: true }
-```
-
 ## $sort
 
 Sorts an array based on specified criteria.
-
-**Apply Form:**
 
 ```javascript
 // Sort children by age
@@ -1733,28 +1057,9 @@ apply({ $sort: { by: "name", desc: true } }, children);
 // Returns: [{ name: "Zara", age: 3 }, { name: "Kai", age: 5 }, { name: "Aria", age: 4 }]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Sort with multiple criteria
-evaluate({
-  $sort: {
-    array: [
-      { group: "A", score: 85 },
-      { group: "B", score: 90 },
-      { group: "A", score: 95 },
-    ],
-    sortCriteria: [{ by: "group" }, { by: "score", desc: true }],
-  },
-});
-// Returns: [{ group: "A", score: 95 }, { group: "A", score: 85 }, { group: "B", score: 90 }]
-```
-
 ## $split
 
 Splits a string into an array using a separator.
-
-**Apply Form:**
 
 ```javascript
 // Split child's full name
@@ -1762,19 +1067,9 @@ apply({ $split: " " }, "Amara Chen Rodriguez");
 // Returns: ["Amara", "Chen", "Rodriguez"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Split string by delimiter
-evaluate({ $split: ["apple,banana,orange", ","] });
-// Returns: ["apple", "banana", "orange"]
-```
-
 ## $sqrt
 
 Calculates the square root of a number.
-
-**Apply Form:**
 
 ```javascript
 // Calculate side length of square play area
@@ -1782,19 +1077,9 @@ apply({ $sqrt: null }, 64);
 // Returns: 8
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Calculate square root
-evaluate({ $sqrt: 25 });
-// Returns: 5
-```
-
 ## $substring
 
 Extracts a portion of a string.
-
-**Apply Form:**
 
 ```javascript
 // Get child's initials from name
@@ -1802,39 +1087,30 @@ apply({ $substring: [0, 1] }, "Amara");
 // Returns: "A"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Extract substring
-evaluate({ $substring: ["Sunshine Daycare", 0, 8] });
-// Returns: "Sunshine"
-```
-
 ## $subtract
 
 Performs subtraction operation.
 
-**Apply Form:**
-
 ```javascript
-// Calculate remaining snack budget
+// Single operand: subtract from input data
 apply({ $subtract: 15.5 }, 25.0);
-// Returns: 9.50
-```
+// Returns: 9.50 (25.0 - 15.5)
 
-**Evaluate Form:**
+// Array form: subtract two expressions
+apply(
+  { $subtract: [{ $get: "total" }, { $get: "discount" }] },
+  { total: 20, discount: 3 },
+);
+// Returns: 17 (20 - 3)
 
-```javascript
-// Subtract two numbers
-evaluate({ $subtract: [20, 7] });
-// Returns: 13
+// Mixed form: expression - literal
+apply({ $subtract: [{ $get: "age" }, 2] }, { age: 6 });
+// Returns: 4 (6 - 2)
 ```
 
 ## $sum
 
 Calculates the sum of array values.
-
-**Apply Form:**
 
 ```javascript
 // Calculate total daily temperatures
@@ -1843,19 +1119,9 @@ apply({ $sum: null }, temperatures);
 // Returns: 358
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Sum array values
-evaluate({ $sum: [5, 10, 15, 20] });
-// Returns: 50
-```
-
 ## $take
 
 Takes first N elements of an array.
-
-**Apply Form:**
 
 ```javascript
 // Get first three children for small group activity
@@ -1864,19 +1130,9 @@ apply({ $take: 3 }, allChildren);
 // Returns: ["Aria", "Chen", "Diego"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Take first elements
-evaluate({ $take: [2, ["breakfast", "snack", "lunch", "dinner"]] });
-// Returns: ["breakfast", "snack"]
-```
-
 ## $trim
 
 Removes whitespace from beginning and end of string.
-
-**Apply Form:**
 
 ```javascript
 // Clean up child name input
@@ -1884,19 +1140,9 @@ apply({ $trim: null }, "  Amara Chen  ");
 // Returns: "Amara Chen"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Trim whitespace
-evaluate({ $trim: "  Sunshine Daycare  " });
-// Returns: "Sunshine Daycare"
-```
-
 ## $uppercase
 
 Converts string to uppercase.
-
-**Apply Form:**
 
 ```javascript
 // Format child's name for name tag
@@ -1904,19 +1150,9 @@ apply({ $uppercase: null }, "amara");
 // Returns: "AMARA"
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Convert to uppercase
-evaluate({ $uppercase: "sunshine daycare" });
-// Returns: "SUNSHINE DAYCARE"
-```
-
 ## $unique
 
 Returns an array with duplicate values removed.
-
-**Apply Form:**
 
 ```javascript
 // Get unique dietary restrictions
@@ -1931,31 +1167,13 @@ apply({ $unique: null }, restrictions);
 // Returns: ["none", "nut allergy", "vegetarian"]
 ```
 
-**Evaluate Form:**
-
-```javascript
-// Remove duplicates from array
-evaluate({ $unique: ["apple", "banana", "apple", "orange", "banana"] });
-// Returns: ["apple", "banana", "orange"]
-```
-
 ## $values
 
 Returns an array of all property values from an object.
-
-**Apply Form:**
 
 ```javascript
 // Get all values from child record
 const child = { name: "Amara", age: 4, group: "Butterflies", present: true };
 apply({ $values: null }, child);
 // Returns: ["Amara", 4, "Butterflies", true]
-```
-
-**Evaluate Form:**
-
-```javascript
-// Extract object values
-evaluate({ $values: { room: "A", capacity: 20, teacher: "Ms. Chen" } });
-// Returns: ["A", 20, "Ms. Chen"]
 ```

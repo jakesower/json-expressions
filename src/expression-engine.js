@@ -68,12 +68,16 @@ export function createExpressionEngine(config = {}) {
   const { packs = [], custom = {}, includeBase = true } = config;
   let evaluate;
 
-  const expressions = [
+  const combinedExpressions = [
     ...(includeBase ? [base] : []),
     ...packs,
     custom,
     { $literal },
   ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
+
+  const expressions = mapValues(combinedExpressions, (expr) =>
+    typeof expr === "function" ? { apply: expr } : expr,
+  );
 
   const isExpression = (val) =>
     looksLikeExpression(val) && Object.keys(val)[0] in expressions;

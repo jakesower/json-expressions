@@ -7,8 +7,7 @@
  * - Sorting ($sort)
  */
 
-import { get } from "es-toolkit/compat";
-import { createDualExpression } from "../helpers.js";
+import { createDualExpression, get } from "../helpers.js";
 
 const $debug = {
   apply: (operand, inputData, { apply }) => {
