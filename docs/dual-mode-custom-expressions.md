@@ -1,5 +1,7 @@
 # Custom Expressions with Apply and Evaluate
 
+**⚠️ WARNING: This guide contains ANTI-PATTERNS that should NOT be followed. Many examples show custom expressions delegating to other expressions, which is considered an anti-pattern. Custom expressions should provide complete implementations instead of delegating to other expressions.**
+
 This guide covers creating custom expressions that support **both apply and evaluate modes**. Most users should start with the **[main custom expressions guide](custom-expressions.md)** which covers function-based expressions for apply mode only.
 
 **When you need this guide:**

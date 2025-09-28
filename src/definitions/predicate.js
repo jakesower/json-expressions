@@ -10,8 +10,7 @@
  * - Pattern matching ($matchesRegex)
  */
 
-import { isEqual } from "es-toolkit";
-import { get } from "../helpers.js";
+import { get, isEqual } from "../helpers.js";
 
 /**
  * Creates a comparative expression that applies a comparison function to resolved operands.
@@ -226,6 +225,42 @@ const $lt = createComparativeExpression((a, b) => a < b);
 
 const $lte = createComparativeExpression((a, b) => a <= b);
 
+const $matches = {
+  apply: (operand, inputData, { apply, isExpression, isWrappedLiteral }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$matches operand must be an object with property conditions",
+      );
+    }
+    return Object.entries(operand).every(([path, condition]) => {
+      const value = get(inputData, path);
+
+      if (isWrappedLiteral(condition)) {
+        return isEqual(condition.$literal, value);
+      }
+      if (isExpression(condition)) return apply(condition, value);
+
+      return isEqual(value, condition);
+    });
+  },
+  evaluate: (operand, { apply }) => {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$matches evaluate form requires object operand: { data, conditions }",
+      );
+    }
+
+    const { data, conditions } = operand;
+    if (data === undefined || conditions === undefined) {
+      throw new Error(
+        "$matches evaluate form requires 'data' and 'conditions' properties",
+      );
+    }
+
+    return apply({ $matches: conditions }, data);
+  },
+};
+
 const $matchesRegex = {
   apply(operand, inputData, { apply }) {
     const resolvedOperand = apply(operand, inputData);
@@ -289,6 +324,7 @@ export {
   $isPresent,
   $lt,
   $lte,
+  $matches,
   $matchesRegex,
   $ne,
   $nin,

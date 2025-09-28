@@ -4,6 +4,19 @@ This document provides comprehensive documentation for all expressions available
 
 > **Need dual-mode support?** For advanced scenarios requiring both apply and evaluate modes, see the **[Evaluate Method](evaluate-method.md)** and **[Dual-Mode Expressions](dual-mode-expressions.md)** guides.
 
+**Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most do not distinguish between the two. Use `$exists` if you wish to determine if the key of an object is undefined.
+
+```javascript
+const child = { name: "Zoë", petName: null };
+
+engine.apply({ $eq: [undefined, null] }, {}); // returns true
+engine.apply({ $eq: null }, child.age); // returns true
+engine.apply({ $eq: [{ $get: "petName" }, { $get: "age" }] }, child); // returns true
+
+engine.apply({ $exists: "petName" }, child); // returns true
+engine.apply({ $exists: "age" }, child); // returns false
+```
+
 ## $abs
 
 Returns the absolute value of a number.
@@ -261,7 +274,7 @@ apply({ $divide: [{ $get: "minutes" }, 60] }, { minutes: 150 });
 
 ## $eq
 
-Tests equality using deep comparison.
+Tests equality using deep comparison. JSON has no notion of `undefined`, which means that `undefined` and `null` will be treated as equal when using `$eq`. If you wish to distinguish between the two, use `$exists` instead.
 
 ```javascript
 // Single operand: compare input data
@@ -796,7 +809,7 @@ apply({ $multiply: [{ $get: "hours" }, 8] }, { hours: 5 });
 
 ## $ne
 
-Tests inequality using deep comparison.
+Tests inequality using deep comparison. JSON has no notion of `undefined`, which means that `undefined` and `null` will be treated as equal when using `$ne`. If you wish to distinguish between the two, use `$exists` instead.
 
 ```javascript
 // Single operand: compare input data

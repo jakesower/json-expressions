@@ -1,5 +1,4 @@
-import { isEqual } from "es-toolkit";
-import { get } from "../helpers.js";
+import { isEqual } from "../helpers.js";
 
 /**
  * Internal helper to validate a boolean condition and execute if/else logic.
@@ -101,40 +100,5 @@ const $if = {
   },
 };
 
-const $matches = {
-  apply: (operand, inputData, { apply, isExpression, isWrappedLiteral }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches operand must be an object with property conditions",
-      );
-    }
-    return Object.entries(operand).every(([path, condition]) => {
-      const value = get(inputData, path);
-
-      if (isWrappedLiteral(condition))
-        {return isEqual(condition.$literal, value);}
-      if (isExpression(condition)) return apply(condition, value);
-
-      return isEqual(value, condition);
-    });
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-    }
-
-    const { data, conditions } = operand;
-    if (data === undefined || conditions === undefined) {
-      throw new Error(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-    }
-
-    return apply({ $matches: conditions }, data);
-  },
-};
-
 // Individual exports for tree shaking
-export { $case, $if, $matches };
+export { $case, $if };

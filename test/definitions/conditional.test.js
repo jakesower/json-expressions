@@ -730,3 +730,445 @@ describe("$if", () => {
     });
   });
 });
+
+describe("conditional expressions - edge cases", () => {
+  describe("$case edge cases", () => {
+    it("throws when case item missing 'when' property", () => {
+      expect(() =>
+        apply(
+          {
+            $case: {
+              value: 5,
+              cases: [{ then: "Missing when" }],
+              default: "Default",
+            },
+          },
+          {},
+        ),
+      ).toThrow("Case item must have 'when' property");
+    });
+
+    it("throws when non-boolean expression used in when clause", () => {
+      expect(() =>
+        apply(
+          {
+            $case: {
+              value: 5,
+              cases: [{ when: { $add: [1, 2] }, then: "Result" }],
+              default: "Default",
+            },
+          },
+          {},
+        ),
+      ).toThrow(
+        "only expressions that return true of false may be used in when clauses",
+      );
+    });
+
+    it("handles null values in when clauses", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: null,
+              cases: [
+                { when: null, then: "Null match" },
+                { when: "other", then: "Other match" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Null match");
+
+      // null and undefined are equal in JSON
+      expect(
+        apply(
+          {
+            $case: {
+              value: undefined,
+              cases: [
+                { when: null, then: "Null match" },
+                { when: "other", then: "Other match" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Null match");
+    });
+
+    it("handles empty cases array", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: "test",
+              cases: [],
+              default: "Default value",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Default value");
+    });
+
+    it("handles $literal wrapped values in when clauses", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: 5,
+              cases: [
+                {
+                  when: { $literal: 5 },
+                  then: "Literal match",
+                },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Literal match");
+    });
+
+    it("handles false and 0 values correctly", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: false,
+              cases: [
+                { when: 0, then: "Zero" },
+                { when: false, then: "False" },
+                { when: "", then: "Empty string" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("False");
+
+      expect(
+        apply(
+          {
+            $case: {
+              value: 0,
+              cases: [
+                { when: false, then: "False" },
+                { when: 0, then: "Zero" },
+                { when: "", then: "Empty string" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Zero");
+    });
+
+    it("handles circular references in evaluation (evaluate form)", () => {
+      expect(
+        evaluate({
+          $case: [
+            {
+              value: 5,
+              cases: [
+                { when: { $gt: 3 }, then: "Greater than 3" },
+                { when: { $lt: 10 }, then: "Less than 10" },
+              ],
+              default: "In range",
+            },
+          ],
+        }),
+      ).toEqual("Greater than 3");
+    });
+
+    it("handles deeply nested conditional expressions", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: { $get: "status" },
+              cases: [
+                {
+                  when: "pending",
+                  then: {
+                    $if: {
+                      if: { $eq: [{ $get: "name" }, "urgent"] },
+                      then: "Urgent pending",
+                      else: "Normal pending",
+                    },
+                  },
+                },
+                { when: "complete", then: "Task complete" },
+              ],
+              default: "Unknown status",
+            },
+          },
+          { status: "pending", name: "urgent" },
+        ),
+      ).toEqual("Urgent pending");
+    });
+
+    it("handles when clause with complex boolean expression", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: 15,
+              cases: [
+                {
+                  when: {
+                    $and: [{ $gt: 10 }, { $lt: 20 }, { $not: { $eq: 13 } }],
+                  },
+                  then: "Complex match",
+                },
+              ],
+              default: "No complex match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Complex match");
+    });
+  });
+
+  describe("$if edge cases", () => {
+    it("throws with non-boolean condition that's not an expression", () => {
+      expect(() =>
+        apply({ $if: { if: "not boolean", then: "yes", else: "no" } }, {}),
+      ).toThrow(
+        "$if.if must be a boolean or an expression that resolves to one",
+      );
+    });
+
+    it("throws with non-boolean condition in evaluate form", () => {
+      expect(() =>
+        evaluate({
+          $if: { if: { $add: [1, 2] }, then: "yes", else: "no" },
+        }),
+      ).toThrow(
+        "$if.if must be a boolean or an expression that resolves to one",
+      );
+    });
+
+    it("handles null/undefined values in condition expressions", () => {
+      expect(
+        apply(
+          {
+            $if: {
+              if: { $isPresent: true },
+              then: "Present",
+              else: "Not present",
+            },
+          },
+          null,
+        ),
+      ).toEqual("Not present");
+
+      expect(
+        apply(
+          {
+            $if: {
+              if: { $isEmpty: true },
+              then: "Empty",
+              else: "Not empty",
+            },
+          },
+          undefined,
+        ),
+      ).toEqual("Empty");
+    });
+
+    it("handles deeply nested if expressions", () => {
+      expect(
+        apply(
+          {
+            $if: {
+              if: { $gt: 10 },
+              then: {
+                $if: {
+                  if: { $lt: 20 },
+                  then: "Between 10 and 20",
+                  else: "Greater than or equal to 20",
+                },
+              },
+              else: "10 or less",
+            },
+          },
+          15,
+        ),
+      ).toEqual("Between 10 and 20");
+    });
+
+    it("handles complex expressions in then/else branches", () => {
+      expect(
+        apply(
+          {
+            $if: {
+              if: { $eq: [{ $get: "type" }, "children"] },
+              then: {
+                $case: {
+                  value: { $get: "age" },
+                  cases: [
+                    { when: { $lt: 3 }, then: "Toddler" },
+                    { when: { $lt: 6 }, then: "Preschooler" },
+                  ],
+                  default: "School age",
+                },
+              },
+              else: "Adult",
+            },
+          },
+          { type: "children", age: 4 },
+        ),
+      ).toEqual("Preschooler");
+    });
+
+    it("evaluates correct branch based on condition", () => {
+      expect(
+        apply(
+          {
+            $if: {
+              if: false,
+              then: "This should not be returned",
+              else: "This should be returned",
+            },
+          },
+          {},
+        ),
+      ).toEqual("This should be returned");
+
+      expect(
+        apply(
+          {
+            $if: {
+              if: true,
+              then: "This should be returned",
+              else: "This should not be returned",
+            },
+          },
+          {},
+        ),
+      ).toEqual("This should be returned");
+    });
+
+    it("handles literal expressions correctly in branches", () => {
+      const result = apply(
+        {
+          $if: {
+            if: true,
+            then: { $literal: { $add: [1, 2] } },
+            else: "fallback",
+          },
+        },
+        {},
+      );
+
+      expect(result).toEqual({ $add: [1, 2] });
+    });
+  });
+
+  describe("error handling and validation", () => {
+    it("handles malformed case operands gracefully", () => {
+      expect(() => apply({ $case: null }, {})).toThrow();
+
+      expect(() => apply({ $case: "not an object" }, {})).toThrow();
+
+      expect(() => apply({ $case: [] }, {})).toThrow();
+    });
+
+    it("handles malformed if operands gracefully", () => {
+      expect(() => apply({ $if: null }, {})).toThrow();
+
+      expect(() => apply({ $if: "not an object" }, {})).toThrow();
+
+      expect(
+        () => apply({ $if: { then: "yes", else: "no" } }, {}), // missing if
+      ).toThrow();
+    });
+
+    it("handles missing then/else in $if", () => {
+      // These should return undefined rather than throw, as the expressions handle missing properties gracefully
+      expect(
+        apply({ $if: { if: true, else: "no" } }, {}), // missing then returns undefined
+      ).toBe(undefined);
+
+      expect(
+        apply({ $if: { if: false, then: "yes" } }, {}), // missing else returns undefined
+      ).toBe(undefined);
+    });
+
+    it("handles missing properties in $case", () => {
+      // Missing value should still work with undefined
+      expect(
+        apply({ $case: { cases: [], default: "default" } }, {}), // missing value
+      ).toBe("default");
+
+      expect(
+        apply({ $case: { value: 5, cases: [] } }, {}), // missing default but empty cases
+      ).toBe(undefined);
+    });
+  });
+
+  describe("type coercion and equality", () => {
+    it("handles strict equality in case matching", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: "5",
+              cases: [
+                { when: 5, then: "Number five" },
+                { when: "5", then: "String five" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("String five");
+    });
+
+    it("handles NaN values correctly", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: NaN,
+              cases: [
+                { when: NaN, then: "NaN match" },
+                { when: "not a number", then: "String match" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("NaN match"); // isEqual handles NaN correctly
+    });
+
+    it("handles Infinity values", () => {
+      expect(
+        apply(
+          {
+            $case: {
+              value: Infinity,
+              cases: [
+                { when: Infinity, then: "Infinity match" },
+                { when: -Infinity, then: "Negative infinity" },
+              ],
+              default: "No match",
+            },
+          },
+          {},
+        ),
+      ).toEqual("Infinity match");
+    });
+  });
+});

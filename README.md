@@ -232,7 +232,7 @@ const engine = createExpressionEngine({
 - **[Expression Reference](docs/expressions.md)** - Complete list of available expressions
 - **[Custom Expressions](docs/custom-expressions.md)** - Creating your own expressions
 - **[Evaluate Method](docs/evaluate-method.md)** - Advanced static calculations and template expressions
-- **[Dual-Mode Expressions](docs/dual-mode-expressions.md)** - Custom expressions with both apply and evaluate support
+- **[Dual-Mode Custom Expressions](docs/dual-mode-custom-expressions.md)** - Custom expressions with both apply and evaluate support
 
 ## Performance
 

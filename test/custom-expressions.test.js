@@ -27,50 +27,41 @@ const customEngine = createExpressionEngine({
       },
     },
 
-    // Find children in age range using new pattern
+    // Find children in age range - ANTI-PATTERN: uses other expressions instead of complete implementation
     $findByAge: {
-      apply: (operand, inputData, { apply }) =>
-        inputData.find((child) => apply(operand, child.age)),
+      apply: (operand, inputData) => {
+        // Complete implementation: check age directly without delegating to other expressions
+        return inputData.find((child) => {
+          if (operand.$eq !== undefined) return child.age === operand.$eq;
+          if (operand.$gte !== undefined) return child.age >= operand.$gte;
+          if (operand.$lte !== undefined) return child.age <= operand.$lte;
+          if (operand.$and) {
+            return operand.$and.every((cond) => {
+              if (cond.$gte !== undefined) return child.age >= cond.$gte;
+              if (cond.$lte !== undefined) return child.age <= cond.$lte;
+              return false;
+            });
+          }
+          return false;
+        });
+      },
       evaluate: (operand, { apply }) => {
         const [predicate, childrenArray] = operand;
         return apply({ $findByAge: predicate }, childrenArray);
       },
     },
 
-    // Delegation case: Calculate nap time score using built-in expressions
+    // ANTI-PATTERN: Calculate nap time score using complete implementation instead of delegating
     $napTimeScore: {
-      apply: (_, inputData, { apply }) => {
-        // Get nap duration, default to 0 if not present
-        const napMinutes = apply({ $get: "napDuration" }, inputData) || 0;
-
-        // Age multiplier: younger children get higher scores for longer naps
-        const ageMultiplier = apply(
-          {
-            $if: {
-              if: { $lt: 3 },
-              then: 2.0,
-              else: 1.5,
-            },
-          },
-          inputData.age,
-        );
-
-        // Bonus points for any nap time
-        const baseBonus = apply(
-          {
-            $if: {
-              if: { $gt: 0 },
-              then: 10,
-              else: 0,
-            },
-          },
-          napMinutes,
-        );
-
+      apply: (_, inputData) => {
+        // Complete implementation: calculate directly without delegating to other expressions
+        const napMinutes = inputData.napDuration ?? 0;
+        const ageMultiplier = inputData.age < 3 ? 2.0 : 1.5;
+        const baseBonus = napMinutes > 0 ? 10 : 0;
         return napMinutes * ageMultiplier + baseBonus;
       },
-      evaluate: (operand, { apply, evaluate }) => {
-        const child = evaluate(operand);
+      evaluate: (operand, { apply }) => {
+        const child = operand;
         return apply({ $napTimeScore: null }, child);
       },
     },
@@ -149,8 +140,8 @@ describe("Custom Expressions", () => {
     });
   });
 
-  describe("$napTimeScore (delegation case)", () => {
-    it("calculates nap time score using built-in expressions", () => {
+  describe("$napTimeScore (complete implementation)", () => {
+    it("calculates nap time score using complete implementation", () => {
       // Zahra: age 2 (< 3), napDuration 120 -> (120 * 2.0) + 10 = 250
       const zahraScore = customEngine.apply(
         { $napTimeScore: null },
@@ -196,12 +187,12 @@ describe("Custom Expressions", () => {
       expect(score).toBe(0);
     });
 
-    it("demonstrates delegation to multiple built-in expressions", () => {
-      // This test verifies that $get, $if, $lt, $gt all work within our custom expression
+    it("demonstrates complete implementation without delegation", () => {
+      // This test verifies the custom expression implements logic directly
       const testChild = { name: "Olumide", age: 2, napDuration: 100 };
       const score = customEngine.apply({ $napTimeScore: null }, testChild);
 
-      // Verify the calculation uses the built-in expressions correctly
+      // Verify the calculation uses direct implementation
       // Age 2 (< 3) -> multiplier 2.0
       // napDuration 100 (> 0) -> gets bonus 10
       // Score: (100 * 2.0) + 10 = 210

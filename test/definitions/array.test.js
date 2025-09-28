@@ -966,3 +966,754 @@ describe("$unique", () => {
     });
   });
 });
+
+describe("array expressions - edge cases", () => {
+  describe("$all edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $all: true }, [])).toBe(true);
+      expect(apply({ $all: { $eq: 5 } }, [])).toBe(true);
+    });
+
+    it("handles complex nested expressions", () => {
+      const data = [
+        { user: { active: true, age: 25 } },
+        { user: { active: true, age: 30 } },
+      ];
+      expect(
+        apply(
+          {
+            $all: {
+              $and: [
+                { $get: "user.active" },
+                { $gte: [{ $get: "user.age" }, 18] },
+              ],
+            },
+          },
+          data,
+        ),
+      ).toBe(true);
+    });
+
+    it("throws error for missing expression property in evaluate form", () => {
+      expect(() => evaluate({ $all: { array: [true, true] } })).toThrow(
+        "$all evaluate form requires 'expression' and 'array' properties",
+      );
+    });
+
+    it("throws error for missing array property in evaluate form", () => {
+      expect(() => evaluate({ $all: { expression: true } })).toThrow(
+        "$all evaluate form requires 'expression' and 'array' properties",
+      );
+    });
+  });
+
+  describe("$any edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $any: true }, [])).toBe(false);
+      expect(apply({ $any: { $eq: 5 } }, [])).toBe(false);
+    });
+
+    it("handles complex nested expressions", () => {
+      const data = [
+        { status: "inactive", priority: 1 },
+        { status: "active", priority: 5 },
+      ];
+      expect(
+        apply(
+          {
+            $any: {
+              $and: [
+                { $eq: [{ $get: "status" }, "active"] },
+                { $gte: [{ $get: "priority" }, 3] },
+              ],
+            },
+          },
+          data,
+        ),
+      ).toBe(true);
+    });
+
+    it("throws error for invalid evaluate operand", () => {
+      expect(() => evaluate({ $any: null })).toThrow(
+        "$any evaluate form requires object operand",
+      );
+      expect(() => evaluate({ $any: [] })).toThrow(
+        "$any evaluate form requires object operand",
+      );
+    });
+  });
+
+  describe("$append edge cases", () => {
+    it("handles null and undefined values", () => {
+      expect(apply({ $append: [null] }, [1, 2])).toEqual([1, 2, null]);
+      expect(apply({ $append: [undefined] }, [1, 2])).toEqual([
+        1,
+        2,
+        undefined,
+      ]);
+    });
+
+    it("handles nested arrays", () => {
+      expect(apply({ $append: [[3, 4]] }, [1, 2])).toEqual([1, 2, [3, 4]]);
+    });
+
+    it("throws error for missing properties in evaluate form", () => {
+      expect(() => evaluate({ $append: { baseArray: [1, 2] } })).toThrow(
+        "evaluate form requires 'arrayToAppend' and 'baseArray' properties",
+      );
+      expect(() => evaluate({ $append: { arrayToAppend: [3] } })).toThrow(
+        "evaluate form requires 'arrayToAppend' and 'baseArray' properties",
+      );
+    });
+  });
+
+  describe("$coalesce edge cases", () => {
+    it("handles arrays with all null/undefined values", () => {
+      expect(apply({ $coalesce: [null, undefined, null] }, {})).toBeUndefined();
+    });
+
+    it("handles empty arrays", () => {
+      expect(apply({ $coalesce: [] }, {})).toBeUndefined();
+    });
+
+    it("handles mixed null and falsy values", () => {
+      expect(apply({ $coalesce: [null, 0, false, ""] }, {})).toBe(0);
+      expect(apply({ $coalesce: [undefined, false, null] }, {})).toBe(false);
+    });
+
+    it("works with complex expressions in evaluate form", () => {
+      expect(
+        evaluate({
+          $coalesce: [
+            null,
+            { $get: { object: { value: "found" }, path: "value" } },
+            "default",
+          ],
+        }),
+      ).toBe("found");
+    });
+  });
+
+  describe("$concat edge cases", () => {
+    it("handles empty arrays to concatenate", () => {
+      expect(apply({ $concat: [] }, [1, 2])).toEqual([1, 2]);
+      expect(apply({ $concat: [[], []] }, [1, 2])).toEqual([1, 2]);
+    });
+
+    it("handles nested array structures", () => {
+      expect(apply({ $concat: [[[3]], [[4]]] }, [1, 2])).toEqual([
+        1,
+        2,
+        [3],
+        [4],
+      ]);
+    });
+
+    it("preserves types and special values", () => {
+      expect(
+        apply({ $concat: [[null, undefined, false, 0]] }, ["test"]),
+      ).toEqual(["test", null, undefined, false, 0]);
+    });
+
+    it("works with evaluate form and multiple arrays", () => {
+      expect(
+        evaluate({
+          $concat: [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+          ],
+        }),
+      ).toEqual([1, 2, 3, 4, 5, 6]);
+    });
+  });
+
+  describe("$filter edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $filter: true }, [])).toEqual([]);
+      expect(apply({ $filter: { $gt: 5 } }, [])).toEqual([]);
+    });
+
+    it("handles complex filtering conditions", () => {
+      const data = [
+        { user: { name: "Aria", score: 85, active: true } },
+        { user: { name: "Chen", score: 92, active: false } },
+        { user: { name: "Zara", score: 78, active: true } },
+      ];
+      expect(
+        apply(
+          {
+            $filter: {
+              $and: [
+                { $get: "user.active" },
+                { $gte: [{ $get: "user.score" }, 80] },
+              ],
+            },
+          },
+          data,
+        ),
+      ).toEqual([{ user: { name: "Aria", score: 85, active: true } }]);
+    });
+
+    it("throws error for null operand in evaluate form", () => {
+      expect(() => evaluate({ $filter: null })).toThrow(
+        "$filter evaluate form requires object operand",
+      );
+    });
+  });
+
+  describe("$filterBy edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $filterBy: { status: "active" } }, [])).toEqual([]);
+    });
+
+    it("throws error when applied to non-arrays", () => {
+      expect(() =>
+        apply({ $filterBy: { name: "test" } }, "not an array"),
+      ).toThrow("$filterBy can only be applied to arrays");
+    });
+
+    it("throws error for invalid operand types", () => {
+      expect(() => apply({ $filterBy: null }, [])).toThrow(
+        "$filterBy operand must be an object with property conditions",
+      );
+      expect(() => apply({ $filterBy: [] }, [])).toThrow(
+        "$filterBy operand must be an object with property conditions",
+      );
+    });
+
+    it("handles complex expression conditions", () => {
+      const data = [
+        { name: "Kai", age: 25, department: "engineering" },
+        { name: "Luna", age: 30, department: "design" },
+        { name: "Ravi", age: 28, department: "engineering" },
+      ];
+      expect(
+        apply(
+          {
+            $filterBy: {
+              department: "engineering",
+              age: { $gte: 26 },
+            },
+          },
+          data,
+        ),
+      ).toEqual([{ name: "Ravi", age: 28, department: "engineering" }]);
+    });
+
+    it("throws error for invalid evaluate form operand length", () => {
+      expect(() => evaluate({ $filterBy: [1] })).toThrow(
+        "$filterBy evaluate form requires array operand: [data, conditions]",
+      );
+      expect(() => evaluate({ $filterBy: [1, 2, 3] })).toThrow(
+        "$filterBy evaluate form requires array operand: [data, conditions]",
+      );
+    });
+
+    it("throws error when first argument is not an array in evaluate form", () => {
+      expect(() =>
+        evaluate({ $filterBy: ["not array", { status: "active" }] }),
+      ).toThrow("$filterBy first argument must be an array");
+    });
+
+    it("throws error for invalid conditions in evaluate form", () => {
+      expect(() => evaluate({ $filterBy: [[], null] })).toThrow(
+        "$filterBy conditions must be an object with property conditions",
+      );
+      expect(() => evaluate({ $filterBy: [[], []] })).toThrow(
+        "$filterBy conditions must be an object with property conditions",
+      );
+    });
+  });
+
+  describe("$find edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $find: true }, [])).toBeUndefined();
+      expect(apply({ $find: { $eq: 5 } }, [])).toBeUndefined();
+    });
+
+    it("handles complex search conditions", () => {
+      const data = [
+        { product: { name: "laptop", price: 999, inStock: false } },
+        { product: { name: "phone", price: 599, inStock: true } },
+        { product: { name: "tablet", price: 399, inStock: true } },
+      ];
+      expect(
+        apply(
+          {
+            $find: {
+              $and: [
+                { $get: "product.inStock" },
+                { $lt: [{ $get: "product.price" }, 500] },
+              ],
+            },
+          },
+          data,
+        ),
+      ).toEqual({ product: { name: "tablet", price: 399, inStock: true } });
+    });
+
+    it("returns undefined when no match found", () => {
+      expect(
+        apply({ $find: { $eq: "missing" } }, ["a", "b", "c"]),
+      ).toBeUndefined();
+    });
+  });
+
+  describe("$flatMap edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $flatMap: [] }, [])).toEqual([]);
+      expect(apply({ $flatMap: [1, 2] }, [])).toEqual([]);
+    });
+
+    it("handles complex transformation and flattening", () => {
+      const data = [
+        { tags: ["javascript", "web"] },
+        { tags: ["python", "data"] },
+        { tags: ["go"] },
+      ];
+      expect(apply({ $flatMap: { $get: "tags" } }, data)).toEqual([
+        "javascript",
+        "web",
+        "python",
+        "data",
+        "go",
+      ]);
+    });
+
+    it("handles nested array results", () => {
+      expect(
+        apply({ $flatMap: [{ $get: "." }, { $get: "." }] }, [1, 2]),
+      ).toEqual([1, 1, 2, 2]);
+    });
+  });
+
+  describe("$flatten edge cases", () => {
+    it("handles already flat arrays", () => {
+      expect(apply({ $flatten: {} }, [1, 2, 3])).toEqual([1, 2, 3]);
+    });
+
+    it("handles custom depth", () => {
+      expect(apply({ $flatten: { depth: 2 } }, [1, [2, [3, 4]]])).toEqual([
+        1, 2, 3, 4,
+      ]);
+      expect(apply({ $flatten: { depth: 0 } }, [1, [2, 3]])).toEqual([
+        1,
+        [2, 3],
+      ]);
+    });
+
+    it("handles deeply nested structures", () => {
+      expect(apply({ $flatten: { depth: 3 } }, [1, [2, [3, [4, 5]]]])).toEqual([
+        1, 2, 3, 4, 5,
+      ]);
+    });
+
+    it("works with evaluate form using array operand", () => {
+      expect(evaluate({ $flatten: [1, [2, 3]] })).toEqual([1, 2, 3]);
+    });
+
+    it("throws error for invalid evaluate form operand", () => {
+      expect(() => evaluate({ $flatten: { depth: 2 } })).toThrow(
+        "$flatten evaluate form requires either an array operand, or an object of the form { array: [...], depth: 2 }",
+      );
+      expect(() =>
+        evaluate({ $flatten: { array: "not array", depth: 1 } }),
+      ).toThrow(
+        "$flatten evaluate form requires either an array operand, or an object of the form { array: [...], depth: 2 }",
+      );
+    });
+  });
+
+  describe("$groupBy edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $groupBy: "status" }, [])).toEqual({});
+      expect(apply({ $groupBy: { $get: "category" } }, [])).toEqual({});
+    });
+
+    it("throws error when applied to non-arrays", () => {
+      expect(() => apply({ $groupBy: "field" }, "not an array")).toThrow(
+        "$groupBy can only be applied to arrays",
+      );
+    });
+
+    it("throws error when grouping key is missing (string operand)", () => {
+      expect(() => apply({ $groupBy: "missing" }, [{ name: "test" }])).toThrow(
+        '{"name":"test"} could not be grouped by missing',
+      );
+    });
+
+    it("throws error when grouping key is missing (expression operand)", () => {
+      expect(() =>
+        apply({ $groupBy: { $get: "missing" } }, [{ name: "test" }]),
+      ).toThrow('{"name":"test"} could not be grouped by [object Object]');
+    });
+
+    it("handles complex grouping expressions", () => {
+      const data = [
+        { user: { department: "eng", level: "senior" } },
+        { user: { department: "eng", level: "junior" } },
+        { user: { department: "design", level: "senior" } },
+      ];
+      expect(
+        apply(
+          {
+            $groupBy: {
+              $get: "user.department",
+            },
+          },
+          data,
+        ),
+      ).toEqual({
+        eng: [
+          { user: { department: "eng", level: "senior" } },
+          { user: { department: "eng", level: "junior" } },
+        ],
+        design: [{ user: { department: "design", level: "senior" } }],
+      });
+    });
+
+    it("throws error for missing array property in evaluate form", () => {
+      expect(() => evaluate({ $groupBy: { groupBy: "status" } })).toThrow(
+        "$groupBy evaluate form requires 'array' and 'groupBy' properties",
+      );
+    });
+
+    it("throws error for missing groupBy property in evaluate form", () => {
+      expect(() => evaluate({ $groupBy: { array: [] } })).toThrow(
+        "$groupBy evaluate form requires 'array' and 'groupBy' properties",
+      );
+    });
+
+    it("throws error for invalid evaluate operand", () => {
+      expect(() => evaluate({ $groupBy: null })).toThrow(
+        "$groupBy evaluate form requires object operand",
+      );
+      expect(() => evaluate({ $groupBy: [] })).toThrow(
+        "$groupBy evaluate form requires object operand",
+      );
+    });
+  });
+
+  describe("$join edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $join: "," }, [])).toBe("");
+    });
+
+    it("handles arrays with null and undefined", () => {
+      expect(apply({ $join: "," }, [1, null, undefined, 2])).toBe("1,,,2");
+    });
+
+    it("handles complex separators", () => {
+      expect(apply({ $join: " -> " }, ["a", "b", "c"])).toBe("a -> b -> c");
+      expect(apply({ $join: "" }, ["a", "b", "c"])).toBe("abc");
+    });
+
+    it("throws error for missing properties in evaluate form", () => {
+      expect(() => evaluate({ $join: { array: ["a", "b"] } })).toThrow(
+        "evaluate form requires 'separator' and 'array' properties",
+      );
+      expect(() => evaluate({ $join: { separator: "," } })).toThrow(
+        "evaluate form requires 'separator' and 'array' properties",
+      );
+    });
+  });
+
+  describe("$map edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $map: { $get: "name" } }, [])).toEqual([]);
+    });
+
+    it("handles complex transformation expressions", () => {
+      const data = [
+        { user: { first: "Aria", last: "Chen", age: 25 } },
+        { user: { first: "Zara", last: "Kim", age: 30 } },
+      ];
+      expect(
+        apply(
+          {
+            $map: {
+              $select: {
+                fullName: { $get: "user.first" },
+                isAdult: { $gte: [{ $get: "user.age" }, 18] },
+              },
+            },
+          },
+          data,
+        ),
+      ).toEqual([
+        { fullName: "Aria", isAdult: true },
+        { fullName: "Zara", isAdult: true },
+      ]);
+    });
+
+    it("preserves array length even with undefined results", () => {
+      expect(apply({ $map: { $get: "missing" } }, [1, 2, 3])).toEqual([
+        undefined,
+        undefined,
+        undefined,
+      ]);
+    });
+  });
+
+  describe("$pluck edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $pluck: "name" }, [])).toEqual([]);
+      expect(apply({ $pluck: { $get: "field" } }, [])).toEqual([]);
+    });
+
+    it("throws error when applied to non-arrays", () => {
+      expect(() => apply({ $pluck: "field" }, "not an array")).toThrow(
+        "$pluck can only be applied to arrays",
+      );
+    });
+
+    it("handles missing properties", () => {
+      expect(apply({ $pluck: "missing" }, [{ name: "test" }])).toEqual([
+        undefined,
+      ]);
+    });
+
+    it("handles nested property paths", () => {
+      const data = [
+        { user: { profile: { email: "aria@example.com" } } },
+        { user: { profile: { email: "chen@example.com" } } },
+      ];
+      expect(apply({ $pluck: "user.profile.email" }, data)).toEqual([
+        "aria@example.com",
+        "chen@example.com",
+      ]);
+    });
+
+    it("handles complex expression operands", () => {
+      const data = [
+        { metrics: { views: 100, clicks: 5 } },
+        { metrics: { views: 200, clicks: 15 } },
+      ];
+      expect(
+        apply(
+          {
+            $pluck: {
+              $divide: [{ $get: "metrics.clicks" }, { $get: "metrics.views" }],
+            },
+          },
+          data,
+        ),
+      ).toEqual([0.05, 0.075]);
+    });
+
+    it("throws error for missing array property in evaluate form", () => {
+      expect(() => evaluate({ $pluck: { property: "name" } })).toThrow(
+        "$pluck evaluate form requires 'array' and 'property' properties",
+      );
+    });
+
+    it("throws error for missing property property in evaluate form", () => {
+      expect(() => evaluate({ $pluck: { array: [] } })).toThrow(
+        "$pluck evaluate form requires 'array' and 'property' properties",
+      );
+    });
+
+    it("throws error for invalid evaluate operand", () => {
+      expect(() => evaluate({ $pluck: null })).toThrow(
+        "$pluck evaluate form requires object operand",
+      );
+      expect(() => evaluate({ $pluck: [] })).toThrow(
+        "$pluck evaluate form requires object operand",
+      );
+    });
+  });
+
+  describe("$prepend edge cases", () => {
+    it("handles null and undefined values", () => {
+      expect(apply({ $prepend: [null] }, [1, 2])).toEqual([null, 1, 2]);
+      expect(apply({ $prepend: [undefined] }, [1, 2])).toEqual([
+        undefined,
+        1,
+        2,
+      ]);
+    });
+
+    it("handles nested arrays", () => {
+      expect(apply({ $prepend: [[0]] }, [1, 2])).toEqual([[0], 1, 2]);
+    });
+
+    it("handles empty arrays to prepend", () => {
+      expect(apply({ $prepend: [] }, [1, 2])).toEqual([1, 2]);
+    });
+
+    it("throws error for missing properties in evaluate form", () => {
+      expect(() => evaluate({ $prepend: { baseArray: [1, 2] } })).toThrow(
+        "evaluate form requires 'arrayToPrepend' and 'baseArray' properties",
+      );
+      expect(() => evaluate({ $prepend: { arrayToPrepend: [0] } })).toThrow(
+        "evaluate form requires 'arrayToPrepend' and 'baseArray' properties",
+      );
+    });
+  });
+
+  describe("$reverse edge cases", () => {
+    it("handles empty arrays", () => {
+      expect(apply({ $reverse: {} }, [])).toEqual([]);
+    });
+
+    it("handles single element arrays", () => {
+      expect(apply({ $reverse: {} }, ["only"])).toEqual(["only"]);
+    });
+
+    it("maintains immutability", () => {
+      const original = [1, 2, 3];
+      const result = apply({ $reverse: {} }, original);
+      expect(result).toEqual([3, 2, 1]);
+      expect(original).toEqual([1, 2, 3]); // Original unchanged
+    });
+
+    it("handles arrays with mixed types", () => {
+      expect(apply({ $reverse: {} }, [1, "two", null, true])).toEqual([
+        true,
+        null,
+        "two",
+        1,
+      ]);
+    });
+  });
+
+  describe("$skip edge cases", () => {
+    it("handles skip count larger than array length", () => {
+      expect(apply({ $skip: 10 }, [1, 2, 3])).toEqual([]);
+    });
+
+    it("handles zero skip", () => {
+      expect(apply({ $skip: 0 }, [1, 2, 3])).toEqual([1, 2, 3]);
+    });
+
+    it("handles negative skip count", () => {
+      expect(apply({ $skip: -1 }, [1, 2, 3])).toEqual([3]);
+    });
+
+    it("handles empty arrays", () => {
+      expect(apply({ $skip: 5 }, [])).toEqual([]);
+    });
+
+    it("throws error for missing properties in evaluate form", () => {
+      expect(() => evaluate({ $skip: { array: [1, 2] } })).toThrow(
+        "evaluate form requires 'count' and 'array' properties",
+      );
+      expect(() => evaluate({ $skip: { count: 1 } })).toThrow(
+        "evaluate form requires 'count' and 'array' properties",
+      );
+    });
+  });
+
+  describe("$take edge cases", () => {
+    it("handles negative take count", () => {
+      expect(apply({ $take: -1 }, [1, 2, 3])).toEqual([1, 2]);
+    });
+
+    it("handles non-integer count", () => {
+      expect(apply({ $take: 2.7 }, [1, 2, 3, 4])).toEqual([1, 2]);
+    });
+
+    it("handles empty arrays", () => {
+      expect(apply({ $take: 5 }, [])).toEqual([]);
+    });
+
+    it("throws error for missing properties in evaluate form", () => {
+      expect(() => evaluate({ $take: { array: [1, 2] } })).toThrow(
+        "evaluate form requires 'count' and 'array' properties",
+      );
+      expect(() => evaluate({ $take: { count: 1 } })).toThrow(
+        "evaluate form requires 'count' and 'array' properties",
+      );
+    });
+  });
+
+  describe("$unique edge cases", () => {
+    it("handles arrays with objects (reference equality)", () => {
+      const obj1 = { id: 1 };
+      const obj2 = { id: 2 };
+      const obj3 = { id: 1 }; // Different reference but same content
+      expect(apply({ $unique: {} }, [obj1, obj2, obj1, obj3])).toEqual([
+        obj1,
+        obj2,
+        obj3,
+      ]);
+    });
+
+    it("handles arrays with special values", () => {
+      expect(
+        apply({ $unique: {} }, [0, false, "", null, undefined, 0, false]),
+      ).toEqual([0, false, "", null, undefined]);
+    });
+
+    it("handles arrays with NaN", () => {
+      expect(apply({ $unique: {} }, [NaN, 1, NaN, 2])).toEqual([NaN, 1, 2]);
+    });
+  });
+
+  describe("error handling and validation", () => {
+    it("handles malformed operands gracefully", () => {
+      expect(() => apply({ $all: true }, "not array")).toThrow();
+      expect(() => apply({ $map: {} }, null)).toThrow();
+    });
+
+    it("provides helpful error messages", () => {
+      expect(() => evaluate({ $all: "string" })).toThrow(
+        "$all evaluate form requires object operand",
+      );
+      expect(() => evaluate({ $filter: 123 })).toThrow(
+        "$filter evaluate form requires object operand",
+      );
+    });
+
+    it("handles missing required properties consistently", () => {
+      expect(() => evaluate({ $map: {} })).toThrow(
+        "$map evaluate form requires 'expression' and 'array' properties",
+      );
+      expect(() => evaluate({ $filter: {} })).toThrow(
+        "$filter evaluate form requires 'expression' and 'array' properties",
+      );
+    });
+  });
+
+  describe("integration and compatibility", () => {
+    it("works well with other expressions in complex scenarios", () => {
+      const data = {
+        users: [
+          { name: "Aria", scores: [85, 90, 88], active: true },
+          { name: "Chen", scores: [92, 89, 94], active: false },
+          { name: "Zara", scores: [78, 85, 82], active: true },
+        ],
+      };
+
+      expect(
+        apply(
+          {
+            $filter: {
+              $get: "active",
+            },
+          },
+          data.users,
+        ),
+      ).toEqual([
+        { name: "Aria", scores: [85, 90, 88], active: true },
+        { name: "Zara", scores: [78, 85, 82], active: true },
+      ]);
+    });
+
+    it("maintains consistent behavior across apply and evaluate forms", () => {
+      const testData = [1, 2, 3, 4, 5];
+
+      // Apply form
+      const applyResult = apply({ $filter: { $gt: 3 } }, testData);
+
+      // Evaluate form
+      const evaluateResult = evaluate({
+        $filter: { expression: { $gt: 3 }, array: testData },
+      });
+
+      expect(applyResult).toEqual(evaluateResult);
+      expect(applyResult).toEqual([4, 5]);
+    });
+  });
+});

@@ -1,4 +1,7 @@
 // useful for function that are _almost_ identical -- breaks if anything needs
+
+import { isEqualWith } from "es-toolkit";
+
 // to be done with the input data or the operands differ at all
 export function createDualExpression(fn) {
   return {
@@ -14,13 +17,17 @@ export function createDualExpression(fn) {
  * @param {*} [defaultValue] - The value returned if the resolved value is undefined.
  * @returns {*} Returns the resolved value.
  */
-export function get(obj, path, defaultValue) {
+export function get(obj, path) {
   // Convert the path to an array if it's not already.
-  const pathArray = Array.isArray(path) ? path : path.split(".");
+  const pathArray = path.split(".");
 
   // Reduce over the path array to find the nested value.
-  const result = pathArray.reduce((acc, key) => acc && acc[key], obj);
+  return pathArray.reduce((acc, key) => acc && acc[key], obj);
+}
 
-  // Return the resolved value or the default value if undefined.
-  return result === undefined ? defaultValue : result;
+export function isEqual(a, b) {
+  return isEqualWith(a, b, (x, y) =>
+    // eslint-disable-next-line eqeqeq
+    x === undefined || x === null ? x == y : undefined,
+  );
 }

@@ -11,7 +11,12 @@ npm install json-expressions
 ## Basic Setup
 
 ```javascript
-import { createExpressionEngine, math, comparison, array } from "json-expressions";
+import {
+  createExpressionEngine,
+  math,
+  comparison,
+  array,
+} from "json-expressions";
 
 const engine = createExpressionEngine({
   packs: [math, comparison, array],
@@ -316,20 +321,20 @@ const needsAttention = engine.apply(
 
 ## Common Patterns Cheat Sheet
 
-| Goal                   | Expression Pattern                                        |
-| ---------------------- | --------------------------------------------------------- |
-| Get property           | `{ $get: "propertyName" }`                                |
-| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                          |
-| Multiple conditions    | `{ $and: [condition1, condition2] }`                      |
-| Object matching        | `{ $matches: { prop1: condition1, prop2: condition2 } }`  |
-| Filter array           | `{ $filter: condition }`                                  |
-| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }` |
-| Transform array        | `{ $map: transformation }`                                |
-| Count items            | `{ $count: { $identity: null } }`                         |
+| Goal                   | Expression Pattern                                                  |
+| ---------------------- | ------------------------------------------------------------------- |
+| Get property           | `{ $get: "propertyName" }`                                          |
+| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                                    |
+| Multiple conditions    | `{ $and: [condition1, condition2] }`                                |
+| Object matching        | `{ $matches: { prop1: condition1, prop2: condition2 } }`            |
+| Filter array           | `{ $filter: condition }`                                            |
+| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }`           |
+| Transform array        | `{ $map: transformation }`                                          |
+| Count items            | `{ $count: { $identity: null } }`                                   |
 | Get first/last         | `{ $first: { $identity: null } }`, `{ $last: { $identity: null } }` |
-| Sort array             | `{ $sort: { by: "property" } }`                           |
-| Chain operations       | `{ $pipe: [step1, step2, step3] }`                        |
-| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`  |
+| Sort array             | `{ $sort: { by: "property" } }`                                     |
+| Chain operations       | `{ $pipe: [step1, step2, step3] }`                                  |
+| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`            |
 
 ## Next Steps
 
