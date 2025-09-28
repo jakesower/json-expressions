@@ -191,14 +191,37 @@ const $isEmpty = {
 };
 
 const $exists = {
-  apply: (operand, inputData, { apply }) => {
-    const resolvedPath = apply(operand, inputData);
-    if (typeof resolvedPath !== "string") {
-      throw new Error("$exists operand must resolve to a string path");
+  apply(operand, inputData, { apply }) {
+    if (typeof inputData !== "object" || inputData === null) {
+      throw new Error("$exists input data must resolve be an object");
     }
-    return get(inputData, resolvedPath) !== undefined;
+
+    const resolvedPath = apply(operand, inputData);
+    if (!Array.isArray(resolvedPath) && typeof resolvedPath !== "string") {
+      throw new Error(
+        "$exists operand must resolve to an array or string path",
+      );
+    }
+
+    const pathPieces = Array.isArray(resolvedPath)
+      ? resolvedPath
+      : resolvedPath.split(".");
+
+    if (pathPieces.length === 1) {
+      return (
+        pathPieces[0] in inputData && inputData[pathPieces[0]] !== undefined
+      );
+    }
+
+    const lastObj = get(inputData, pathPieces.slice(0, -1));
+
+    return (
+      lastObj !== null &&
+      typeof lastObj === "object" &&
+      pathPieces.slice(-1)[0] in lastObj
+    );
   },
-  evaluate: (operand, { evaluate }) => {
+  evaluate(operand, { evaluate, apply }) {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
         "$exists evaluate form requires object operand: { object, path }",
@@ -214,10 +237,7 @@ const $exists = {
 
     const evaluatedObject = evaluate(object);
     const evaluatedPath = evaluate(path);
-    if (typeof evaluatedPath !== "string") {
-      throw new Error("$exists path must be a string");
-    }
-    return get(evaluatedObject, evaluatedPath) !== undefined;
+    return this.apply(evaluatedPath, evaluatedObject, { apply });
   },
 };
 

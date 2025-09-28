@@ -637,7 +637,7 @@ describe("$exists", () => {
 
     it("should throw error for non-string paths", () => {
       expect(() => apply({ $exists: 123 }, {})).toThrow(
-        "$exists operand must resolve to a string path",
+        "$exists operand must resolve to an array or string path",
       );
     });
   });
@@ -694,7 +694,7 @@ describe("$exists", () => {
 
     it("should require string paths", () => {
       expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow(
-        "$exists path must be a string",
+        "$exists operand must resolve to an array or string path",
       );
     });
   });
@@ -1704,10 +1704,10 @@ describe("predicate expressions - edge cases", () => {
 
     it("throws error for non-string paths", () => {
       expect(() => apply({ $exists: 123 }, {})).toThrow(
-        "$exists operand must resolve to a string path",
+        "$exists operand must resolve to an array or string path",
       );
       expect(() => apply({ $exists: null }, {})).toThrow(
-        "$exists operand must resolve to a string path",
+        "$exists operand must resolve to an array or string path",
       );
     });
 
@@ -1731,7 +1731,7 @@ describe("predicate expressions - edge cases", () => {
 
     it("throws error for non-string path in evaluate form", () => {
       expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow(
-        "$exists path must be a string",
+        "$exists operand must resolve to an array or string path",
       );
     });
 
@@ -2041,7 +2041,7 @@ describe("predicate expressions - edge cases", () => {
         "$isEmpty apply form requires boolean operand (true/false)",
       );
       expect(() => apply({ $exists: 123 }, {})).toThrow(
-        "$exists operand must resolve to a string path",
+        "$exists operand must resolve to an array or string path",
       );
     });
   });

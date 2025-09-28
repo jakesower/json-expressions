@@ -40,6 +40,14 @@ describe("$get", () => {
         evaluate({ $get: { object: { name: "Asha" }, path: "name" } }),
       ).toBe("Asha");
     });
+
+    it("works with array path in object operand", () => {
+      expect(
+        evaluate({
+          $get: { object: { user: { name: "Asha" } }, path: ["user", "name"] },
+        }),
+      ).toBe("Asha");
+    });
   });
 
   describe("apply form", () => {
@@ -53,6 +61,21 @@ describe("$get", () => {
       expect(apply({ $get: "user.name" }, { user: { name: "Chen" } })).toEqual(
         "Chen",
       );
+    });
+
+    it("gets nested value using array path", () => {
+      expect(
+        apply({ $get: ["user", "name"] }, { user: { name: "Chen" } }),
+      ).toEqual("Chen");
+    });
+
+    it("gets deeply nested value using array path", () => {
+      const data = {
+        child: { profile: { contact: { email: "test@example.com" } } },
+      };
+      expect(
+        apply({ $get: ["child", "profile", "contact", "email"] }, data),
+      ).toEqual("test@example.com");
     });
   });
 });
@@ -176,7 +199,7 @@ describe("$select", () => {
       });
     });
 
-    it("skips undefined properties in array form", () => {
+    it("skips null properties in array form", () => {
       expect(apply({ $select: ["name", "missing"] }, children[0])).toEqual({
         name: "Chen",
       });
@@ -338,24 +361,24 @@ describe("access expressions - edge cases", () => {
       ).toBe("Sofia");
     });
 
-    it("returns undefined for non-existent nested paths", () => {
+    it("returns null for non-existent nested paths", () => {
       const data = { child: { name: "Omar" } };
-      expect(apply({ $get: "child.profile.missing" }, data)).toBe(undefined);
-      expect(apply({ $get: "nonexistent.path" }, data)).toBe(undefined);
+      expect(apply({ $get: "child.profile.missing" }, data)).toBe(null);
+      expect(apply({ $get: "nonexistent.path" }, data)).toBe(null);
     });
 
     it("handles array index access", () => {
       const data = { meals: ["apple", "crackers", "juice"] };
       expect(apply({ $get: "meals.0" }, data)).toBe("apple");
       expect(apply({ $get: "meals.2" }, data)).toBe("juice");
-      expect(apply({ $get: "meals.10" }, data)).toBe(undefined);
+      expect(apply({ $get: "meals.10" }, data)).toBe(null);
     });
 
     it("handles null and undefined input data", () => {
       expect(apply({ $get: "name" }, null)).toBe(null);
-      expect(apply({ $get: "name" }, undefined)).toBe(undefined);
+      expect(apply({ $get: "name" }, undefined)).toBe(null);
       expect(apply({ $get: "." }, null)).toBe(null);
-      expect(apply({ $get: "." }, undefined)).toBe(undefined);
+      expect(apply({ $get: "." }, undefined)).toBe(null);
     });
 
     it("handles empty string paths", () => {
@@ -545,7 +568,7 @@ describe("access expressions - edge cases", () => {
       });
     });
 
-    it("skips properties that resolve to undefined", () => {
+    it("skips properties that resolve to null", () => {
       const data = { name: "Amara", age: 3 };
       expect(apply({ $select: ["name", "missing.path", "age"] }, data)).toEqual(
         {
@@ -613,7 +636,7 @@ describe("access expressions - edge cases", () => {
       ).toEqual({
         childName: "Zara",
         nullValue: null,
-        missingValue: undefined,
+        missingValue: null,
       });
     });
 

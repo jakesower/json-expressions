@@ -35,9 +35,9 @@ const $default = createDualExpression((operand, applyOrEvaluate) => {
   }
 
   const { allowNull, expression } = operand;
-  const check = allowNull
-    ? (val) => val !== undefined
-    : (val) => val !== undefined && val !== null;
+  // In this system where null = undefined, treat them the same
+  // Use != to check for both null and undefined
+  const check = (val) => val != null;
   const result = applyOrEvaluate(expression);
 
   return check(result) ? result : applyOrEvaluate(operand.default);

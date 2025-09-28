@@ -19,10 +19,10 @@ export function createDualExpression(fn) {
  */
 export function get(obj, path) {
   // Convert the path to an array if it's not already.
-  const pathArray = path.split(".");
+  const pathArray = Array.isArray(path) ? path : path.split(".");
 
   // Reduce over the path array to find the nested value.
-  return pathArray.reduce((acc, key) => acc && acc[key], obj);
+  return pathArray.reduce((acc, key) => acc && acc[key], obj) ?? null;
 }
 
 export function isEqual(a, b) {

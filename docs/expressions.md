@@ -419,7 +419,7 @@ apply({ $flatten: { depth: 2 } }, nestedBelongings);
 
 ## $get
 
-Retrieves a value from data using dot notation paths.
+Retrieves a value from data using dot notation paths or array paths.
 
 ```javascript
 // Get child's name with default
@@ -427,9 +427,18 @@ const child = { info: { name: "Amara", age: 4 } };
 apply({ $get: { path: "info.name", default: "Unknown" } }, child);
 // Returns: "Amara"
 
-// Simple path access
+// Simple path access with dot notation
 apply({ $get: "info.age" }, child);
 // Returns: 4
+
+// Path access with array notation
+apply({ $get: ["info", "age"] }, child);
+// Returns: 4
+
+// Deep nesting with array path
+const data = { child: { profile: { contact: { email: "test@example.com" } } } };
+apply({ $get: ["child", "profile", "contact", "email"] }, data);
+// Returns: "test@example.com"
 ```
 
 ## $groupBy

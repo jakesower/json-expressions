@@ -724,11 +724,7 @@ describe("$pluck", () => {
       { name: "Diego", age: 4 },
     ];
 
-    expect(apply({ $pluck: "age" }, dataWithMissing)).toEqual([
-      5,
-      undefined,
-      4,
-    ]);
+    expect(apply({ $pluck: "age" }, dataWithMissing)).toEqual([5, null, 4]);
   });
 
   it("works with expression operands", () => {
@@ -1447,11 +1443,11 @@ describe("array expressions - edge cases", () => {
       ]);
     });
 
-    it("preserves array length even with undefined results", () => {
+    it("preserves array length even with null results", () => {
       expect(apply({ $map: { $get: "missing" } }, [1, 2, 3])).toEqual([
-        undefined,
-        undefined,
-        undefined,
+        null,
+        null,
+        null,
       ]);
     });
   });
@@ -1469,9 +1465,7 @@ describe("array expressions - edge cases", () => {
     });
 
     it("handles missing properties", () => {
-      expect(apply({ $pluck: "missing" }, [{ name: "test" }])).toEqual([
-        undefined,
-      ]);
+      expect(apply({ $pluck: "missing" }, [{ name: "test" }])).toEqual([null]);
     });
 
     it("handles nested property paths", () => {

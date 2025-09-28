@@ -151,7 +151,7 @@ describe("$default", () => {
       ).toBe(false);
     });
 
-    it("returns default when expression is undefined even with allowNull true", () => {
+    it("returns default when expression is null (was undefined) even with allowNull true", () => {
       expect(
         apply(
           {
@@ -655,10 +655,10 @@ describe("flow expressions - edge cases", () => {
   });
 
   describe("$default edge cases", () => {
-    it("handles complex allowNull scenarios", () => {
+    it("handles null and undefined consistently (null = undefined)", () => {
       const data = { nullValue: null, undefinedValue: undefined };
 
-      // allowNull: true should return null but not undefined
+      // In this system, null = undefined, so both use the default
       expect(
         apply(
           {
@@ -670,7 +670,7 @@ describe("flow expressions - edge cases", () => {
           },
           data,
         ),
-      ).toBe(null);
+      ).toBe("fallback");
 
       expect(
         apply(
@@ -1064,16 +1064,16 @@ describe("flow expressions - edge cases", () => {
       expect(result.map((item) => item.name)).toEqual(["C", "B", "A"]);
     });
 
-    it("handles undefined values in sort field", () => {
-      const withUndefined = [
+    it("handles missing values in sort field (now null)", () => {
+      const withMissing = [
         { name: "A", score: 90 },
-        { name: "B" }, // missing score (undefined)
+        { name: "B" }, // missing score (now returns null instead of undefined)
         { name: "C", score: 85 },
       ];
 
-      const result = apply({ $sort: "score" }, withUndefined);
-      // JavaScript comparison behavior with undefined
-      expect(result.map((item) => item.name)).toEqual(["A", "B", "C"]);
+      const result = apply({ $sort: "score" }, withMissing);
+      // JavaScript comparison behavior: null < numbers, so B comes first
+      expect(result.map((item) => item.name)).toEqual(["B", "C", "A"]);
     });
 
     it("handles complex expression-based sorting", () => {

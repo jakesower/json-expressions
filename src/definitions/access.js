@@ -15,7 +15,9 @@ const $get = {
   apply: (operand, inputData, { apply }) => {
     const resolvedOperand = apply(operand, inputData);
     return resolvedOperand === "."
-      ? inputData
+      ? inputData === undefined
+        ? null
+        : inputData
       : get(inputData, resolvedOperand);
   },
   evaluate: (operand, { apply }) => {
@@ -75,7 +77,7 @@ const $select = {
       operand.forEach((prop) => {
         const key = typeof prop === "string" ? prop : apply(prop, inputData);
         const value = get(inputData, key);
-        if (value !== undefined) {
+        if (value !== null) {
           result[key] = value;
         }
       });

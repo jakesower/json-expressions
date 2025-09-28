@@ -5,10 +5,12 @@
 This guide covers creating custom expressions that support **both apply and evaluate modes**. Most users should start with the **[main custom expressions guide](custom-expressions.md)** which covers function-based expressions for apply mode only.
 
 **When you need this guide:**
+
 - Your expression needs to work in both apply mode (with input data) and evaluate mode (static calculations)
 - You're creating expressions for use with complex evaluate scenarios like template rendering or configuration calculations
 
 **When you DON'T need this guide:**
+
 - Your expression only needs to work with input data (apply mode) - use function-based expressions instead
 
 ## Apply vs Evaluate Requirements
@@ -43,6 +45,7 @@ const $myExpression = {
 ### Why Define Both Forms?
 
 The engine can switch between modes during expression evaluation. For example:
+
 - `$case` evaluates `when` expressions in apply mode
 - Complex expressions may need static sub-calculations (evaluate) within dynamic processing (apply)
 - Template expressions may combine static configuration with dynamic data
@@ -481,6 +484,7 @@ const $ageGroup = {
 ```
 
 **Migration steps:**
+
 1. Wrap your function in an object with an `apply` property
 2. Add an `evaluate` method that handles self-contained data
 3. Use `evaluate(operand)` to resolve any nested expressions in the operand
