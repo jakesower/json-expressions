@@ -489,6 +489,7 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 | `$values`       |        |      |            |       | ✓      |        |           |            |             |
 
 > \* The base pack is always included in the expression engine unless explicitly excluded.
+
 > † The `$debug` expression is not in any packs and must be imported manually.
 
 ---
