@@ -30,12 +30,12 @@ const engine = createExpressionEngine({ packs: [basePack] });
 #### Data Access
 
 - [`$get`](expressions.md#get) - Access object properties by path
-- [`$identity`](expressions.md#identity) - Return input unchanged (identity function)
+- [`$identity`](expressions.md#identity) - Return input unchanged (identity function) ([evaluate mode](dual-mode-expressions.md#identity))
 
 #### Conditionals
 
-- [`$case`](expressions.md#case) - Multi-branch conditional with literal and predicate support
-- [`$if`](expressions.md#if) - Simple if-then-else conditional
+- [`$case`](expressions.md#case) - Multi-branch conditional with literal and predicate support ([evaluate mode](dual-mode-expressions.md#case))
+- [`$if`](expressions.md#if) - Simple if-then-else conditional ([evaluate mode](dual-mode-expressions.md#if))
 
 #### Comparisons
 
@@ -68,7 +68,7 @@ const engine = createExpressionEngine({ packs: [basePack] });
 #### Flow Control
 
 - [`$default`](expressions.md#default) - Provide default value for null/undefined
-- [`$literal`](expressions.md#literal) - Treat value as literal (not expression)
+- [`$literal`](expressions.md#literal) - Treat value as literal (not expression) ([evaluate mode](dual-mode-expressions.md#literal))
 - [`$pipe`](expressions.md#pipe) - Chain expressions in sequence ([evaluate mode](dual-mode-expressions.md#pipe))
 - [`$sort`](expressions.md#sort) - Sort array by criteria ([evaluate mode](dual-mode-expressions.md#sort))
 
@@ -87,7 +87,7 @@ const engine = createExpressionEngine({ packs: [mathPack] });
 
 #### Basic Arithmetic
 
-- [`$abs`](expressions.md#abs) - Absolute value of a number
+- [`$abs`](expressions.md#abs) - Absolute value of a number ([evaluate mode](dual-mode-expressions.md#abs))
 - [`$add`](expressions.md#add) - Addition of numbers ([evaluate mode](dual-mode-expressions.md#add))
 - [`$divide`](expressions.md#divide) - Division of numbers ([evaluate mode](dual-mode-expressions.md#divide))
 - [`$modulo`](expressions.md#modulo) - Modulo operation ([evaluate mode](dual-mode-expressions.md#modulo))
@@ -97,7 +97,7 @@ const engine = createExpressionEngine({ packs: [mathPack] });
 #### Mathematical Functions
 
 - [`$pow`](expressions.md#pow) - Exponentiation ([evaluate mode](dual-mode-expressions.md#pow))
-- [`$sqrt`](expressions.md#sqrt) - Square root
+- [`$sqrt`](expressions.md#sqrt) - Square root ([evaluate mode](dual-mode-expressions.md#sqrt))
 
 #### Aggregations
 
@@ -217,7 +217,7 @@ const engine = createExpressionEngine({ packs: [objectPack] });
 
 #### Property Access
 
-- [`$prop`](expressions.md#prop) - Access object property (alias for $get)
+- [`$prop`](expressions.md#prop) - Access object property (alias for $get) ([evaluate mode](dual-mode-expressions.md#prop))
 - [`$select`](expressions.md#select) - Select and transform object properties ([evaluate mode](dual-mode-expressions.md#select))
 
 #### Property Selection
@@ -332,7 +332,7 @@ const engine = createExpressionEngine({ packs: [projectionPack] });
 
 #### Field Access
 
-- [`$get`](expressions.md#get) - Access object properties by path
+- [`$get`](expressions.md#get) - Access object properties by path ([evaluate mode](dual-mode-expressions.md#get))
 - [`$select`](expressions.md#select) - Select and transform object properties ([evaluate mode](dual-mode-expressions.md#select))
 
 #### Array Transformations
@@ -353,8 +353,8 @@ const engine = createExpressionEngine({ packs: [projectionPack] });
 
 #### Conditionals for Computed Fields
 
-- [`$case`](expressions.md#case) - Multi-branch conditional with literal and predicate support
-- [`$if`](expressions.md#if) - Simple if-then-else conditional
+- [`$case`](expressions.md#case) - Multi-branch conditional with literal and predicate support ([evaluate mode](dual-mode-expressions.md#case))
+- [`$if`](expressions.md#if) - Simple if-then-else conditional ([evaluate mode](dual-mode-expressions.md#if))
 
 #### Comparison Operations
 
@@ -406,7 +406,7 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 
 ### Debug Expression
 
-- [`$debug`](expressions.md#debug) - Debug helper for development (available in all engines)
+- [`$debug`](expressions.md#debug) - Debug helper for development (available in all engines) ([evaluate mode](dual-mode-expressions.md#debug))
 
 ## Expression Coverage by Pack
 

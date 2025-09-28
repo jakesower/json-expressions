@@ -401,6 +401,43 @@ evaluate({ $eq: ["storytime", "storytime"] });
 // Returns: true
 ```
 
+## $exists
+
+Tests if a property or path exists in an object, regardless of its value. Different from $isPresent - this checks existence, not meaningfulness.
+
+**Apply Form:**
+
+```javascript
+// Check if child has allergies field (even if null)
+const student = { name: "Zara", allergies: null, age: 4 };
+apply({ $exists: "allergies" }, student);
+// Returns: true (property exists, even though it's null)
+
+apply({ $exists: "missing" }, student);
+// Returns: false
+```
+
+**Evaluate Form:**
+
+```javascript
+// Check if object has specific property
+evaluate({
+  $exists: {
+    object: { name: "Chen", age: 5, allergies: null },
+    path: "allergies"
+  }
+});
+// Returns: true
+
+evaluate({
+  $exists: {
+    object: { name: "Maya", age: 4 },
+    path: "allergies"
+  }
+});
+// Returns: false
+```
+
 ## $filter
 
 Filters array items based on a condition.
@@ -532,6 +569,79 @@ evaluate({ $flatMap: [{ $split: "," }, ["a,b", "c,d", "e"]] });
 // Returns: ["a", "b", "c", "d", "e"]
 ```
 
+## $flatten
+
+Flattens nested arrays by one level by default, with optional depth control.
+
+**Apply Form:**
+
+```javascript
+// Flatten children's toy collections
+const toyCollections = [
+  ["teddy", "book"],
+  ["blocks", ["puzzle", "crayons"]],
+  ["doll"],
+];
+apply({ $flatten: null }, toyCollections);
+// Returns: ["teddy", "book", "blocks", ["puzzle", "crayons"], "doll"]
+
+// Flatten multiple levels with depth
+const deeplyNested = [
+  ["art supplies", ["crayons", "paint"]],
+  [["blocks", "legos"], "puzzles"],
+];
+apply({ $flatten: { depth: 2 } }, deeplyNested);
+// Returns: ["art supplies", "crayons", "paint", "blocks", "legos", "puzzles"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Flatten static nested array
+evaluate({ $flatten: [["morning", "snack"], ["lunch", ["dessert", "fruit"]], ["dinner"]] });
+// Returns: ["morning", "snack", "lunch", ["dessert", "fruit"], "dinner"]
+
+// Flatten with depth control
+evaluate({
+  $flatten: {
+    array: [["breakfast", ["cereal", "milk"]], [["sandwich", "chips"], "juice"]],
+    depth: 2,
+  },
+});
+// Returns: ["breakfast", "cereal", "milk", "sandwich", "chips", "juice"]
+```
+
+## $fromPairs
+
+Converts an array of [key, value] pairs into an object.
+
+**Apply Form:**
+
+```javascript
+// Convert child data pairs to object
+const childPairs = [
+  ["name", "Zara"],
+  ["age", 4],
+  ["group", "Butterflies"],
+];
+apply({ $fromPairs: null }, childPairs);
+// Returns: { name: "Zara", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Create object from static pairs
+evaluate({
+  $fromPairs: [
+    ["snackTime", "10:30"],
+    ["lunchTime", "12:00"],
+    ["napTime", "13:30"]
+  ]
+});
+// Returns: { snackTime: "10:30", lunchTime: "12:00", napTime: "13:30" }
+```
+
 ## $get
 
 Retrieves a value from data using dot notation paths or array paths.
@@ -609,6 +719,47 @@ apply({ $gte: 3 }, 3);
 // Compare values for minimum threshold
 evaluate({ $gte: [4, 4] });
 // Returns: true
+```
+
+## $groupBy
+
+Groups array elements by a specified property or expression result.
+
+**Apply Form:**
+
+```javascript
+// Group children by age
+const children = [
+  { name: "Aria", age: 4 },
+  { name: "Kai", age: 5 },
+  { name: "Zara", age: 4 },
+  { name: "Maya", age: 5 }
+];
+apply({ $groupBy: "age" }, children);
+// Returns: {
+//   "4": [{ name: "Aria", age: 4 }, { name: "Zara", age: 4 }],
+//   "5": [{ name: "Kai", age: 5 }, { name: "Maya", age: 5 }]
+// }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Group static data by property
+evaluate({
+  $groupBy: {
+    array: [
+      { activity: "art", duration: 30 },
+      { activity: "reading", duration: 20 },
+      { activity: "art", duration: 25 }
+    ],
+    key: "activity"
+  }
+});
+// Returns: {
+//   "art": [{ activity: "art", duration: 30 }, { activity: "art", duration: 25 }],
+//   "reading": [{ activity: "reading", duration: 20 }]
+// }
 ```
 
 ## $if
@@ -705,6 +856,40 @@ evaluate({ $in: [["apple", "banana", "orange"], "banana"] });
 // Returns: true
 ```
 
+## $isEmpty
+
+Tests if a value is empty (null, undefined, empty string, empty array, or empty object).
+
+**Apply Form:**
+
+```javascript
+// Check if child's notes field is empty
+const child = { name: "Zara", notes: "" };
+apply({ $isEmpty: { $get: "notes" } }, child);
+// Returns: true
+
+const childWithNotes = { name: "Kai", notes: "Needs extra help with reading" };
+apply({ $isEmpty: { $get: "notes" } }, childWithNotes);
+// Returns: false
+```
+
+**Evaluate Form:**
+
+```javascript
+// Check if static values are empty
+evaluate({ $isEmpty: "" });
+// Returns: true
+
+evaluate({ $isEmpty: [] });
+// Returns: true
+
+evaluate({ $isEmpty: {} });
+// Returns: true
+
+evaluate({ $isEmpty: "snack time" });
+// Returns: false
+```
+
 ## $join
 
 Joins array elements into a string with a separator.
@@ -724,6 +909,34 @@ apply({ $join: ", " }, names);
 // Join array with separator
 evaluate({ $join: [" | ", ["Morning", "Afternoon", "Evening"]] });
 // Returns: "Morning | Afternoon | Evening"
+```
+
+## $keys
+
+Returns an array of all property names (keys) from an object.
+
+**Apply Form:**
+
+```javascript
+// Get all fields from child record
+const child = { name: "Zara", age: 4, allergies: "none", group: "Butterflies" };
+apply({ $keys: null }, child);
+// Returns: ["name", "age", "allergies", "group"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Get keys from static object
+evaluate({
+  $keys: {
+    schedule: "09:00",
+    snackTime: "10:30",
+    lunchTime: "12:00",
+    napTime: "13:30"
+  }
+});
+// Returns: ["schedule", "snackTime", "lunchTime", "napTime"]
 ```
 
 ## $last
@@ -850,6 +1063,34 @@ apply({ $map: { $get: "age" } }, children);
 // Transform array items
 evaluate({ $map: [{ $multiply: 2 }, [1, 2, 3, 4]] });
 // Returns: [2, 4, 6, 8]
+```
+
+## $merge
+
+Merges multiple objects into a single object, with later objects overriding earlier ones.
+
+**Apply Form:**
+
+```javascript
+// Merge child record with updates
+const child = { name: "Zara", age: 4, group: "Butterflies" };
+const updates = { age: 5, allergies: "nuts" };
+apply({ $merge: [updates] }, child);
+// Returns: { name: "Zara", age: 5, group: "Butterflies", allergies: "nuts" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Merge static objects
+evaluate({
+  $merge: [
+    { breakfast: "8:00", lunch: "12:00" },
+    { snack: "10:30", lunch: "12:30" },
+    { dinner: "17:00" }
+  ]
+});
+// Returns: { breakfast: "8:00", snack: "10:30", lunch: "12:30", dinner: "17:00" }
 ```
 
 ## $matches
@@ -1088,6 +1329,85 @@ evaluate({ $or: [false, false, true] });
 // Returns: true
 ```
 
+## $omit
+
+Creates a new object with specified properties removed.
+
+**Apply Form:**
+
+```javascript
+// Remove sensitive fields from child record
+const child = { name: "Zara", age: 4, ssn: "123-45-6789", group: "Butterflies" };
+apply({ $omit: ["ssn"] }, child);
+// Returns: { name: "Zara", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Remove properties from static object
+evaluate({
+  $omit: {
+    object: { schedule: "9:00", location: "Room A", private: "secret", instructor: "Ms. Smith" },
+    keys: ["private"]
+  }
+});
+// Returns: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith" }
+```
+
+## $pairs
+
+Converts an object into an array of [key, value] pairs.
+
+**Apply Form:**
+
+```javascript
+// Convert child record to pairs
+const child = { name: "Zara", age: 4, group: "Butterflies" };
+apply({ $pairs: null }, child);
+// Returns: [["name", "Zara"], ["age", 4], ["group", "Butterflies"]]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Convert static object to pairs
+evaluate({
+  $pairs: {
+    breakfast: "8:00",
+    snack: "10:30",
+    lunch: "12:00"
+  }
+});
+// Returns: [["breakfast", "8:00"], ["snack", "10:30"], ["lunch", "12:00"]]
+```
+
+## $pick
+
+Creates a new object with only the specified properties.
+
+**Apply Form:**
+
+```javascript
+// Pick only essential fields from child record
+const child = { name: "Zara", age: 4, ssn: "123-45-6789", group: "Butterflies", notes: "Very creative" };
+apply({ $pick: ["name", "age", "group"] }, child);
+// Returns: { name: "Zara", age: 4, group: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Pick properties from static object
+evaluate({
+  $pick: {
+    object: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith", capacity: 20 },
+    keys: ["schedule", "location"]
+  }
+});
+// Returns: { schedule: "9:00", location: "Room A" }
+```
+
 ## $pipe
 
 Pipes data through multiple expressions in sequence (left-to-right).
@@ -1180,6 +1500,40 @@ evaluate({
 // Returns: ["First", "Second", "Third", "Fourth"]
 ```
 
+## $pluck
+
+Extracts values of a specified property from all objects in an array.
+
+**Apply Form:**
+
+```javascript
+// Get all children's names
+const children = [
+  { name: "Aria", age: 4 },
+  { name: "Kai", age: 5 },
+  { name: "Zara", age: 4 }
+];
+apply({ $pluck: "name" }, children);
+// Returns: ["Aria", "Kai", "Zara"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Extract property from static array
+evaluate({
+  $pluck: {
+    array: [
+      { activity: "art", duration: 30 },
+      { activity: "reading", duration: 20 },
+      { activity: "music", duration: 25 }
+    ],
+    property: "duration"
+  }
+});
+// Returns: [30, 20, 25]
+```
+
 ## $prop
 
 Retrieves a property from an object using a dynamic property name.
@@ -1243,6 +1597,42 @@ evaluate({ $reverse: [1, 2, 3, 4, 5] });
 // Returns: [5, 4, 3, 2, 1]
 ```
 
+## $select
+
+Selects and transforms object properties into a new structure.
+
+**Apply Form:**
+
+```javascript
+// Select and rename child properties
+const child = { name: "Zara", age: 4, allergies: "none", group: "Butterflies" };
+apply({
+  $select: {
+    fullName: { $get: "name" },
+    years: { $get: "age" },
+    classroom: { $get: "group" }
+  }
+}, child);
+// Returns: { fullName: "Zara", years: 4, classroom: "Butterflies" }
+```
+
+**Evaluate Form:**
+
+```javascript
+// Transform static object structure
+evaluate({
+  $select: {
+    object: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith" },
+    fields: {
+      startTime: { $get: "schedule" },
+      room: { $get: "location" },
+      teacher: { $get: "instructor" }
+    }
+  }
+});
+// Returns: { startTime: "9:00", room: "Room A", teacher: "Ms. Smith" }
+```
+
 ## $skip
 
 Skips first N elements of an array.
@@ -1282,6 +1672,36 @@ apply({ $split: " " }, "Amara Chen Rodriguez");
 // Split string by delimiter
 evaluate({ $split: ["apple,banana,orange", ","] });
 // Returns: ["apple", "banana", "orange"]
+```
+
+## $sort
+
+Sorts an array by specified criteria.
+
+**Apply Form:**
+
+```javascript
+// Sort children by age
+const children = [
+  { name: "Zara", age: 4 },
+  { name: "Kai", age: 5 },
+  { name: "Aria", age: 3 }
+];
+apply({ $sort: "age" }, children);
+// Returns: [{ name: "Aria", age: 3 }, { name: "Zara", age: 4 }, { name: "Kai", age: 5 }]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Sort static array
+evaluate({
+  $sort: {
+    array: [{ activity: "art", duration: 30 }, { activity: "reading", duration: 20 }],
+    key: "duration"
+  }
+});
+// Returns: [{ activity: "reading", duration: 20 }, { activity: "art", duration: 30 }]
 ```
 
 ## $sqrt
@@ -1424,4 +1844,53 @@ apply({ $uppercase: null }, "amara");
 // Convert to uppercase
 evaluate({ $uppercase: "sunshine daycare" });
 // Returns: "SUNSHINE DAYCARE"
+```
+
+## $unique
+
+Removes duplicate elements from an array.
+
+**Apply Form:**
+
+```javascript
+// Remove duplicate age values
+const ages = [4, 5, 4, 3, 5, 4];
+apply({ $unique: null }, ages);
+// Returns: [4, 5, 3]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Remove duplicates from static array
+evaluate({ $unique: ["art", "reading", "art", "music", "reading"] });
+// Returns: ["art", "reading", "music"]
+```
+
+## $values
+
+Returns an array of all property values from an object.
+
+**Apply Form:**
+
+```javascript
+// Get all values from child record
+const child = { name: "Zara", age: 4, group: "Butterflies" };
+apply({ $values: null }, child);
+// Returns: ["Zara", 4, "Butterflies"]
+```
+
+**Evaluate Form:**
+
+```javascript
+// Get values from static object
+evaluate({
+  $values: {
+    breakfast: "8:00",
+    snack: "10:30",
+    lunch: "12:00",
+    napTime: "13:30"
+  }
+});
+// Returns: ["8:00", "10:30", "12:00", "13:30"]
 ```
