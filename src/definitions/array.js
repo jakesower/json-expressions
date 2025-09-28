@@ -7,6 +7,7 @@
  * - Slicing ($append, $prepend, $skip, $take)
  * - Projection ($pluck)
  * - Grouping ($groupBy)
+ * - Accessors ($first, $last)
  * - Utilities ($coalesce)
  */
 
@@ -330,6 +331,14 @@ const $take = createArrayOperationExpression(
 
 const $unique = createArrayTransformExpression((array) => [...new Set(array)]);
 
+const $first = createArrayTransformExpression((array) => {
+  return array.length === 0 ? undefined : array[0];
+});
+
+const $last = createArrayTransformExpression((array) => {
+  return array.length === 0 ? undefined : array[array.length - 1];
+});
+
 // Individual exports for tree shaking (alphabetized)
 export {
   $all,
@@ -340,10 +349,12 @@ export {
   $filter,
   $filterBy,
   $find,
+  $first,
   $flatMap,
   $flatten,
   $groupBy,
   $join,
+  $last,
   $map,
   $pluck,
   $prepend,

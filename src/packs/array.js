@@ -8,6 +8,7 @@
  * - Array modifications ($append, $prepend, $reverse, $join)
  * - Array slicing ($take, $skip)
  * - Array operations ($concat, $unique, $pluck)
+ * - Array accessors ($first, $last)
  * - Utility ($coalesce)
  * - Grouping ($groupBy)
  */

@@ -12,7 +12,7 @@
  */
 
 // Import conditional expressions
-import { $matches } from "../definitions/conditional.js";
+// $matches is imported from predicate.js below
 import { $all, $any, $filter, $filterBy, $find } from "../definitions/array.js";
 
 // Import comparison expressions
@@ -31,6 +31,7 @@ import {
   $and,
   $or,
   $not,
+  $matches,
   $matchesRegex,
   $between,
 } from "../definitions/predicate.js";

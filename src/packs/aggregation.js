@@ -9,11 +9,9 @@
  */
 
 // Import aggregative expressions
-import { $groupBy } from "../definitions/array.js";
+import { $groupBy, $first, $last } from "../definitions/array.js";
 import {
   $count,
-  $first,
-  $last,
   $max,
   $mean,
   $min,

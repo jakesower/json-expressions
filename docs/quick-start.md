@@ -13,14 +13,22 @@ npm install json-expressions
 ```javascript
 import {
   createExpressionEngine,
-  math,
-  comparison,
-  array,
+  mathPack,
+  comparisonPack,
+  arrayPack,
 } from "json-expressions";
 
 const engine = createExpressionEngine({
-  packs: [math, comparison, array],
+  packs: [mathPack, comparisonPack, arrayPack],
 });
+```
+
+> **Need help choosing packs?** See the **[Pack Reference](packs.md)** for a complete guide to all available packs and their expressions.
+
+```javascript
+// Most users start with basePack for essential expressions
+import { createExpressionEngine, basePack } from "json-expressions";
+const engine = createExpressionEngine({ packs: [basePack] });
 ```
 
 ## Your First Expression

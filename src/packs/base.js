@@ -14,7 +14,7 @@
 // Import the near universal expressions
 import { $get, $identity } from "../definitions/access.js";
 import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
-import { $if, $case, $matches } from "../definitions/conditional.js";
+import { $if, $case } from "../definitions/conditional.js";
 import {
   $and,
   $eq,
@@ -25,6 +25,7 @@ import {
   $isPresent,
   $lt,
   $lte,
+  $matches,
   $ne,
   $not,
   $or,

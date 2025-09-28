@@ -202,16 +202,16 @@ Different contexts can use different expression engines with tailored capabiliti
 
 ```javascript
 // Restrictive engine for user-facing rule builders
-const userEngine = createExpressionEngine({ packs: [filtering] });
+const userEngine = createExpressionEngine({ packs: [filteringPack] });
 
 // Full-featured engine for admin interfaces
 const adminEngine = createExpressionEngine({
-  packs: [filtering, projection, math],
+  packs: [filteringPack, projectionPack, mathPack],
 });
 
 // Specialized engine for specific domains
 const geoEngine = createExpressionEngine({
-  packs: [filtering],
+  packs: [filteringPack],
   custom: { $withinRadius, $intersects, $contains },
 });
 ```
@@ -280,11 +280,11 @@ Creates a custom expression engine with specified configuration.
 - `config.includeBase` (Boolean, default: true) - Whether to include base expressions. Note that $literal cannot be excluded or overwritten.
 
 ```javascript
-import { createExpressionEngine, math } from "json-expressions";
+import { createExpressionEngine, mathPack } from "json-expressions";
 
 // Create engine with math pack
 const mathEngine = createExpressionEngine({
-  packs: [math],
+  packs: [mathPack],
 });
 
 // Create engine with only custom expressions (no base pack)
@@ -419,10 +419,10 @@ The base pack contains near-universal expressions used across almost all scenari
 Beyond the base pack, you can import additional functionality as needed:
 
 ```javascript
-import { createExpressionEngine, math, string } from "json-expressions";
+import { createExpressionEngine, mathPack, stringPack } from "json-expressions";
 
 const engine = createExpressionEngine({
-  packs: [math, string],
+  packs: [mathPack, stringPack],
 });
 ```
 
@@ -489,9 +489,9 @@ Complete toolkit for WHERE clause logic and data filtering - combines field acce
 Perfect for building complex filters with a single import. Use `$matches` as your primary tool for object-based conditions:
 
 ```javascript
-import { createExpressionEngine, filtering } from "json-expressions";
+import { createExpressionEngine, filteringPack } from "json-expressions";
 
-const engine = createExpressionEngine({ packs: [filtering] });
+const engine = createExpressionEngine({ packs: [filteringPack] });
 
 // Complex daycare filtering with nested properties
 const activeToddlers = engine.apply(
@@ -523,9 +523,9 @@ Complete toolkit for SELECT clause operations and data transformation - combines
 Perfect for transforming and projecting data with a single import:
 
 ```javascript
-import { createExpressionEngine, projection } from "json-expressions";
+import { createExpressionEngine, projectionPack } from "json-expressions";
 
-const engine = createExpressionEngine({ packs: [projection] });
+const engine = createExpressionEngine({ packs: [projectionPack] });
 
 // Complex daycare reporting
 const report = engine.apply(
@@ -855,9 +855,9 @@ const formatted = customEngine.evaluate({ $titleCase: "john doe" });
 ### More Examples
 
 ```javascript
-import { createExpressionEngine, object } from "json-expressions";
+import { createExpressionEngine, objectPack } from "json-expressions";
 
-const engine = createExpressionEngine({ packs: [object] });
+const engine = createExpressionEngine({ packs: [objectPack] });
 
 const students = [
   { name: "Aisha", age: 3, scores: [85, 90, 88], active: true },

@@ -2,6 +2,8 @@
 
 This document provides comprehensive documentation for all expressions available in the JSON Expressions library. All examples show **apply mode** - expressions that operate on input data.
 
+> **Looking for pack information?** See the **[Pack Reference](packs.md)** to understand which expressions are available in each pack.
+>
 > **Need dual-mode support?** For advanced scenarios requiring both apply and evaluate modes, see the **[Evaluate Method](evaluate-method.md)** and **[Dual-Mode Expressions](dual-mode-expressions.md)** guides.
 
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most do not distinguish between the two. Use `$exists` if you wish to determine if the key of an object is undefined.

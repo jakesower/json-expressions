@@ -2,6 +2,8 @@
 
 This guide covers creating custom expressions for the apply-only JSON Expressions engine. Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the declarative nature of the expression system.
 
+> **Need built-in expressions?** Check the **[Pack Reference](packs.md)** for comprehensive coverage of all available expression packs.
+>
 > **Note:** This guide covers function-based custom expressions. The unified `createExpressionEngine` supports both apply and evaluate modes when your expressions provide both methods.
 
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most do not distinguish between the two. Use `$exists` if you wish to determine if the key of an object is undefined.
@@ -108,7 +110,7 @@ engine.apply({ $ageGroup: null }, child);
 
 ```javascript
 // Note: This example uses $matchesRegex which requires the filtering pack
-import { createExpressionEngine, filtering } from "json-expressions";
+import { createExpressionEngine, filteringPack } from "json-expressions";
 
 // ANTI-PATTERN: This example delegates to other expressions instead of complete implementation
 const $validateChild = (operand, inputData) => {
@@ -144,7 +146,7 @@ const $validateChild = (operand, inputData) => {
 };
 
 const engine = createExpressionEngine({
-  packs: [filtering],
+  packs: [filteringPack], // See Pack Reference for all available packs
   custom: { $validateChild },
 });
 

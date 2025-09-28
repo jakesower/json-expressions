@@ -11,10 +11,10 @@ npm install json-expressions
 ```
 
 ```javascript
-import { createExpressionEngine, math, comparison } from "json-expressions";
+import { createExpressionEngine, mathPack, comparisonPack } from "json-expressions";
 
 // Create an engine with the packs you need
-const engine = createExpressionEngine({ packs: [math, comparison] });
+const engine = createExpressionEngine({ packs: [mathPack, comparisonPack] });
 
 // Apply expressions to your data
 const user = { age: 25, score: 85 };
@@ -211,24 +211,27 @@ Import only the functionality you need:
 ```javascript
 import {
   createExpressionEngine,
-  math, // $add, $subtract, $multiply, $divide, $sum, $mean, etc.
-  comparison, // $eq, $ne, $gt, $lt, $gte, $lte, $in, $nin
-  array, // $filter, $map, $sort, $unique, $flatten, $groupBy
-  object, // $pick, $omit, $merge, $keys, $values, $pairs
-  string, // $concat, $join, $matchesRegex
-  filtering, // $filterBy, $find, $all, $any
-  projection, // $select, $pluck
-  aggregation, // Statistical functions
+  mathPack, // $add, $subtract, $multiply, $divide, $sum, $mean, etc.
+  comparisonPack, // $eq, $ne, $gt, $lt, $gte, $lte, $in, $nin
+  arrayPack, // $filter, $map, $sort, $unique, $flatten, $groupBy
+  objectPack, // $pick, $omit, $merge, $keys, $values, $pairs
+  stringPack, // $concat, $join, $matchesRegex
+  filteringPack, // $filterBy, $find, $all, $any
+  projectionPack, // $select, $pluck
+  aggregationPack, // Statistical functions
 } from "json-expressions";
 
 const engine = createExpressionEngine({
-  packs: [math, comparison, array],
+  packs: [mathPack, comparisonPack, arrayPack],
 });
 ```
+
+**[→ Complete Pack Reference](docs/packs.md)** - Detailed guide to all packs and their expressions
 
 ## Documentation
 
 - **[Quick Start Guide](docs/quick-start.md)** - Get up and running in minutes
+- **[Pack Reference](docs/packs.md)** - Complete guide to all expression packs
 - **[Expression Reference](docs/expressions.md)** - Complete list of available expressions
 - **[Custom Expressions](docs/custom-expressions.md)** - Creating your own expressions
 - **[Evaluate Method](docs/evaluate-method.md)** - Advanced static calculations and template expressions
@@ -242,5 +245,7 @@ JSON Expressions is **optimized for flexibility over raw execution speed**. Expe
 - **Good performance** for business rules, data transformations, and configuration logic
 - **Execution overhead** compared to native JavaScript functions
 - **Consider caching** for frequently-evaluated complex expressions
+
+Benchmarks show ~3M ops/sec for simple expressions and ~200k ops/sec for complex operations. Run `npm run bench` for detailed performance metrics.
 
 Perfect for configuration logic, business rules, and data processing. Consider direct JavaScript functions for performance-critical hot paths.

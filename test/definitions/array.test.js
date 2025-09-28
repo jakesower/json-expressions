@@ -1711,3 +1711,89 @@ describe("array expressions - edge cases", () => {
     });
   });
 });
+
+describe("$first", () => {
+  describe("apply form", () => {
+    it("returns first element from array", () => {
+      expect(apply({ $first: null }, [1, 2, 3, 4, 5])).toBe(1);
+      expect(apply({ $first: null }, ["Amara", "Kenji", "Yuki"])).toBe("Amara");
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $first: null }, [])).toBe(undefined);
+    });
+
+    it("works with single element arrays", () => {
+      expect(apply({ $first: null }, [42])).toBe(42);
+      expect(apply({ $first: null }, ["Dao"])).toBe("Dao");
+    });
+
+    it("handles mixed data types", () => {
+      expect(apply({ $first: null }, [null, "Elena", 3])).toBe(null);
+      expect(apply({ $first: null }, [false, true])).toBe(false);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("gets first element from static arrays", () => {
+      expect(evaluate({ $first: [1, 2, 3, 4, 5] })).toBe(1);
+      expect(evaluate({ $first: ["Yuki", "Dao", "Elena"] })).toBe("Yuki");
+    });
+
+    it("handles empty arrays in evaluate", () => {
+      expect(evaluate({ $first: [] })).toBe(undefined);
+    });
+
+    it("works with expressions that return arrays", () => {
+      const scores = [85, 92, 78, 96];
+      expect(
+        evaluate({
+          $first: { $filter: { expression: { $gt: 80 }, array: scores } },
+        }),
+      ).toBe(85);
+    });
+  });
+});
+
+describe("$last", () => {
+  describe("apply form", () => {
+    it("returns last element from array", () => {
+      expect(apply({ $last: null }, [1, 2, 3, 4, 5])).toBe(5);
+      expect(apply({ $last: null }, ["Amara", "Kenji", "Yuki"])).toBe("Yuki");
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(apply({ $last: null }, [])).toBe(undefined);
+    });
+
+    it("works with single element arrays", () => {
+      expect(apply({ $last: null }, [42])).toBe(42);
+      expect(apply({ $last: null }, ["Dao"])).toBe("Dao");
+    });
+
+    it("handles mixed data types", () => {
+      expect(apply({ $last: null }, ["Elena", 3, null])).toBe(null);
+      expect(apply({ $last: null }, [true, false])).toBe(false);
+    });
+  });
+
+  describe("evaluate form", () => {
+    it("gets last element from static arrays", () => {
+      expect(evaluate({ $last: [1, 2, 3, 4, 5] })).toBe(5);
+      expect(evaluate({ $last: ["Yuki", "Dao", "Elena"] })).toBe("Elena");
+    });
+
+    it("handles empty arrays in evaluate", () => {
+      expect(evaluate({ $last: [] })).toBe(undefined);
+    });
+
+    it("works with expressions that return arrays", () => {
+      const ages = [3, 4, 5, 6];
+      expect(
+        evaluate({
+          $last: { $filter: { expression: { $lt: 6 }, array: ages } },
+        }),
+      ).toBe(5);
+    });
+  });
+});

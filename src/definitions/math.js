@@ -4,7 +4,6 @@
  * Mathematical operations and calculations:
  * - Basic arithmetic ($add, $divide, $modulo, $multiply, $subtract)
  * - Aggregation ($count, $max, $mean, $min, $sum)
- * - Array statistics ($first, $last)
  * - Advanced math ($abs, $pow, $sqrt)
  */
 
@@ -91,13 +90,6 @@ const $pow = createMathExpression((left, right) => Math.pow(left, right));
 
 const $count = createAggregativeExpression((values) => values.length);
 
-const $first = createAggregativeExpression((values) => {
-  return values.length === 0 ? undefined : values[0];
-});
-
-const $last = createAggregativeExpression((values) => {
-  return values.length === 0 ? undefined : values[values.length - 1];
-});
 
 const $max = createAggregativeExpression((values) => {
   return values.length === 0
@@ -132,8 +124,6 @@ export {
   $add,
   $count,
   $divide,
-  $first,
-  $last,
   $max,
   $mean,
   $min,

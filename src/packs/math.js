@@ -5,7 +5,6 @@
  * - Basic operations ($add, $subtract, $multiply, $divide, $modulo)
  * - Mathematical functions ($pow, $sqrt)
  * - Aggregations ($count, $sum, $max, $min, $mean)
- * - Array accessors ($first, $last)
  */
 
 // Import arithmetic expressions
