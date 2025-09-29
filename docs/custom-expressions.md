@@ -4,7 +4,7 @@ This guide covers creating custom expressions for the apply-only JSON Expression
 
 > **Need built-in expressions?** Check the **[Pack Reference](packs.md)** for comprehensive coverage of all available expression packs.
 >
-> **Note:** This guide covers function-based custom expressions. The unified `createExpressionEngine` supports both apply and evaluate modes when your expressions provide both methods.
+> **Note:** This guide covers function-based custom expressions for the apply mode expression engine.
 
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most languages do not distinguish between the two. Therefore, `undefined` and `null` are considered to be **equal** throughout the library. Use `$exists` if you wish to determine if a key in an object is undefined.
 

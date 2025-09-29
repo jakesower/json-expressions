@@ -11,10 +11,11 @@
  * Creates a math expression that performs binary operations.
  * @param {function(number, number): number} operationFn - Function that takes (left, right) and returns result
  * @param {function(number, number): void} [validateFn] - Optional validation function for divide by zero checks
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createMathExpression = (operationFn, validateFn) => ({
-  apply: (operand, inputData, { apply }) => {
+const createMathExpression =
+  (operationFn, validateFn) =>
+  (operand, inputData, { apply }) => {
     const resolved = apply(operand, inputData);
 
     if (validateFn) validateFn(inputData, resolved);
@@ -27,52 +28,26 @@ const createMathExpression = (operationFn, validateFn) => ({
     return Array.isArray(resolved)
       ? operationFn(...resolved)
       : operationFn(inputData, resolved);
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
-      throw new Error(
-        "Math expressions require array of exactly 2 elements in evaluate form",
-      );
-    }
-    const [left, right] = operand;
-    const leftValue = evaluate(left);
-    const rightValue = evaluate(right);
-    if (validateFn) validateFn(leftValue, rightValue);
-    return operationFn(leftValue, rightValue);
-  },
-});
+  };
 
 /**
  * Creates an aggregative expression that applies a calculation function to resolved values.
  *
  * @param {function(Array): any} calculateFn - Function that takes an array of values and returns a calculated result
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createAggregativeExpression = (calculateFn) => ({
-  apply(operand, inputData, { apply }) {
+const createAggregativeExpression =
+  (calculateFn) =>
+  (operand, inputData, { apply }) => {
     const values = apply(operand, inputData);
     return calculateFn(values);
-  },
-  evaluate: (operand, { evaluate }) => {
-    const values = evaluate(operand);
-    return calculateFn(values);
-  },
-});
+  };
 
-const $abs = {
-  apply: (operand, inputData) => Math.abs(inputData),
-  evaluate: (operand, { evaluate }) => Math.abs(evaluate(operand)),
-};
+const $abs = (operand, inputData) => Math.abs(inputData);
 
-const $ceil = {
-  apply: (operand, inputData) => Math.ceil(inputData),
-  evaluate: (operand, { evaluate }) => Math.ceil(evaluate(operand)),
-};
+const $ceil = (operand, inputData) => Math.ceil(inputData);
 
-const $floor = {
-  apply: (operand, inputData) => Math.floor(inputData),
-  evaluate: (operand, { evaluate }) => Math.floor(evaluate(operand)),
-};
+const $floor = (operand, inputData) => Math.floor(inputData);
 
 const $add = createMathExpression((left, right) => left + right);
 const $subtract = createMathExpression((left, right) => left - right);
@@ -100,7 +75,6 @@ const $pow = createMathExpression((left, right) => Math.pow(left, right));
 
 const $count = createAggregativeExpression((values) => values.length);
 
-
 const $max = createAggregativeExpression((values) => {
   return values.length === 0
     ? undefined
@@ -119,10 +93,7 @@ const $min = createAggregativeExpression((values) => {
     : values.reduce((min, v) => Math.min(min, v));
 });
 
-const $sqrt = {
-  apply: (operand, inputData) => Math.sqrt(inputData),
-  evaluate: (operand, { evaluate }) => Math.sqrt(evaluate(operand)),
-};
+const $sqrt = (operand, inputData) => Math.sqrt(inputData);
 
 const $sum = createAggregativeExpression((values) => {
   return values.reduce((sum, v) => sum + v, 0);

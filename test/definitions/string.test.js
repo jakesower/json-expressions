@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createExpressionEngine } from "../../src/index.js";
 import { allExpressionsForTesting } from "../../src/packs/all.js";
 
-const { apply, evaluate } = createExpressionEngine({
+const { apply } = createExpressionEngine({
   packs: [allExpressionsForTesting],
 });
 
 describe("String Expressions", () => {
   describe("$matchesRegex", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should match basic patterns for student names", () => {
         expect(apply({ $matchesRegex: "^A.*" }, "Aisha")).toBe(true);
         expect(apply({ $matchesRegex: "^A.*" }, "Kenji")).toBe(false);
@@ -57,46 +57,6 @@ describe("String Expressions", () => {
         expect(() => apply({ $matchesRegex: "test" }, null)).toThrow(
           "$matchesRegex requires string input",
         );
-      });
-    });
-
-    describe("evaluate form", () => {
-      it("should match patterns for student registration validation", () => {
-        expect(
-          evaluate({
-            $matchesRegex: { pattern: "^[A-Z][a-z]+$", text: "Yuki" },
-          }),
-        ).toBe(true);
-        expect(
-          evaluate({
-            $matchesRegex: { pattern: "^[A-Z][a-z]+$", text: "yuki" },
-          }),
-        ).toBe(false);
-        expect(
-          evaluate({ $matchesRegex: { pattern: "\\d{4}", text: "Room1234" } }),
-        ).toBe(true);
-        expect(
-          evaluate({ $matchesRegex: { pattern: "\\d{4}", text: "RoomA" } }),
-        ).toBe(false);
-      });
-
-      it("should handle case-insensitive matching for names", () => {
-        expect(
-          evaluate({
-            $matchesRegex: { pattern: "(?i)^elena.*", text: "ELENA" },
-          }),
-        ).toBe(true);
-        expect(
-          evaluate({
-            $matchesRegex: { pattern: "(?i)^diego.*", text: "Diego" },
-          }),
-        ).toBe(true);
-      });
-
-      it("should throw error for non-string input in evaluate form", () => {
-        expect(() =>
-          evaluate({ $matchesRegex: { pattern: "test", text: 123 } }),
-        ).toThrow("$matchesRegex requires string input");
       });
     });
   });
@@ -195,7 +155,7 @@ describe("String Expressions", () => {
   // });
 
   describe("$split", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should split student names by spaces", () => {
         expect(apply({ $split: " " }, "Maria Elena Rodriguez")).toEqual([
           "Maria",
@@ -233,25 +193,10 @@ describe("String Expressions", () => {
         ]);
       });
     });
-
-    describe("evaluate form", () => {
-      it("should split attendance records", () => {
-        expect(evaluate({ $split: ["Present;Absent;Present", ";"] })).toEqual([
-          "Present",
-          "Absent",
-          "Present",
-        ]);
-        expect(
-          evaluate({
-            $split: ["Priya: Present\nRajesh: Absent\nNina: Present", "\n"],
-          }),
-        ).toEqual(["Priya: Present", "Rajesh: Absent", "Nina: Present"]);
-      });
-    });
   });
 
   describe("$trim", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should trim whitespace from student names", () => {
         expect(apply({ $trim: null }, "  Elena  ")).toBe("Elena");
         expect(apply({ $trim: null }, "\t\nDiego\n\t")).toBe("Diego");
@@ -259,18 +204,10 @@ describe("String Expressions", () => {
         expect(apply({ $trim: null }, "   ")).toBe("");
       });
     });
-
-    describe("evaluate form", () => {
-      it("should trim whitespace from form inputs", () => {
-        expect(evaluate({ $trim: "  Fatima Zahra  " })).toBe("Fatima Zahra");
-        expect(evaluate({ $trim: "\n\tKenji\t\n" })).toBe("Kenji");
-        expect(evaluate({ $trim: "Yuki" })).toBe("Yuki");
-      });
-    });
   });
 
   describe("$uppercase", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should convert student names to uppercase", () => {
         expect(apply({ $uppercase: null }, "maria")).toBe("MARIA");
         expect(apply({ $uppercase: null }, "Arun")).toBe("ARUN");
@@ -278,18 +215,10 @@ describe("String Expressions", () => {
         expect(apply({ $uppercase: null }, "")).toBe("");
       });
     });
-
-    describe("evaluate form", () => {
-      it("should convert text to uppercase for labels", () => {
-        expect(evaluate({ $uppercase: "sana" })).toBe("SANA");
-        expect(evaluate({ $uppercase: "Diego Rivera" })).toBe("DIEGO RIVERA");
-        expect(evaluate({ $uppercase: "priya123" })).toBe("PRIYA123");
-      });
-    });
   });
 
   describe("$lowercase", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should convert student names to lowercase", () => {
         expect(apply({ $lowercase: null }, "ELENA")).toBe("elena");
         expect(apply({ $lowercase: null }, "Rajesh")).toBe("rajesh");
@@ -297,18 +226,10 @@ describe("String Expressions", () => {
         expect(apply({ $lowercase: null }, "")).toBe("");
       });
     });
-
-    describe("evaluate form", () => {
-      it("should convert text to lowercase for processing", () => {
-        expect(evaluate({ $lowercase: "YUKI" })).toBe("yuki");
-        expect(evaluate({ $lowercase: "Amara Sofia" })).toBe("amara sofia");
-        expect(evaluate({ $lowercase: "NINA456" })).toBe("nina456");
-      });
-    });
   });
 
   describe("$replace", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should replace text in student records", () => {
         expect(apply({ $replace: ["Grade", "Class"] }, "Grade 1 Grade 2")).toBe(
           "Class 1 Class 2",
@@ -330,27 +251,10 @@ describe("String Expressions", () => {
         );
       });
     });
-
-    describe("evaluate form", () => {
-      it("should replace patterns in daycare communications", () => {
-        expect(
-          evaluate({
-            $replace: [
-              "The teacher will help students",
-              "teacher",
-              "instructor",
-            ],
-          }),
-        ).toBe("The instructor will help students");
-        expect(
-          evaluate({ $replace: ["Elena Sofia Rodriguez", "\\s+", "_"] }),
-        ).toBe("Elena_Sofia_Rodriguez");
-      });
-    });
   });
 
   describe("$substring", () => {
-    describe("apply form", () => {
+    describe("basic functionality", () => {
       it("should extract substrings from student names", () => {
         expect(apply({ $substring: [0, 3] }, "Fatima")).toBe("Fat");
         expect(apply({ $substring: [1, 3] }, "Amara")).toBe("mar");
@@ -362,16 +266,6 @@ describe("String Expressions", () => {
         expect(apply({ $substring: [5] }, "Elena")).toBe("");
         expect(apply({ $substring: [0, 0] }, "Kenji")).toBe("");
         expect(apply({ $substring: [-1] }, "Sana")).toBe("a");
-      });
-    });
-
-    describe("evaluate form", () => {
-      it("should extract parts of daycare codes", () => {
-        expect(evaluate({ $substring: ["STUDENT123", 7, 3] })).toBe("123");
-        expect(evaluate({ $substring: ["CLASSROOM_A1", 0, 9] })).toBe(
-          "CLASSROOM",
-        );
-        expect(evaluate({ $substring: ["TEACHER_PRIYA", 8] })).toBe("PRIYA");
       });
     });
   });

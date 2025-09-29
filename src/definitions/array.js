@@ -16,232 +16,103 @@ import { get } from "../helpers.js";
 /**
  * Creates an array iteration expression that applies a function to array elements.
  * @param {function(Array, function): any} arrayMethodFn - Function that takes (array, itemFn) and returns result
- * @param {string} expressionName - Name of the expression for evaluate form
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createArrayIterationExpression = (arrayMethodFn, expressionName) => ({
-  apply: (operand, inputData, { apply }) =>
-    arrayMethodFn(inputData, (item) => apply(operand, item)),
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        `${expressionName} evaluate form requires object operand: { expression, array }`,
-      );
-    }
-    const { expression, array } = operand;
-    if (!expression || !array) {
-      throw new Error(
-        `${expressionName} evaluate form requires 'expression' and 'array' properties`,
-      );
-    }
-    return apply({ [expressionName]: expression }, array);
-  },
-});
+const createArrayIterationExpression =
+  (arrayMethodFn) =>
+  (operand, inputData, { apply }) =>
+    arrayMethodFn(inputData, (item) => apply(operand, item));
 
 /**
  * Creates a simple array operation expression.
  * @param {function(any, Array): any} operationFn - Function that takes (operand, inputData) and returns result
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createArrayOperationExpression = (
-  operationFn,
-  operandName = "operand",
-  dataName = "array",
-) => ({
-  apply: (operand, inputData) => operationFn(operand, inputData),
-  evaluate: (operand, { evaluate }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        `evaluate form requires object operand: { ${operandName}, ${dataName} }`,
-      );
-    }
-    const operandValue = operand[operandName];
-    const dataValue = operand[dataName];
-    if (operandValue === undefined || dataValue === undefined) {
-      throw new Error(
-        `evaluate form requires '${operandName}' and '${dataName}' properties`,
-      );
-    }
-    return operationFn(evaluate(operandValue), evaluate(dataValue));
-  },
-});
+const createArrayOperationExpression = (operationFn) => (operand, inputData) =>
+  operationFn(operand, inputData);
 
 /**
  * Creates a simple array transformation expression (no operand needed).
  * @param {function(Array): any} transformFn - Function that transforms an array
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createArrayTransformExpression = (transformFn) => ({
-  apply: (_, inputData) => transformFn(inputData),
-  evaluate: (operand, { evaluate }) => {
-    const array = evaluate(operand);
-    return transformFn(array);
-  },
-});
+const createArrayTransformExpression = (transformFn) => (_, inputData) =>
+  transformFn(inputData);
 
-const $all = createArrayIterationExpression(
-  (array, itemFn) => array.every(itemFn),
-  "$all",
+const $all = createArrayIterationExpression((array, itemFn) =>
+  array.every(itemFn),
 );
 
-const $any = createArrayIterationExpression(
-  (array, itemFn) => array.some(itemFn),
-  "$any",
+const $any = createArrayIterationExpression((array, itemFn) =>
+  array.some(itemFn),
 );
 
-const $append = createArrayOperationExpression(
-  (arrayToAppend, baseArray) => baseArray.concat(arrayToAppend),
-  "arrayToAppend",
-  "baseArray",
+const $append = createArrayOperationExpression((arrayToAppend, baseArray) =>
+  baseArray.concat(arrayToAppend),
 );
 
-const $coalesce = {
-  apply: (operand, inputData, { apply }) => {
-    const values = apply(operand, inputData);
-    return values.find((value) => value != null);
-  },
-  evaluate: (operand, { evaluate }) => {
-    const values = evaluate(operand);
-    return values.find((value) => value != null);
-  },
+const $coalesce = (operand, inputData, { apply }) => {
+  const values = apply(operand, inputData);
+  return values.find((value) => value != null);
 };
 
-const $concat = {
-  apply: (operand, inputData, { apply }) => {
-    const arrays = apply(operand, inputData);
-    return inputData.concat(...arrays);
-  },
-  evaluate: (operand, { evaluate }) => {
-    const [baseArray, ...arrays] = evaluate(operand);
-    return baseArray.concat(...arrays);
-  },
+const $concat = (operand, inputData, { apply }) => {
+  const arrays = apply(operand, inputData);
+  return inputData.concat(...arrays);
 };
 
-const $filter = createArrayIterationExpression(
-  (array, itemFn) => array.filter(itemFn),
-  "$filter",
+const $filter = createArrayIterationExpression((array, itemFn) =>
+  array.filter(itemFn),
 );
 
-const $find = createArrayIterationExpression(
-  (array, itemFn) => array.find(itemFn),
-  "$find",
+const $find = createArrayIterationExpression((array, itemFn) =>
+  array.find(itemFn),
 );
 
-const $filterBy = {
-  apply: (operand, inputData, { apply, isExpression }) => {
-    if (!Array.isArray(inputData)) {
-      throw new Error("$filterBy can only be applied to arrays");
-    }
+const $filterBy = (operand, inputData, { apply, isExpression }) => {
+  if (!Array.isArray(inputData)) {
+    throw new Error("$filterBy can only be applied to arrays");
+  }
 
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$filterBy operand must be an object with property conditions",
-      );
-    }
+  if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+    throw new Error(
+      "$filterBy operand must be an object with property conditions",
+    );
+  }
 
-    return inputData.filter((item) => {
-      return Object.entries(operand).every(([path, condition]) => {
-        const value = get(item, path);
-        // If condition is an expression, apply it to the value
-        // If it's a literal, check for equality
-        if (isExpression(condition)) {
-          return apply(condition, value);
-        } else {
-          return value === condition;
-        }
-      });
+  return inputData.filter((item) => {
+    return Object.entries(operand).every(([path, condition]) => {
+      const value = get(item, path);
+      // If condition is an expression, apply it to the value
+      // If it's a literal, check for equality
+      if (isExpression(condition)) {
+        return apply(condition, value);
+      } else {
+        return value === condition;
+      }
     });
-  },
-  evaluate: (operand, { apply, evaluate }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$filterBy evaluate form requires object operand: { array, matcher }",
-      );
-    }
-
-    const { array, matcher } = operand;
-    if (array === undefined || matcher === undefined) {
-      throw new Error(
-        "$filterBy evaluate form requires 'array' and 'matcher' properties",
-      );
-    }
-
-    const evaluatedArray = evaluate(array);
-    const evaluatedMatcher = evaluate(matcher);
-
-    if (!Array.isArray(evaluatedArray)) {
-      throw new Error("$filterBy array must be an array");
-    }
-
-    if (
-      !evaluatedMatcher ||
-      typeof evaluatedMatcher !== "object" ||
-      Array.isArray(evaluatedMatcher)
-    ) {
-      throw new Error(
-        "$filterBy matcher must be an object with property conditions",
-      );
-    }
-
-    return apply({ $filterBy: evaluatedMatcher }, evaluatedArray);
-  },
+  });
 };
 
-const $flatMap = createArrayIterationExpression(
-  (array, itemFn) => array.flatMap(itemFn),
-  "$flatMap",
+const $flatMap = createArrayIterationExpression((array, itemFn) =>
+  array.flatMap(itemFn),
 );
 
-const $flatten = {
-  apply: (operand, inputData) => {
-    const depth = operand?.depth ?? 1;
-    return inputData.flat(depth);
-  },
-  evaluate: (operand, { evaluate }) => {
-    const evaluated = evaluate(operand);
-    if (Array.isArray(evaluated)) return evaluate(evaluated).flat();
-
-    if (
-      typeof evaluated !== "object" ||
-      !Array.isArray(evaluated.array) ||
-      typeof evaluated.depth !== "number"
-    ) {
-      throw new Error(
-        "$flatten evaluate form requires either an array operand, or an object of the form { array: [...], depth: 2 }",
-      );
-    }
-
-    return evaluated.array.flat(evaluated.depth);
-  },
+const $flatten = (operand, inputData) => {
+  const depth = operand?.depth ?? 1;
+  return inputData.flat(depth);
 };
 
-const $groupBy = {
-  apply: (operand, inputData, { apply }) => {
-    if (!Array.isArray(inputData)) {
-      throw new Error("$groupBy can only be applied to arrays");
-    }
+const $groupBy = (operand, inputData, { apply }) => {
+  if (!Array.isArray(inputData)) {
+    throw new Error("$groupBy can only be applied to arrays");
+  }
 
-    if (typeof operand === "string") {
-      // Simple property path grouping
-      const groups = {};
-      inputData.forEach((item) => {
-        const key = item?.[operand];
-        if (!key) {
-          throw new Error(
-            `${JSON.stringify(item)} could not be grouped by ${operand}`,
-          );
-        }
-
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(item);
-      });
-      return groups;
-    }
-
-    // Expression-based grouping
+  if (typeof operand === "string") {
+    // Simple property path grouping
     const groups = {};
     inputData.forEach((item) => {
-      const key = apply(operand, item);
+      const key = item?.[operand];
       if (!key) {
         throw new Error(
           `${JSON.stringify(item)} could not be grouped by ${operand}`,
@@ -251,88 +122,60 @@ const $groupBy = {
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
-
     return groups;
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+  }
+
+  // Expression-based grouping
+  const groups = {};
+  inputData.forEach((item) => {
+    const key = apply(operand, item);
+    if (!key) {
       throw new Error(
-        "$groupBy evaluate form requires object operand: { array, groupBy }",
+        `${JSON.stringify(item)} could not be grouped by ${operand}`,
       );
     }
 
-    const { array, groupBy } = operand;
-    if (!array || !groupBy) {
-      throw new Error(
-        "$groupBy evaluate form requires 'array' and 'groupBy' properties",
-      );
-    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
 
-    return apply({ $groupBy: groupBy }, array);
-  },
+  return groups;
 };
 
-const $join = createArrayOperationExpression(
-  (separator, array) => array.join(separator),
-  "separator",
-  "array",
+const $join = createArrayOperationExpression((separator, array) =>
+  array.join(separator),
 );
 
-const $map = createArrayIterationExpression(
-  (array, itemFn) => array.map(itemFn),
-  "$map",
+const $map = createArrayIterationExpression((array, itemFn) =>
+  array.map(itemFn),
 );
 
-const $pluck = {
-  apply: (operand, inputData, { apply }) => {
-    if (!Array.isArray(inputData)) {
-      throw new Error("$pluck can only be applied to arrays");
-    }
+const $pluck = (operand, inputData, { apply }) => {
+  if (!Array.isArray(inputData)) {
+    throw new Error("$pluck can only be applied to arrays");
+  }
 
-    if (typeof operand === "string") {
-      return inputData.map((item) => get(item, operand));
-    }
+  if (typeof operand === "string") {
+    return inputData.map((item) => get(item, operand));
+  }
 
-    return inputData.map((item) => apply(operand, item));
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$pluck evaluate form requires object operand: { array, property }",
-      );
-    }
-
-    const { array, property } = operand;
-    if (!array || !property) {
-      throw new Error(
-        "$pluck evaluate form requires 'array' and 'property' properties",
-      );
-    }
-
-    return apply({ $pluck: property }, array);
-  },
+  return inputData.map((item) => apply(operand, item));
 };
 
-const $prepend = createArrayOperationExpression(
-  (arrayToPrepend, baseArray) => arrayToPrepend.concat(baseArray),
-  "arrayToPrepend",
-  "baseArray",
+const $prepend = createArrayOperationExpression((arrayToPrepend, baseArray) =>
+  arrayToPrepend.concat(baseArray),
 );
 
 const $reverse = createArrayTransformExpression((array) =>
   array.slice().reverse(),
 );
 
-const $skip = createArrayOperationExpression(
-  (count, array) => array.slice(count),
-  "count",
-  "array",
+const $skip = createArrayOperationExpression((count, array) =>
+  array.slice(count),
 );
 
-const $take = createArrayOperationExpression(
-  (count, array) => array.slice(0, count),
-  "count",
-  "array",
+const $take = createArrayOperationExpression((count, array) =>
+  array.slice(0, count),
 );
 
 const $unique = createArrayTransformExpression((array) => [...new Set(array)]);

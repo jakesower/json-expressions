@@ -12,7 +12,7 @@ const kids = {
 const testEngine = createExpressionEngine({
   packs: [allExpressionsForTesting],
 });
-const { apply, evaluate } = testEngine;
+const { apply } = testEngine;
 
 describe("binary comparitive expressions", () => {
   const binaryComparisonExpressions = {
@@ -50,34 +50,12 @@ describe("binary comparitive expressions", () => {
             );
           });
         });
-
-        describe("evaluate", () => {
-          it("evaluates array form", () => {
-            const expFn = (kid) => ({ [expr]: [kid.age, 5] });
-            Object.values(kids).forEach((kid) => {
-              expect(evaluate(expFn(kid))).toBe(fn(kid.age, 5));
-            });
-          });
-
-          it("evaluates object form", () => {
-            const expFn = (kid) => ({ [expr]: { left: kid.age, right: 5 } });
-            Object.values(kids).forEach((kid) => {
-              expect(evaluate(expFn(kid))).toBe(fn(kid.age, 5));
-            });
-          });
-
-          it("throws with wrong array length", () => {
-            expect(() => evaluate({ [expr]: [1, 2, 3] })).toThrowError(
-              "Comparison evaluate form requires either array or object operand: [left, right] or { left, right }",
-            );
-          });
-        });
       });
     });
   });
 
   describe("$eq", () => {
-    describe("apply form", () => {
+    describe("deep equality", () => {
       it("handles deep equality", () => {
         const expression = {
           $eq: { $literal: [3, { chicken: "butt" }] },
@@ -98,7 +76,7 @@ describe("binary comparitive expressions", () => {
   });
 
   describe("$ne", () => {
-    describe("apply form", () => {
+    describe("deep inequality", () => {
       it("handles deep inequality", () => {
         const expression = {
           $ne: { $literal: [3, { chicken: "butt" }] },
@@ -110,7 +88,7 @@ describe("binary comparitive expressions", () => {
 });
 
 describe("$in", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("implements the $in expression", () => {
       const exp = { $pipe: [{ $get: "age" }, { $in: [4, 6] }] };
 
@@ -119,34 +97,10 @@ describe("$in", () => {
       expect(apply(exp, kids.zoë)).toBe(true);
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates static array membership", () => {
-      expect(evaluate({ $in: { array: [1, 2, 3], value: 2 } })).toBe(true);
-      expect(evaluate({ $in: { array: [1, 2, 3], value: 5 } })).toBe(false);
-    });
-
-    it("evaluates using object format", () => {
-      expect(evaluate({ $in: { array: [1, 2, 3], value: 2 } })).toBe(true);
-      expect(evaluate({ $in: { array: [1, 2, 3], value: 5 } })).toBe(false);
-    });
-
-    it("throws error for non-array parameter in evaluate", () => {
-      expect(() => evaluate({ $in: { array: "not-array", value: 2 } })).toThrow(
-        "$in parameter must be an array",
-      );
-    });
-
-    it("throws error for invalid object format", () => {
-      expect(() => evaluate({ $in: "not an object" })).toThrow(
-        "$in evaluate form requires object operand: { array, value }",
-      );
-    });
-  });
 });
 
 describe("$nin", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("implements the $nin expression", () => {
       const exp = { $pipe: [{ $get: "age" }, { $nin: [4, 6] }] };
 
@@ -155,27 +109,10 @@ describe("$nin", () => {
       expect(apply(exp, kids.zoë)).toBe(false);
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates static array membership", () => {
-      expect(evaluate({ $nin: { array: [1, 2, 3], value: 5 } })).toBe(true);
-      expect(evaluate({ $nin: { array: [1, 2, 3], value: 2 } })).toBe(false);
-    });
-
-    it("throws error for non-array operand in evaluate", () => {
-      expect(() => apply({ $nin: 2 })).toThrow();
-    });
-
-    it("throws error for non-array parameter in evaluate", () => {
-      expect(() =>
-        evaluate({ $nin: { array: "not-array", value: 2 } }),
-      ).toThrow("$nin parameter must be an array");
-    });
-  });
 });
 
 describe("$matchesRegex", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("should match a simple pattern", () => {
       expect(apply({ $matchesRegex: "hello" }, "hello world")).toBe(true);
       expect(apply({ $matchesRegex: "hello" }, "goodbye world")).toBe(false);
@@ -254,38 +191,6 @@ describe("$matchesRegex", () => {
     });
   });
 
-  describe("evaluate form", () => {
-    it("should work with evaluate form", () => {
-      expect(
-        evaluate({ $matchesRegex: { pattern: "hello", text: "hello world" } }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $matchesRegex: { pattern: "hello", text: "goodbye world" },
-        }),
-      ).toBe(false);
-    });
-
-    it("should work with flags in evaluate form", () => {
-      expect(
-        evaluate({
-          $matchesRegex: { pattern: "(?i)hello", text: "HELLO WORLD" },
-        }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $matchesRegex: { pattern: "(?m)^line2", text: "line1\nline2" },
-        }),
-      ).toBe(true);
-    });
-
-    it("should throw with invalid input in evaluate form", () => {
-      expect(() =>
-        evaluate({ $matchesRegex: { pattern: "pattern", text: 123 } }),
-      ).toThrow("$matchesRegex requires string input");
-    });
-  });
-
   describe("edge cases", () => {
     it("should handle empty string input", () => {
       expect(apply({ $matchesRegex: "" }, "")).toBe(true);
@@ -309,7 +214,7 @@ describe("$matchesRegex", () => {
 });
 
 describe("$between", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("should check if student ages are within daycare range", () => {
       expect(apply({ $between: { min: 3, max: 6 } }, 4)).toBe(true);
       expect(apply({ $between: { min: 3, max: 6 } }, 3)).toBe(true);
@@ -348,67 +253,10 @@ describe("$between", () => {
       expect(apply({ $between: { min: 100, max: 100 } }, 101)).toBe(false);
     });
   });
-
-  describe("evaluate form", () => {
-    it("should evaluate static between expressions for Nina's grades", () => {
-      expect(evaluate({ $between: { value: 85, min: 80, max: 90 } })).toBe(
-        true,
-      );
-      expect(evaluate({ $between: { value: 75, min: 80, max: 90 } })).toBe(
-        false,
-      );
-      expect(evaluate({ $between: { value: 95, min: 80, max: 90 } })).toBe(
-        false,
-      );
-      expect(evaluate({ $between: { value: 80, min: 80, max: 90 } })).toBe(
-        true,
-      ); // Min boundary
-      expect(evaluate({ $between: { value: 90, min: 80, max: 90 } })).toBe(
-        true,
-      ); // Max boundary
-    });
-
-    it("should work with complex nested expressions for Chen's performance", () => {
-      const result = evaluate({
-        $between: {
-          value: { $sum: [70, 15] }, // 85
-          min: { $multiply: [2, 40] }, // 80
-          max: { $add: [85, 5] }, // 90
-        },
-      });
-      expect(result).toBe(true);
-    });
-
-    it("should handle string comparisons for Aria's name length", () => {
-      expect(
-        evaluate({ $between: { value: "hello", min: "a", max: "z" } }),
-      ).toBe(true);
-      expect(
-        evaluate({ $between: { value: "HELLO", min: "a", max: "z" } }),
-      ).toBe(false);
-    });
-
-    it("should work with date comparisons for Zahra's enrollment period", () => {
-      const startDate = "2024-01-01";
-      const endDate = "2024-12-31";
-      const checkDate = "2024-06-15";
-
-      expect(
-        evaluate({
-          $between: { value: checkDate, min: startDate, max: endDate },
-        }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $between: { value: "2025-01-01", min: startDate, max: endDate },
-        }),
-      ).toBe(false);
-    });
-  });
 });
 
 describe("$isPresent", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("should detect meaningful values in Arun's medical records", () => {
       expect(apply({ $isPresent: true }, null)).toBe(false);
       expect(apply({ $isPresent: true }, undefined)).toBe(false);
@@ -447,57 +295,20 @@ describe("$isPresent", () => {
 
     it("should require boolean operand", () => {
       expect(() => apply({ $isPresent: "invalid" }, "present")).toThrow(
-        "$isPresent apply form requires boolean operand (true/false)",
+        "$isPresent requires boolean operand (true/false)",
       );
       expect(() => apply({ $isPresent: null }, null)).toThrow(
-        "$isPresent apply form requires boolean operand (true/false)",
+        "$isPresent requires boolean operand (true/false)",
       );
       expect(() => apply({ $isPresent: { complex: "object" } }, null)).toThrow(
-        "$isPresent apply form requires boolean operand (true/false)",
+        "$isPresent requires boolean operand (true/false)",
       );
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("should evaluate static value checks for Kenji's allergy information", () => {
-      expect(evaluate({ $isPresent: null })).toBe(false);
-      expect(evaluate({ $isPresent: undefined })).toBe(false);
-      expect(evaluate({ $isPresent: 0 })).toBe(true);
-      expect(evaluate({ $isPresent: "" })).toBe(true);
-      expect(evaluate({ $isPresent: false })).toBe(true);
-      expect(evaluate({ $isPresent: [] })).toBe(true);
-      expect(evaluate({ $isPresent: {} })).toBe(true);
-      expect(evaluate({ $isPresent: "Kenji" })).toBe(true);
-    });
-
-    it("should work with expressions that return values for Diego's attendance", () => {
-      expect(
-        evaluate({ $isPresent: { $get: { object: {}, path: "missing" } } }),
-      ).toBe(false);
-      expect(
-        evaluate({
-          $isPresent: { $get: { object: { name: "Diego" }, path: "name" } },
-        }),
-      ).toBe(true);
-    });
-
-    it("should handle complex nested structures", () => {
-      expect(
-        evaluate({
-          $isPresent: {
-            $get: {
-              object: { students: [{ name: "Fatima" }] },
-              path: "teachers.primary",
-            },
-          },
-        }),
-      ).toBe(false);
     });
   });
 });
 
 describe("$isEmpty", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("should detect empty/absent values in Amara's progress tracking", () => {
       expect(apply({ $isEmpty: true }, null)).toBe(true);
       expect(apply({ $isEmpty: true }, undefined)).toBe(true);
@@ -536,77 +347,20 @@ describe("$isEmpty", () => {
 
     it("should require boolean operand", () => {
       expect(() => apply({ $isEmpty: "invalid" }, null)).toThrow(
-        "$isEmpty apply form requires boolean operand (true/false)",
+        "$isEmpty requires boolean operand (true/false)",
       );
       expect(() => apply({ $isEmpty: null }, null)).toThrow(
-        "$isEmpty apply form requires boolean operand (true/false)",
+        "$isEmpty requires boolean operand (true/false)",
       );
       expect(() => apply({ $isEmpty: 42 }, "present")).toThrow(
-        "$isEmpty apply form requires boolean operand (true/false)",
+        "$isEmpty requires boolean operand (true/false)",
       );
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("should evaluate static emptiness checks for Nina's dietary restrictions", () => {
-      expect(evaluate({ $isEmpty: null })).toBe(true);
-      expect(evaluate({ $isEmpty: undefined })).toBe(true);
-      expect(evaluate({ $isEmpty: 0 })).toBe(false);
-      expect(evaluate({ $isEmpty: "" })).toBe(false);
-      expect(evaluate({ $isEmpty: false })).toBe(false);
-      expect(evaluate({ $isEmpty: [] })).toBe(false);
-      expect(evaluate({ $isEmpty: {} })).toBe(false);
-      expect(evaluate({ $isEmpty: "Nina" })).toBe(false);
-    });
-
-    it("should work with expressions for Chen's pickup person", () => {
-      expect(
-        evaluate({
-          $isEmpty: {
-            $get: { object: { pickupPerson: "dad" }, path: "pickupPerson" },
-          },
-        }),
-      ).toBe(false);
-      expect(
-        evaluate({
-          $isEmpty: { $get: { object: {}, path: "pickupPerson" } },
-        }),
-      ).toBe(true);
-    });
-
-    it("should validate empty fields for Aria's enrollment form", () => {
-      const enrollment = {
-        studentName: "Aria",
-        parentEmail: "parent@example.com",
-        emergencyContact: null,
-        medicalInfo: "",
-      };
-
-      expect(
-        evaluate({
-          $isEmpty: { $get: { object: enrollment, path: "studentName" } },
-        }),
-      ).toBe(false);
-
-      expect(
-        evaluate({
-          $isEmpty: {
-            $get: { object: enrollment, path: "emergencyContact" },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $isEmpty: { $get: { object: enrollment, path: "medicalInfo" } },
-        }),
-      ).toBe(false); // Empty string is not null/undefined
     });
   });
 });
 
 describe("$exists", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("should check if properties exist in student records", () => {
       const student = {
         name: "Zara",
@@ -637,63 +391,6 @@ describe("$exists", () => {
 
     it("should throw error for non-string paths", () => {
       expect(() => apply({ $exists: 123 }, {})).toThrow(
-        "$exists operand must resolve to an array or string path",
-      );
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("should check property existence in provided objects", () => {
-      const student = { name: "Layla", activities: ["art", "music"] };
-
-      expect(evaluate({ $exists: { object: student, path: "name" } })).toBe(
-        true,
-      );
-      expect(
-        evaluate({ $exists: { object: student, path: "activities" } }),
-      ).toBe(true);
-      expect(evaluate({ $exists: { object: student, path: "missing" } })).toBe(
-        false,
-      );
-      expect(evaluate({ $exists: { object: {}, path: "anything" } })).toBe(
-        false,
-      );
-    });
-
-    it("should work with nested paths", () => {
-      const daycare = {
-        staff: { teacher: "Nour", assistant: null },
-        rooms: { toddler: "Room A" },
-      };
-
-      expect(
-        evaluate({ $exists: { object: daycare, path: "staff.teacher" } }),
-      ).toBe(true);
-      expect(
-        evaluate({ $exists: { object: daycare, path: "staff.assistant" } }),
-      ).toBe(true); // exists but null
-      expect(
-        evaluate({ $exists: { object: daycare, path: "staff.janitor" } }),
-      ).toBe(false);
-      expect(
-        evaluate({ $exists: { object: daycare, path: "rooms.toddler" } }),
-      ).toBe(true);
-    });
-
-    it("should require object and path properties", () => {
-      expect(() => evaluate({ $exists: { object: {} } })).toThrow(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-      expect(() => evaluate({ $exists: { path: "test" } })).toThrow(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-      expect(() => evaluate({ $exists: "invalid" })).toThrow(
-        "$exists evaluate form requires object operand: { object, path }",
-      );
-    });
-
-    it("should require string paths", () => {
-      expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow(
         "$exists operand must resolve to an array or string path",
       );
     });
@@ -740,15 +437,6 @@ describe("$isPresent", () => {
         ),
       ).toBe(true);
     });
-
-    it("should work in evaluate form unchanged", () => {
-      // Original evaluate form - unchanged, checks the operand directly
-      expect(evaluate({ $isPresent: "Kenji" })).toBe(true);
-      expect(evaluate({ $isPresent: null })).toBe(false);
-      expect(evaluate({ $isPresent: undefined })).toBe(false);
-      expect(evaluate({ $isPresent: 0 })).toBe(true);
-      expect(evaluate({ $isPresent: "" })).toBe(true);
-    });
   });
 });
 
@@ -791,20 +479,11 @@ describe("$isEmpty", () => {
         ),
       ).toBe(true);
     });
-
-    it("should work in evaluate form unchanged", () => {
-      // Original evaluate form - unchanged, checks the operand directly
-      expect(evaluate({ $isEmpty: null })).toBe(true);
-      expect(evaluate({ $isEmpty: undefined })).toBe(true);
-      expect(evaluate({ $isEmpty: "Nina" })).toBe(false);
-      expect(evaluate({ $isEmpty: 0 })).toBe(false);
-      expect(evaluate({ $isEmpty: "" })).toBe(false);
-    });
   });
 });
 
 describe("$and", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("returns true when all conditions are true", () => {
       const expression = {
         $and: [{ $gte: 4 }, { $lte: 6 }],
@@ -822,19 +501,10 @@ describe("$and", () => {
       expect(apply(expression, 7)).toBe(false);
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates static boolean arrays", () => {
-      expect(evaluate({ $and: [true, true, true] })).toBe(true);
-      expect(evaluate({ $and: [true, false, true] })).toBe(false);
-      expect(evaluate({ $and: [false, false, false] })).toBe(false);
-      expect(evaluate({ $and: [] })).toBe(true); // empty array
-    });
-  });
 });
 
 describe("$or", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("returns true when any condition is true", () => {
       const expression = {
         $or: [{ $eq: "apple" }, { $eq: "banana" }],
@@ -845,19 +515,10 @@ describe("$or", () => {
       expect(apply(expression, "cherry")).toBe(false);
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates static boolean arrays", () => {
-      expect(evaluate({ $or: [false, false, true] })).toBe(true);
-      expect(evaluate({ $or: [true, false, false] })).toBe(true);
-      expect(evaluate({ $or: [false, false, false] })).toBe(false);
-      expect(evaluate({ $or: [] })).toBe(false); // empty array
-    });
-  });
 });
 
 describe("$not", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("returns opposite of the condition", () => {
       const expression = {
         $not: { $gt: 5 },
@@ -867,22 +528,10 @@ describe("$not", () => {
       expect(apply(expression, 7)).toBe(false);
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluate with boolean", () => {
-      expect(evaluate({ $not: true })).toBe(false);
-      expect(evaluate({ $not: false })).toBe(true);
-    });
-
-    it("evaluate with expression", () => {
-      expect(evaluate({ $not: { $eq: [5, 5] } })).toBe(false);
-      expect(evaluate({ $not: { $eq: [5, 10] } })).toBe(true);
-    });
-  });
 });
 
 describe("$matches", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("matches single property with literal value", () => {
       expect(
         apply({ $matches: { name: "Kenji" } }, { name: "Kenji", age: 4 }),
@@ -1137,184 +786,9 @@ describe("$matches", () => {
     });
   });
 
-  describe("evaluate form", () => {
-    it("requires proper object operand with data and conditions", () => {
-      expect(() => evaluate({ $matches: null })).toThrow(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-
-      expect(() => evaluate({ $matches: "not object" })).toThrow(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-
-      expect(() => evaluate({ $matches: [] })).toThrow(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-    });
-
-    it("requires data and conditions properties", () => {
-      expect(() =>
-        evaluate({ $matches: { conditions: { name: "test" } } }),
-      ).toThrow(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-
-      expect(() => evaluate({ $matches: { data: { name: "test" } } })).toThrow(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-    });
-
-    it("evaluates with static data and conditions", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Iris", age: 5, room: "sunshine" },
-            conditions: { name: "Iris", room: "sunshine" },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Iris", age: 5, room: "sunshine" },
-            conditions: { name: "Iris", room: "rainbow" },
-          },
-        }),
-      ).toBe(false);
-    });
-
-    it("evaluates with expression-based conditions", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Wei", age: 4, attendance: 0.95 },
-            conditions: {
-              age: { $gte: 3 },
-              attendance: { $gt: 0.9 },
-            },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Wei", age: 2, attendance: 0.95 },
-            conditions: {
-              age: { $gte: 3 },
-              attendance: { $gt: 0.9 },
-            },
-          },
-        }),
-      ).toBe(false);
-    });
-
-    it("evaluates with nested property paths", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: {
-              name: "Anya",
-              emergency: {
-                contact: { name: "Elena", phone: "555-7890" },
-              },
-            },
-            conditions: {
-              "emergency.contact.name": "Elena",
-              "emergency.contact.phone": "555-7890",
-            },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: {
-              name: "Anya",
-              emergency: {
-                contact: { name: "Elena", phone: "555-7890" },
-              },
-            },
-            conditions: {
-              "emergency.contact.phone": "555-0000", // wrong number
-            },
-          },
-        }),
-      ).toBe(false);
-    });
-
-    it("handles $literal wrapped conditions in evaluate form", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Kai", tags: { $special: "needs" } },
-            conditions: { tags: { $literal: { $special: "needs" } } },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Kai", tags: { $special: "needs" } },
-            conditions: { tags: { $literal: { $special: "attention" } } },
-          },
-        }),
-      ).toBe(false);
-    });
-
-    it("handles complex nested structures in evaluate form", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: {
-              name: "Noor",
-              weekly: {
-                goals: ["counting", "letters"],
-                achievements: { counting: true, letters: false },
-              },
-            },
-            conditions: {
-              "weekly.goals": ["counting", "letters"],
-              "weekly.achievements.counting": true,
-            },
-          },
-        }),
-      ).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: {
-              name: "Noor",
-              weekly: {
-                goals: ["counting", "letters"],
-                achievements: { counting: false, letters: false },
-              },
-            },
-            conditions: {
-              "weekly.achievements.counting": true, // doesn't match
-            },
-          },
-        }),
-      ).toBe(false);
-    });
-  });
-
   describe("edge cases and error handling", () => {
     it("handles empty conditions object", () => {
       expect(apply({ $matches: {} }, { name: "Taj", age: 3 })).toBe(true);
-
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "Taj", age: 3 },
-            conditions: {},
-          },
-        }),
-      ).toBe(true);
     });
 
     it("handles non-existent nested paths", () => {
@@ -1394,13 +868,11 @@ describe("predicate expressions - edge cases", () => {
   describe("$and edge cases", () => {
     it("handles empty arrays", () => {
       expect(apply({ $and: [] }, {})).toBe(true);
-      expect(evaluate({ $and: [] })).toBe(true);
     });
 
     it("handles single element arrays", () => {
       expect(apply({ $and: [true] }, {})).toBe(true);
       expect(apply({ $and: [false] }, {})).toBe(false);
-      expect(evaluate({ $and: [{ $eq: [1, 1] }] })).toBe(true);
     });
 
     it("handles complex nested expressions", () => {
@@ -1437,13 +909,11 @@ describe("predicate expressions - edge cases", () => {
   describe("$or edge cases", () => {
     it("handles empty arrays", () => {
       expect(apply({ $or: [] }, {})).toBe(false);
-      expect(evaluate({ $or: [] })).toBe(false);
     });
 
     it("handles single element arrays", () => {
       expect(apply({ $or: [true] }, {})).toBe(true);
       expect(apply({ $or: [false] }, {})).toBe(false);
-      expect(evaluate({ $or: [{ $eq: [1, 2] }] })).toBe(false);
     });
 
     it("handles complex nested expressions", () => {
@@ -1491,11 +961,6 @@ describe("predicate expressions - edge cases", () => {
       expect(apply({ $not: { $eq: [1, 2] } }, {})).toBe(true);
       expect(apply({ $not: { $eq: [1, 1] } }, {})).toBe(false);
     });
-
-    it("works with evaluate form", () => {
-      expect(evaluate({ $not: { $eq: [1, 1] } })).toBe(false);
-      expect(evaluate({ $not: { $eq: [1, 2] } })).toBe(true);
-    });
   });
 
   describe("comparison expressions edge cases", () => {
@@ -1542,21 +1007,6 @@ describe("predicate expressions - edge cases", () => {
       expect(apply({ $eq: Infinity }, Infinity)).toBe(true);
       expect(apply({ $gt: Infinity }, 1000000)).toBe(false);
     });
-
-    it("throws error for invalid evaluate form operands", () => {
-      expect(() => evaluate({ $eq: "string" })).toThrow(
-        "Comparison evaluate form requires either array or object operand",
-      );
-      expect(() => evaluate({ $eq: null })).toThrow(
-        "Comparison evaluate form requires either array or object operand",
-      );
-    });
-
-    it("works with evaluate form using object operand", () => {
-      expect(evaluate({ $eq: { left: 5, right: 5 } })).toBe(true);
-      expect(evaluate({ $gt: { left: 10, right: 5 } })).toBe(true);
-      expect(evaluate({ $lt: { left: 3, right: 8 } })).toBe(true);
-    });
   });
 
   describe("$between edge cases", () => {
@@ -1578,13 +1028,6 @@ describe("predicate expressions - edge cases", () => {
       expect(apply({ $between: { min: 1.5, max: 2.5 } }, 2.0)).toBe(true);
       expect(apply({ $between: { min: 1.5, max: 2.5 } }, 1.5)).toBe(true);
       expect(apply({ $between: { min: 1.5, max: 2.5 } }, 2.5)).toBe(true);
-    });
-
-    it("works with evaluate form", () => {
-      expect(evaluate({ $between: { value: 7, min: 5, max: 10 } })).toBe(true);
-      expect(evaluate({ $between: { value: 15, min: 5, max: 10 } })).toBe(
-        false,
-      );
     });
 
     it("handles complex expressions in range", () => {
@@ -1638,35 +1081,6 @@ describe("predicate expressions - edge cases", () => {
         "$nin parameter must be an array",
       );
     });
-
-    it("throws error for invalid evaluate form operands", () => {
-      expect(() => evaluate({ $in: "string" })).toThrow(
-        "$in evaluate form requires object operand",
-      );
-      expect(() => evaluate({ $in: [] })).toThrow(
-        "$in evaluate form requires object operand",
-      );
-    });
-
-    it("throws error for missing properties in evaluate form", () => {
-      expect(() => evaluate({ $in: { array: [1, 2, 3] } })).toThrow(
-        "$in evaluate form requires 'array' and 'value' properties",
-      );
-      expect(() => evaluate({ $in: { value: 1 } })).toThrow(
-        "$in evaluate form requires 'array' and 'value' properties",
-      );
-    });
-
-    it("throws error when evaluated array is not an array", () => {
-      expect(() => evaluate({ $in: { array: "not array", value: 1 } })).toThrow(
-        "$in parameter must be an array",
-      );
-    });
-
-    it("works with evaluate form", () => {
-      expect(evaluate({ $in: { array: [1, 2, 3], value: 2 } })).toBe(true);
-      expect(evaluate({ $nin: { array: [1, 2, 3], value: 4 } })).toBe(true);
-    });
   });
 
   describe("$exists edge cases", () => {
@@ -1710,43 +1124,6 @@ describe("predicate expressions - edge cases", () => {
         "$exists operand must resolve to an array or string path",
       );
     });
-
-    it("throws error for invalid evaluate form operands", () => {
-      expect(() => evaluate({ $exists: "string" })).toThrow(
-        "$exists evaluate form requires object operand",
-      );
-      expect(() => evaluate({ $exists: [] })).toThrow(
-        "$exists evaluate form requires object operand",
-      );
-    });
-
-    it("throws error for missing properties in evaluate form", () => {
-      expect(() => evaluate({ $exists: { object: {} } })).toThrow(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-      expect(() => evaluate({ $exists: { path: "name" } })).toThrow(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-    });
-
-    it("throws error for non-string path in evaluate form", () => {
-      expect(() => evaluate({ $exists: { object: {}, path: 123 } })).toThrow(
-        "$exists operand must resolve to an array or string path",
-      );
-    });
-
-    it("works with evaluate form", () => {
-      expect(
-        evaluate({
-          $exists: { object: { name: "test" }, path: "name" },
-        }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $exists: { object: { name: "test" }, path: "missing" },
-        }),
-      ).toBe(false);
-    });
   });
 
   describe("$isEmpty/$isPresent edge cases", () => {
@@ -1781,20 +1158,13 @@ describe("predicate expressions - edge cases", () => {
       expect(apply({ $isPresent: false }, "test")).toBe(false);
     });
 
-    it("throws error for non-boolean operands in apply form", () => {
+    it("throws error for non-boolean operands", () => {
       expect(() => apply({ $isEmpty: "string" }, null)).toThrow(
-        "$isEmpty apply form requires boolean operand (true/false)",
+        "$isEmpty requires boolean operand (true/false)",
       );
       expect(() => apply({ $isPresent: 123 }, null)).toThrow(
-        "$isPresent apply form requires boolean operand (true/false)",
+        "$isPresent requires boolean operand (true/false)",
       );
-    });
-
-    it("works with evaluate form", () => {
-      expect(evaluate({ $isEmpty: null })).toBe(true);
-      expect(evaluate({ $isEmpty: "test" })).toBe(false);
-      expect(evaluate({ $isPresent: null })).toBe(false);
-      expect(evaluate({ $isPresent: "test" })).toBe(true);
     });
   });
 
@@ -1876,35 +1246,6 @@ describe("predicate expressions - edge cases", () => {
         "$matches operand must be an object with property conditions",
       );
     });
-
-    it("throws error for invalid evaluate form operands", () => {
-      expect(() => evaluate({ $matches: "string" })).toThrow(
-        "$matches evaluate form requires object operand",
-      );
-      expect(() => evaluate({ $matches: [] })).toThrow(
-        "$matches evaluate form requires object operand",
-      );
-    });
-
-    it("throws error for missing properties in evaluate form", () => {
-      expect(() => evaluate({ $matches: { conditions: {} } })).toThrow(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-      expect(() => evaluate({ $matches: { data: {} } })).toThrow(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-    });
-
-    it("works with evaluate form", () => {
-      expect(
-        evaluate({
-          $matches: {
-            data: { name: "test", age: 25 },
-            conditions: { name: "test" },
-          },
-        }),
-      ).toBe(true);
-    });
   });
 
   describe("$matchesRegex edge cases", () => {
@@ -1970,40 +1311,6 @@ describe("predicate expressions - edge cases", () => {
       );
     });
 
-    it("throws error for invalid evaluate form operands", () => {
-      expect(() => evaluate({ $matchesRegex: "string" })).toThrow(
-        "$matchesRegex evaluate form requires object operand: { pattern, text }",
-      );
-      expect(() => evaluate({ $matchesRegex: [] })).toThrow(
-        "$matchesRegex evaluate form requires object operand: { pattern, text }",
-      );
-      expect(() => evaluate({ $matchesRegex: null })).toThrow(
-        "$matchesRegex evaluate form requires object operand: { pattern, text }",
-      );
-    });
-
-    it("throws error for missing properties in evaluate form", () => {
-      expect(() => evaluate({ $matchesRegex: { pattern: "test" } })).toThrow(
-        "$matchesRegex evaluate form requires 'pattern' and 'text' properties",
-      );
-      expect(() => evaluate({ $matchesRegex: { text: "test" } })).toThrow(
-        "$matchesRegex evaluate form requires 'pattern' and 'text' properties",
-      );
-    });
-
-    it("works with evaluate form", () => {
-      expect(
-        evaluate({
-          $matchesRegex: { pattern: "^test", text: "testing" },
-        }),
-      ).toBe(true);
-      expect(
-        evaluate({
-          $matchesRegex: { pattern: "(?i)TEST", text: "test" },
-        }),
-      ).toBe(true);
-    });
-
     it("handles edge case patterns", () => {
       expect(apply({ $matchesRegex: "" }, "anything")).toBe(true); // Empty pattern matches everything
       expect(apply({ $matchesRegex: ".*" }, "")).toBe(true); // Match everything including empty
@@ -2019,26 +1326,14 @@ describe("predicate expressions - edge cases", () => {
     });
 
     it("provides helpful error messages", () => {
-      expect(() => evaluate({ $eq: "invalid" })).toThrow(
-        "Comparison evaluate form requires either array or object operand",
-      );
       expect(() => apply({ $in: "not array" }, 5)).toThrow(
         "$in parameter must be an array",
       );
     });
 
-    it("handles missing required properties consistently", () => {
-      expect(() => evaluate({ $exists: { object: {} } })).toThrow(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-      expect(() => evaluate({ $in: { array: [] } })).toThrow(
-        "$in evaluate form requires 'array' and 'value' properties",
-      );
-    });
-
     it("validates operand types appropriately", () => {
       expect(() => apply({ $isEmpty: "not boolean" }, null)).toThrow(
-        "$isEmpty apply form requires boolean operand (true/false)",
+        "$isEmpty requires boolean operand (true/false)",
       );
       expect(() => apply({ $exists: 123 }, {})).toThrow(
         "$exists operand must resolve to an array or string path",
@@ -2093,16 +1388,9 @@ describe("predicate expressions - edge cases", () => {
       ).toBe(false); // Active and adult but not admin/moderator
     });
 
-    it("maintains consistent behavior across apply and evaluate forms", () => {
-      // Apply form
+    it("maintains consistent behavior for operations", () => {
       const applyResult = apply({ $and: [{ $gt: 5 }, { $lt: 10 }] }, 7);
 
-      // Evaluate form
-      const evaluateResult = evaluate({
-        $and: [{ $gt: [7, 5] }, { $lt: [7, 10] }],
-      });
-
-      expect(applyResult).toEqual(evaluateResult);
       expect(applyResult).toBe(true);
     });
 

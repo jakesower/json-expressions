@@ -16,10 +16,11 @@ import { get, isEqual } from "../helpers.js";
  * Creates a comparative expression that applies a comparison function to resolved operands.
  *
  * @param {function(any, any): boolean} compareFn - Function that takes two values and returns a boolean comparison result
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createComparativeExpression = (compareFn) => ({
-  apply(operand, inputData, { apply, isWrappedLiteral }) {
+const createComparativeExpression =
+  (compareFn) =>
+  (operand, inputData, { apply, isWrappedLiteral }) => {
     if (isWrappedLiteral(operand)) {
       return compareFn(inputData, operand.$literal);
     }
@@ -35,66 +36,24 @@ const createComparativeExpression = (compareFn) => ({
     return Array.isArray(resolved)
       ? compareFn(...resolved)
       : compareFn(inputData, resolved);
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (Array.isArray(operand) && operand.length === 2) {
-      const [left, right] = operand;
-      return compareFn(evaluate(left), evaluate(right));
-    }
-
-    if (
-      !operand ||
-      typeof operand !== "object" ||
-      operand.left === undefined ||
-      operand.left === undefined
-    ) {
-      throw new Error(
-        "Comparison evaluate form requires either array or object operand: [left, right] or { left, right }",
-      );
-    }
-
-    const { left, right } = operand;
-    return compareFn(evaluate(left), evaluate(right));
-  },
-});
+  };
 
 /**
  * Creates an inclusion expression that checks if a value is in/not in an array.
  *
  * @param {function(any, Array): boolean} inclusionFn - Function that takes a value and array and returns boolean
  * @param {string} expressionName - Name of the expression for error messages
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createInclusionExpression = (expressionName, inclusionFn) => ({
-  apply(operand, inputData, { apply }) {
+const createInclusionExpression =
+  (expressionName, inclusionFn) =>
+  (operand, inputData, { apply }) => {
     const resolvedOperand = apply(operand, inputData);
     if (!Array.isArray(resolvedOperand)) {
       throw new Error(`${expressionName} parameter must be an array`);
     }
     return inclusionFn(inputData, resolvedOperand);
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        `${expressionName} evaluate form requires object operand: { array, value }`,
-      );
-    }
-
-    const { array, value } = operand;
-    if (array === undefined || value === undefined) {
-      throw new Error(
-        `${expressionName} evaluate form requires 'array' and 'value' properties`,
-      );
-    }
-
-    const evaluatedArray = evaluate(array);
-    const evaluatedValue = evaluate(value);
-    if (!Array.isArray(evaluatedArray)) {
-      throw new Error(`${expressionName} parameter must be an array`);
-    }
-    return inclusionFn(evaluatedValue, evaluatedArray);
-  },
-});
+  };
 
 /**
  * Internal helper to test if a string matches a regex pattern with flag parsing.
@@ -134,24 +93,13 @@ const testRegexPattern = (pattern, inputData) => {
   return regex.test(inputData);
 };
 
-const $and = {
-  apply: (operand, inputData, { apply }) => {
-    return operand.every((expr) => apply(expr, inputData));
-  },
-  evaluate: (operand, { evaluate }) => {
-    return operand.every((expr) => evaluate(expr));
-  },
+const $and = (operand, inputData, { apply }) => {
+  return operand.every((expr) => apply(expr, inputData));
 };
 
-const $between = {
-  apply: (operand, inputData, { apply }) => {
-    const { min, max } = apply(operand, inputData);
-    return inputData >= min && inputData <= max;
-  },
-  evaluate: (operand, { evaluate }) => {
-    const { value, min, max } = evaluate(operand);
-    return value >= min && value <= max;
-  },
+const $between = (operand, inputData, { apply }) => {
+  const { min, max } = apply(operand, inputData);
+  return inputData >= min && inputData <= max;
 };
 
 const $eq = createComparativeExpression((a, b) => isEqual(a, b));
@@ -164,146 +112,78 @@ const $in = createInclusionExpression("$in", (value, array) =>
   array.includes(value),
 );
 
-const $isPresent = {
-  apply: (operand, inputData) => {
-    if (typeof operand !== "boolean") {
-      throw new Error(
-        "$isPresent apply form requires boolean operand (true/false)",
-      );
-    }
-    const isPresent = inputData != null;
-    return operand ? isPresent : !isPresent;
-  },
-  evaluate: (operand, { evaluate }) => evaluate(operand) != null,
+const $isPresent = (operand, inputData) => {
+  if (typeof operand !== "boolean") {
+    throw new Error("$isPresent requires boolean operand (true/false)");
+  }
+  const isPresent = inputData != null;
+  return operand ? isPresent : !isPresent;
 };
 
-const $isEmpty = {
-  apply: (operand, inputData) => {
-    if (typeof operand !== "boolean") {
-      throw new Error(
-        "$isEmpty apply form requires boolean operand (true/false)",
-      );
-    }
-    const isEmpty = inputData == null;
-    return operand ? isEmpty : !isEmpty;
-  },
-  evaluate: (operand, { evaluate }) => evaluate(operand) == null,
+const $isEmpty = (operand, inputData) => {
+  if (typeof operand !== "boolean") {
+    throw new Error("$isEmpty requires boolean operand (true/false)");
+  }
+  const isEmpty = inputData == null;
+  return operand ? isEmpty : !isEmpty;
 };
 
-const $exists = {
-  apply(operand, inputData, { apply }) {
-    if (typeof inputData !== "object" || inputData === null) {
-      throw new Error("$exists input data must resolve be an object");
-    }
+const $exists = (operand, inputData, { apply }) => {
+  if (typeof inputData !== "object" || inputData === null) {
+    throw new Error("$exists input data must resolve be an object");
+  }
 
-    const resolvedPath = apply(operand, inputData);
-    if (!Array.isArray(resolvedPath) && typeof resolvedPath !== "string") {
-      throw new Error(
-        "$exists operand must resolve to an array or string path",
-      );
-    }
+  const resolvedPath = apply(operand, inputData);
+  if (!Array.isArray(resolvedPath) && typeof resolvedPath !== "string") {
+    throw new Error("$exists operand must resolve to an array or string path");
+  }
 
-    const pathPieces = Array.isArray(resolvedPath)
-      ? resolvedPath
-      : resolvedPath.split(".");
+  const pathPieces = Array.isArray(resolvedPath)
+    ? resolvedPath
+    : resolvedPath.split(".");
 
-    if (pathPieces.length === 1) {
-      return (
-        pathPieces[0] in inputData && inputData[pathPieces[0]] !== undefined
-      );
-    }
+  if (pathPieces.length === 1) {
+    return pathPieces[0] in inputData && inputData[pathPieces[0]] !== undefined;
+  }
 
-    const lastObj = get(inputData, pathPieces.slice(0, -1));
+  const lastObj = get(inputData, pathPieces.slice(0, -1));
 
-    return (
-      lastObj !== null &&
-      typeof lastObj === "object" &&
-      pathPieces.slice(-1)[0] in lastObj
-    );
-  },
-  evaluate(operand, { evaluate, apply }) {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$exists evaluate form requires object operand: { object, path }",
-      );
-    }
-
-    const { object, path } = operand;
-    if (object === undefined || path === undefined) {
-      throw new Error(
-        "$exists evaluate form requires 'object' and 'path' properties",
-      );
-    }
-
-    const evaluatedObject = evaluate(object);
-    const evaluatedPath = evaluate(path);
-    return this.apply(evaluatedPath, evaluatedObject, { apply });
-  },
+  return (
+    lastObj !== null &&
+    typeof lastObj === "object" &&
+    pathPieces.slice(-1)[0] in lastObj
+  );
 };
 
 const $lt = createComparativeExpression((a, b) => a < b);
 
 const $lte = createComparativeExpression((a, b) => a <= b);
 
-const $matches = {
-  apply: (operand, inputData, { apply, isExpression, isWrappedLiteral }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches operand must be an object with property conditions",
-      );
+const $matches = (
+  operand,
+  inputData,
+  { apply, isExpression, isWrappedLiteral },
+) => {
+  if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+    throw new Error(
+      "$matches operand must be an object with property conditions",
+    );
+  }
+  return Object.entries(operand).every(([path, condition]) => {
+    const value = get(inputData, path);
+
+    if (isWrappedLiteral(condition)) {
+      return isEqual(condition.$literal, value);
     }
-    return Object.entries(operand).every(([path, condition]) => {
-      const value = get(inputData, path);
+    if (isExpression(condition)) return apply(condition, value);
 
-      if (isWrappedLiteral(condition)) {
-        return isEqual(condition.$literal, value);
-      }
-      if (isExpression(condition)) return apply(condition, value);
-
-      return isEqual(value, condition);
-    });
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matches evaluate form requires object operand: { data, conditions }",
-      );
-    }
-
-    const { data, conditions } = operand;
-    if (data === undefined || conditions === undefined) {
-      throw new Error(
-        "$matches evaluate form requires 'data' and 'conditions' properties",
-      );
-    }
-
-    return apply({ $matches: conditions }, data);
-  },
+    return isEqual(value, condition);
+  });
 };
 
-const $matchesRegex = {
-  apply(operand, inputData, { apply }) {
-    const resolvedOperand = apply(operand, inputData);
-    return testRegexPattern(resolvedOperand, inputData);
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$matchesRegex evaluate form requires object operand: { pattern, text }",
-      );
-    }
-
-    const { pattern, text } = operand;
-    if (pattern === undefined || text === undefined) {
-      throw new Error(
-        "$matchesRegex evaluate form requires 'pattern' and 'text' properties",
-      );
-    }
-
-    const resolvedPattern = evaluate(pattern);
-    const resolvedText = evaluate(text);
-    return testRegexPattern(resolvedPattern, resolvedText);
-  },
+const $matchesRegex = (operand, inputData, { apply }) => {
+  const resolvedOperand = apply(operand, inputData);
+  return testRegexPattern(resolvedOperand, inputData);
 };
 
 const $ne = createComparativeExpression((a, b) => !isEqual(a, b));
@@ -313,22 +193,12 @@ const $nin = createInclusionExpression(
   (value, array) => !array.includes(value),
 );
 
-const $not = {
-  apply: (operand, inputData, { apply }) => {
-    return !apply(operand, inputData);
-  },
-  evaluate: (operand, { evaluate }) => {
-    return !evaluate(operand);
-  },
+const $not = (operand, inputData, { apply }) => {
+  return !apply(operand, inputData);
 };
 
-const $or = {
-  apply: (operand, inputData, { apply }) => {
-    return operand.some((expr) => apply(expr, inputData));
-  },
-  evaluate: (operand, { evaluate }) => {
-    return operand.some((expr) => evaluate(expr));
-  },
+const $or = (operand, inputData, { apply }) => {
+  return operand.some((expr) => apply(expr, inputData));
 };
 
 // Individual exports for tree shaking (alphabetized)

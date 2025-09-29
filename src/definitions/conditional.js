@@ -56,48 +56,29 @@ const findFlexibleCase = (
     return isEqual(value, when);
   });
 
-const $case = {
-  apply(operand, inputData, { apply, isExpression, isWrappedLiteral }) {
-    const value = apply(operand.value, inputData);
-    const found = findFlexibleCase(value, operand.cases, {
-      apply,
-      isExpression,
-      isWrappedLiteral,
-    });
-    return found
-      ? apply(found.then, inputData)
-      : apply(operand.default, inputData);
-  },
-  evaluate(operand, { apply, evaluate, isExpression, isWrappedLiteral }) {
-    // Handle array format for evaluate form
-    const caseOperand = Array.isArray(operand) ? operand[0] : operand;
-    const value = evaluate(caseOperand.value);
-    const found = findFlexibleCase(value, caseOperand.cases, {
-      apply,
-      isExpression,
-      isWrappedLiteral,
-    });
-    return found ? evaluate(found.then) : evaluate(caseOperand.default);
-  },
+const $case = (
+  operand,
+  inputData,
+  { apply, isExpression, isWrappedLiteral },
+) => {
+  const value = apply(operand.value, inputData);
+  const found = findFlexibleCase(value, operand.cases, {
+    apply,
+    isExpression,
+    isWrappedLiteral,
+  });
+  return found
+    ? apply(found.then, inputData)
+    : apply(operand.default, inputData);
 };
 
-const $if = {
-  apply(operand, inputData, { apply }) {
-    const condition = apply(operand.if, inputData);
-    return executeConditional(
-      condition,
-      apply(operand.then, inputData),
-      apply(operand.else, inputData),
-    );
-  },
-  evaluate: (operand, { evaluate }) => {
-    const condition = evaluate(operand.if);
-    return executeConditional(
-      condition,
-      evaluate(operand.then),
-      evaluate(operand.else),
-    );
-  },
+const $if = (operand, inputData, { apply }) => {
+  const condition = apply(operand.if, inputData);
+  return executeConditional(
+    condition,
+    apply(operand.then, inputData),
+    apply(operand.else, inputData),
+  );
 };
 
 // Individual exports for tree shaking

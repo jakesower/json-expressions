@@ -13,64 +13,47 @@ const customEngine = createExpressionEngine({
   packs: [allExpressionsForTesting],
   custom: {
     // Simple case: Convert age from years to months
-    $ageInMonths: {
-      apply: (_, inputData) => {
-        if (typeof inputData !== "number" || inputData < 0) {
-          throw new Error("Age must be a non-negative number");
-        }
-        return inputData * 12;
-      },
-      evaluate: (operand, { evaluate }) => {
-        return evaluate(operand) * 12;
-      },
+    $ageInMonths: (_, inputData) => {
+      if (typeof inputData !== "number" || inputData < 0) {
+        throw new Error("Age must be a non-negative number");
+      }
+      return inputData * 12;
     },
 
     // Find children in age range using new pattern
-    $findByAge: {
-      apply: (operand, inputData, { apply }) =>
-        inputData.find((child) => apply(operand, child.age)),
-      evaluate: (operand, { apply }) => {
-        const [predicate, childrenArray] = operand;
-        return apply({ $findByAge: predicate }, childrenArray);
-      },
-    },
+    $findByAge: (operand, inputData, { apply }) =>
+      inputData.find((child) => apply(operand, child.age)),
 
     // Delegation case: Calculate nap time score using built-in expressions
-    $napTimeScore: {
-      apply: (_, inputData, { apply }) => {
-        // Get nap duration, default to 0 if not present
-        const napMinutes = apply({ $get: "napDuration" }, inputData) || 0;
+    $napTimeScore: (_, inputData, { apply }) => {
+      // Get nap duration, default to 0 if not present
+      const napMinutes = apply({ $get: "napDuration" }, inputData) || 0;
 
-        // Age multiplier: younger children get higher scores for longer naps
-        const ageMultiplier = apply(
-          {
-            $if: {
-              if: { $lt: 3 },
-              then: 2.0,
-              else: 1.5,
-            },
+      // Age multiplier: younger children get higher scores for longer naps
+      const ageMultiplier = apply(
+        {
+          $if: {
+            if: { $lt: 3 },
+            then: 2.0,
+            else: 1.5,
           },
-          inputData.age,
-        );
+        },
+        inputData.age,
+      );
 
-        // Bonus points for any nap time
-        const baseBonus = apply(
-          {
-            $if: {
-              if: { $gt: 0 },
-              then: 10,
-              else: 0,
-            },
+      // Bonus points for any nap time
+      const baseBonus = apply(
+        {
+          $if: {
+            if: { $gt: 0 },
+            then: 10,
+            else: 0,
           },
-          napMinutes,
-        );
+        },
+        napMinutes,
+      );
 
-        return napMinutes * ageMultiplier + baseBonus;
-      },
-      evaluate: (operand, { apply, evaluate }) => {
-        const child = evaluate(operand);
-        return apply({ $napTimeScore: null }, child);
-      },
+      return napMinutes * ageMultiplier + baseBonus;
     },
   },
 });
@@ -81,11 +64,6 @@ describe("Custom Expressions", () => {
       expect(customEngine.apply({ $ageInMonths: null }, 3)).toBe(36);
       expect(customEngine.apply({ $ageInMonths: null }, 2.5)).toBe(30);
       expect(customEngine.apply({ $ageInMonths: null }, 0)).toBe(0);
-    });
-
-    it("works with evaluate form", () => {
-      expect(customEngine.evaluate({ $ageInMonths: 4 })).toBe(48);
-      expect(customEngine.evaluate({ $ageInMonths: 1.5 })).toBe(18);
     });
 
     it("throws error for invalid ages", () => {
@@ -120,18 +98,6 @@ describe("Custom Expressions", () => {
     it("returns undefined when no match found", () => {
       const result = customEngine.apply({ $findByAge: { $eq: 10 } }, children);
       expect(result).toBeUndefined();
-    });
-
-    it("works with evaluate form", () => {
-      const result = customEngine.evaluate({
-        $findByAge: [{ $eq: 2 }, children],
-      });
-      expect(result).toEqual({
-        name: "Zahra",
-        age: 2,
-        napDuration: 120,
-        favoriteToy: "blocks",
-      });
     });
 
     it("works with complex predicates", () => {
@@ -169,19 +135,6 @@ describe("Custom Expressions", () => {
         children[3],
       );
       expect(nomsaScore).toBe(0);
-    });
-
-    it("works with evaluate form", () => {
-      const ximenaScore = customEngine.evaluate({
-        $napTimeScore: {
-          name: "Ximena",
-          age: 4,
-          napDuration: 60,
-          favoriteToy: "dolls",
-        },
-      });
-      // Ximena: age 4 (>= 3), napDuration 60 -> (60 * 1.5) + 10 = 100
-      expect(ximenaScore).toBe(100);
     });
 
     it("handles missing napDuration gracefully", () => {

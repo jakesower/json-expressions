@@ -4,34 +4,22 @@ import { mapValues } from "es-toolkit";
 import { $literal } from "./definitions/flow.js";
 
 /**
- * @typedef {object} ApplicativeExpression
+ * @typedef {object} ExpressionContext
+ * @property {function(any, any): any} apply - Apply an expression to input data
+ * @property {function(any): boolean} isExpression - Check if a value is an expression
+ * @property {function(any): boolean} isWrappedLiteral - Check if a value is a wrapped literal
  */
 
 /**
- * @typedef {object} Expression
- */
-
-/**
- * @template Args, Input, Output
- * @typedef {object} Expression
- * @property {function(any, Input): Output} apply
- * @property {function(Args, Input, any): Output} [applyImplicit]
- * @property {function(Input): Output} evaluate
- * @property {string} [name]
- * @property {object} schema
+ * @template Operand, Input, Output
+ * @typedef {function(Operand, Input, ExpressionContext): Output} Expression
  */
 
 /**
  * @typedef {object} ExpressionEngine
- * @property {function(Expression, any): any} apply
- * @property {function(Expression): any} evaluate
- * @property {string[]} expressionNames
- * @property {function(Expression): boolean} isExpression
- */
-
-/**
- * @template Args, Input, Output
- * @typedef {function(...any): Expression} FunctionExpression
+ * @property {function(any, any): any} apply - Apply an expression to input data
+ * @property {string[]} expressionNames - List of available expression names
+ * @property {function(any): boolean} isExpression - Check if a value is an expression
  */
 
 function looksLikeExpression(val) {
@@ -66,18 +54,13 @@ function isWrappedLiteral(val) {
  */
 export function createExpressionEngine(config = {}) {
   const { packs = [], custom = {}, includeBase = true } = config;
-  let evaluate;
 
-  const combinedExpressions = [
+  const expressions = [
     ...(includeBase ? [base] : []),
     ...packs,
     custom,
     { $literal },
   ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
-
-  const expressions = mapValues(combinedExpressions, (expr) =>
-    typeof expr === "function" ? { apply: expr } : expr,
-  );
 
   const isExpression = (val) =>
     looksLikeExpression(val) && Object.keys(val)[0] in expressions;
@@ -105,9 +88,8 @@ export function createExpressionEngine(config = {}) {
       const [expressionName, operand] = Object.entries(val)[0];
       const expressionDef = expressions[expressionName];
 
-      return expressionDef.apply(operand, inputData, {
+      return expressionDef(operand, inputData, {
         apply,
-        evaluate,
         isExpression,
         isWrappedLiteral,
       });
@@ -122,31 +104,8 @@ export function createExpressionEngine(config = {}) {
         : val;
   };
 
-  evaluate = (val) => {
-    if (isExpression(val)) {
-      const [expressionName, operand] = Object.entries(val)[0];
-      const expressionDef = expressions[expressionName];
-
-      return expressionDef.evaluate(operand, {
-        apply,
-        evaluate,
-        isExpression,
-        isWrappedLiteral,
-      });
-    }
-
-    checkLooksLikeExpression(val);
-
-    return Array.isArray(val)
-      ? val.map(evaluate)
-      : val !== null && typeof val === "object"
-        ? mapValues(val, evaluate)
-        : val;
-  };
-
   return {
     apply,
-    evaluate,
     expressionNames: Object.keys(expressions),
     isExpression,
   };

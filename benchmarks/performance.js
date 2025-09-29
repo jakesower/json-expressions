@@ -1,10 +1,10 @@
 import {
   createExpressionEngine,
-  math,
-  comparison,
-  array,
-  object,
-  filtering,
+  mathPack,
+  comparisonPack,
+  arrayPack,
+  objectPack,
+  filteringPack,
 } from "../src/index.js";
 
 // Test data sets
@@ -27,7 +27,7 @@ const largeArray = Array.from({ length: 1000 }, (_, i) => ({
 
 // Create engine with common packs
 const engine = createExpressionEngine({
-  packs: [math, comparison, array, object, filtering],
+  packs: [mathPack, comparisonPack, arrayPack, objectPack, filteringPack],
 });
 
 // Benchmark function
@@ -63,10 +63,6 @@ benchmark("Property access ($get)", () => {
 
 benchmark("Math operation ($add)", () => {
   engine.apply({ $add: [10, 20] }, {});
-});
-
-benchmark("Static evaluation ($multiply)", () => {
-  engine.evaluate({ $multiply: [5, 8] });
 });
 
 console.log("\n🔍 Complex Operations:");
@@ -175,7 +171,7 @@ const memBefore = process.memoryUsage();
 
 // Create many engines to test memory
 const engines = Array.from({ length: 100 }, () =>
-  createExpressionEngine({ packs: [math, comparison] }),
+  createExpressionEngine({ packs: [mathPack, comparisonPack] }),
 );
 
 // Execute many operations

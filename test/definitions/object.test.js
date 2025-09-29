@@ -3,7 +3,7 @@ import { createExpressionEngine } from "../../src/index.js";
 import { object } from "../../src/packs/object.js";
 
 const testEngine = createExpressionEngine({ packs: [object] });
-const { apply, evaluate } = testEngine;
+const { apply } = testEngine;
 
 const children = [
   { name: "Chen", age: 5, status: "active", scores: [92, 87, 95] },
@@ -12,7 +12,7 @@ const children = [
 ];
 
 describe("$merge", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("merges single object", () => {
       const baseData = { name: "Chen", age: 5 };
 
@@ -80,24 +80,10 @@ describe("$merge", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("merges objects in evaluate mode", () => {
-      expect(
-        evaluate({
-          $merge: [{ name: "Kenji", age: 6 }, { status: "active" }, { age: 7 }],
-        }),
-      ).toEqual({
-        name: "Kenji",
-        age: 7,
-        status: "active",
-      });
-    });
-  });
 });
 
 describe("$pick", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("picks specified properties", () => {
       expect(apply({ $pick: ["name", "age"] }, children[0])).toEqual({
         name: "Chen",
@@ -130,31 +116,10 @@ describe("$pick", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("picks properties from provided object", () => {
-      const child = { name: "Zara", age: 4, status: "active", score: 88 };
-
-      expect(
-        evaluate({
-          $pick: { object: child, properties: ["name", "score"] },
-        }),
-      ).toEqual({
-        name: "Zara",
-        score: 88,
-      });
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $pick: "not an array" })).toThrow(
-        "$pick evaluate form requires object operand: { object, properties }",
-      );
-    });
-  });
 });
 
 describe("$omit", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("omits specified properties", () => {
       expect(apply({ $omit: ["scores", "status"] }, children[0])).toEqual({
         name: "Chen",
@@ -186,31 +151,10 @@ describe("$omit", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("omits properties from provided object", () => {
-      const child = { name: "Omar", age: 4, status: "active", score: 85 };
-
-      expect(
-        evaluate({
-          $omit: { object: child, properties: ["status", "score"] },
-        }),
-      ).toEqual({
-        name: "Omar",
-        age: 4,
-      });
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $omit: "not an array" })).toThrow(
-        "$omit evaluate form requires object operand: { object, properties }",
-      );
-    });
-  });
 });
 
 describe("$keys", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("gets object keys", () => {
       const result = apply({ $keys: null }, children[0]);
       expect(result.sort()).toEqual(["age", "name", "scores", "status"]);
@@ -222,25 +166,10 @@ describe("$keys", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("gets keys from provided object", () => {
-      const data = { teacher: "Ms. Rodriguez", room: "B2", capacity: 20 };
-
-      const result = evaluate({ $keys: data });
-      expect(result.sort()).toEqual(["capacity", "room", "teacher"]);
-    });
-
-    it("throws error for non-object in evaluate form", () => {
-      expect(() => evaluate({ $keys: "not an object" })).toThrow(
-        "$keys can only be applied to objects",
-      );
-    });
-  });
 });
 
 describe("$values", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("gets object values", () => {
       const simpleObject = { name: "Chen", age: 5 };
       const result = apply({ $values: null }, simpleObject);
@@ -253,24 +182,10 @@ describe("$values", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("gets values from provided object", () => {
-      const data = { morning: "reading", afternoon: "art", evening: "play" };
-
-      expect(evaluate({ $values: data })).toEqual(["reading", "art", "play"]);
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $values: "not an array" })).toThrow(
-        "$values can only be applied to objects",
-      );
-    });
-  });
 });
 
 describe("$pairs", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("converts object to key-value pairs", () => {
       const simpleObject = { name: "Diego", age: 4 };
       const result = apply({ $pairs: null }, simpleObject);
@@ -286,32 +201,10 @@ describe("$pairs", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("converts provided object to pairs", () => {
-      const schedule = {
-        "9:00": "circle time",
-        "10:00": "snack",
-        "11:00": "outdoor play",
-      };
-
-      expect(evaluate({ $pairs: schedule })).toEqual([
-        ["9:00", "circle time"],
-        ["10:00", "snack"],
-        ["11:00", "outdoor play"],
-      ]);
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $pairs: "not an array" })).toThrow(
-        "$pairs can only be applied to objects",
-      );
-    });
-  });
 });
 
 describe("$fromPairs", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("converts pairs to object", () => {
       const pairs = [
         ["name", "Lila"],
@@ -336,28 +229,6 @@ describe("$fromPairs", () => {
       expect(() =>
         apply({ $fromPairs: null }, [["key"], ["incomplete"]]),
       ).toThrow("$fromPairs requires array of [key, value] pairs");
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("converts pairs to object in evaluate mode", () => {
-      const pairs = [
-        ["activity", { $get: { object: { key: "painting" }, path: "key" } }],
-        ["duration", "30 min"],
-        ["materials", "watercolors"],
-      ];
-
-      expect(evaluate({ $fromPairs: pairs })).toEqual({
-        activity: "painting",
-        duration: "30 min",
-        materials: "watercolors",
-      });
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $fromPairs: "not an array" })).toThrow(
-        "$fromPairs can only be applied to arrays of [key, value] pairs",
-      );
     });
   });
 });
@@ -395,7 +266,11 @@ describe("Integration with other expressions", () => {
   });
 
   it("roundtrip: object to pairs and back", () => {
-    const original = { classroom: "Rainbow", teacher: "Mr. O'Brien", count: 15 };
+    const original = {
+      classroom: "Rainbow",
+      teacher: "Mr. O'Brien",
+      count: 15,
+    };
 
     const result = apply(
       {

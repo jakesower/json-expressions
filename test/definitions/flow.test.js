@@ -5,7 +5,7 @@ import { allExpressionsForTesting } from "../../src/packs/all.js";
 const testEngine = createExpressionEngine({
   packs: [allExpressionsForTesting],
 });
-const { apply, evaluate } = testEngine;
+const { apply } = testEngine;
 
 describe("$debug", () => {
   it("applies debug expression and logs result", () => {
@@ -29,28 +29,6 @@ describe("$debug", () => {
     );
     consoleSpy.mockRestore();
   });
-
-  describe("evaluate form", () => {
-    it("evaluates debug expression and logs result", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      expect(evaluate({ $debug: { $sum: [1, 2, 3] } })).toEqual(6);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Debug (evaluate):",
-        expect.objectContaining({ result: 6 }),
-      );
-      consoleSpy.mockRestore();
-    });
-
-    it("debugs literal values", () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-      expect(evaluate({ $debug: { $literal: "hello" } })).toEqual("hello");
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Debug (evaluate):",
-        expect.objectContaining({ result: "hello" }),
-      );
-      consoleSpy.mockRestore();
-    });
-  });
 });
 
 describe("$default", () => {
@@ -65,7 +43,7 @@ describe("$default", () => {
     },
   };
 
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("returns expression result when not null/undefined", () => {
       expect(
         apply(
@@ -221,119 +199,17 @@ describe("$default", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates expression and returns result when not null/undefined", () => {
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: "success" },
-            default: { $literal: "fallback" },
-          },
-        }),
-      ).toBe("success");
-    });
-
-    it("evaluates default when expression is null", () => {
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: null },
-            default: { $literal: "fallback" },
-          },
-        }),
-      ).toBe("fallback");
-    });
-
-    it("evaluates default when expression is undefined", () => {
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: undefined },
-            default: { $literal: "fallback" },
-          },
-        }),
-      ).toBe("fallback");
-    });
-
-    it("returns expression result even if falsy when allowNull is true", () => {
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: "" },
-            default: { $literal: "fallback" },
-            allowNull: true,
-          },
-        }),
-      ).toBe("");
-
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: 0 },
-            default: { $literal: "fallback" },
-            allowNull: true,
-          },
-        }),
-      ).toBe(0);
-
-      expect(
-        evaluate({
-          $default: {
-            expression: { $literal: false },
-            default: { $literal: "fallback" },
-            allowNull: true,
-          },
-        }),
-      ).toBe(false);
-    });
-
-    it("works with complex expressions in both expression and default", () => {
-      expect(
-        evaluate({
-          $default: {
-            expression: {
-              $get: { object: { missing: null }, path: "missing" },
-            },
-            default: { $sum: [1, 2, 3] },
-          },
-        }),
-      ).toBe(6);
-    });
-
-    it("throws error for invalid operand", () => {
-      expect(() => evaluate({ $default: "not an object" })).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
-      );
-    });
-
-    it("throws error for missing expression property", () => {
-      expect(() =>
-        evaluate({ $default: { default: { $literal: "fallback" } } }),
-      ).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
-      );
-    });
-
-    it("throws error for missing default property", () => {
-      expect(() =>
-        evaluate({ $default: { expression: { $literal: "test" } } }),
-      ).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
-      );
-    });
-  });
 });
 
 describe("$literal", () => {
   it("doesn't apply to expression operands", () => {
     const expr = { $unknownExpr: "" };
-    expect(apply({ $literal: expr })).toEqual(expr);
+    expect(apply({ $literal: expr }, {})).toEqual(expr);
   });
 
   it("doesn't allow literals that look like expressions to be evaluated", () => {
     const notExpr = { $literal: { $eq: 4 } };
-    expect(apply(notExpr, 4)).toEqual({ $eq: 4 });
+    expect(apply(notExpr, { value: 4 })).toEqual({ $eq: 4 });
   });
 
   it("doesn't allow literals that look like expressions to be evaluated (2)", () => {
@@ -348,11 +224,6 @@ describe("$literal", () => {
 
     expect(apply(expr, { value: 4 })).toEqual("No match");
     expect(apply(expr, { value: { $eq: 4 } })).toEqual("Match literal");
-  });
-
-  it("doesn't evaluate expression operands", () => {
-    const expr = { $unknownExpr: "" };
-    expect(evaluate({ $literal: expr })).toEqual(expr);
   });
 });
 
@@ -394,12 +265,6 @@ describe("$pipe", () => {
     expect(result).toEqual("Fatoumata");
   });
 
-  it("throws with a non-expression", () => {
-    expect(() => {
-      evaluate([{ $pipe: "lol" }, { name: "Zarina" }]);
-    }).toThrowError();
-  });
-
   it("throws with an invalid expression", () => {
     expect(() => {
       apply({ $pipe: [{ $in: "should be an array" }] }, { name: "Zarina" });
@@ -436,7 +301,7 @@ describe("$sort", () => {
     { name: "Amira", age: 3, status: "inactive", score: 78 },
   ];
 
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("sorts by simple field name", () => {
       const result = apply({ $sort: "age" }, children);
       expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
@@ -509,59 +374,6 @@ describe("$sort", () => {
       );
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates sort against provided array", () => {
-      const data = [
-        { name: "Yuki", age: 6 },
-        { name: "Omar", age: 4 },
-        { name: "Lila", age: 5 },
-      ];
-
-      const result = evaluate({
-        $sort: { array: data, by: "age" },
-      });
-
-      expect(result.map((c) => c.name)).toEqual(["Omar", "Lila", "Yuki"]);
-    });
-
-    it("works with complex sort criteria in evaluate form", () => {
-      const data = [
-        { name: "Sofia", status: "active", score: 85 },
-        { name: "Raj", status: "inactive", score: 90 },
-        { name: "Emma", status: "active", score: 88 },
-      ];
-
-      const result = evaluate({
-        $sort: {
-          array: data,
-          by: [{ by: "status" }, { by: "score", desc: true }],
-        },
-      });
-
-      expect(result.map((c) => c.name)).toEqual(["Emma", "Sofia", "Raj"]);
-    });
-
-    it("works with object format in evaluate form", () => {
-      const data = [
-        { name: "Chen", age: 5 },
-        { name: "Amira", age: 3 },
-        { name: "Diego", age: 4 },
-      ];
-
-      const result = evaluate({
-        $sort: { array: data, by: { by: "age" } },
-      });
-
-      expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
-    });
-
-    it("throws error for invalid operand format", () => {
-      expect(() => evaluate({ $sort: "not an array" })).toThrow(
-        "$sort evaluate form requires object operand: { array, by, desc? }",
-      );
-    });
-  });
 });
 
 describe("flow expressions - edge cases", () => {
@@ -625,7 +437,7 @@ describe("flow expressions - edge cases", () => {
       consoleSpy.mockRestore();
     });
 
-    it("preserves original input data in apply form", () => {
+    it("preserves original input data", () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       const originalData = { name: "Chen", toys: ["blocks"] };
 
@@ -812,7 +624,6 @@ describe("flow expressions - edge cases", () => {
       };
 
       expect(apply({ $literal: complexExpr }, {})).toEqual(complexExpr);
-      expect(evaluate({ $literal: complexExpr })).toEqual(complexExpr);
     });
 
     it("preserves arrays with expression-like objects", () => {
@@ -972,61 +783,6 @@ describe("flow expressions - edge cases", () => {
         ),
       ).toBe("processing");
     });
-
-    // Evaluate form edge cases
-    it("throws when missing expressions property in evaluate form", () => {
-      expect(() =>
-        evaluate({ $pipe: { inputData: { name: "test" } } }),
-      ).toThrow(
-        "$pipe evaluate form requires 'expressions' and 'inputData' properties",
-      );
-    });
-
-    it("throws when missing inputData property in evaluate form", () => {
-      expect(() =>
-        evaluate({ $pipe: { expressions: [{ $get: "name" }] } }),
-      ).toThrow(
-        "$pipe evaluate form requires 'expressions' and 'inputData' properties",
-      );
-    });
-
-    it("handles null/undefined properties in evaluate form", () => {
-      expect(() =>
-        evaluate({ $pipe: { expressions: null, inputData: undefined } }),
-      ).toThrow(
-        "$pipe evaluate form requires 'expressions' and 'inputData' properties",
-      );
-    });
-
-    it("works with complex evaluate form scenarios", () => {
-      expect(
-        evaluate({
-          $pipe: {
-            expressions: [
-              { $get: "numbers" },
-              { $filter: { $gt: 2 } },
-              { $map: { $multiply: 3 } },
-            ],
-            inputData: { numbers: [1, 2, 3, 4, 5] },
-          },
-        }),
-      ).toEqual([9, 12, 15]);
-    });
-
-    it("handles evaluate form with literal data", () => {
-      expect(
-        evaluate({
-          $pipe: {
-            expressions: [
-              { $literal: { value: 42 } },
-              { $get: "value" },
-              { $add: 8 },
-            ],
-            inputData: "ignored",
-          },
-        }),
-      ).toBe(50);
-    });
   });
 
   describe("$sort edge cases", () => {
@@ -1174,102 +930,12 @@ describe("flow expressions - edge cases", () => {
         apply({ $sort: { by: "score" } }, data).map((i) => i.name),
       ).toEqual(["C", "A", "B"]);
     });
-
-    // Evaluate form edge cases
-    it("throws when missing array property in evaluate form", () => {
-      expect(() => evaluate({ $sort: { by: "name" } })).toThrow(
-        "$sort evaluate form requires 'array' and 'by' properties",
-      );
-    });
-
-    it("throws when missing by property in evaluate form", () => {
-      expect(() => evaluate({ $sort: { array: [{ name: "test" }] } })).toThrow(
-        "$sort evaluate form requires 'array' and 'by' properties",
-      );
-    });
-
-    it("handles null/undefined properties in evaluate form", () => {
-      expect(() =>
-        evaluate({ $sort: { array: null, by: undefined } }),
-      ).toThrow(
-        "$sort evaluate form requires 'array' and 'by' properties",
-      );
-    });
-
-    it("works with expression-based sort criteria in evaluate form", () => {
-      const data = [
-        { person: { name: "Zara", details: { age: 5 } } },
-        { person: { name: "Omar", details: { age: 3 } } },
-        { person: { name: "Luna", details: { age: 4 } } },
-      ];
-
-      expect(
-        evaluate({
-          $sort: {
-            array: data,
-            by: { by: { $get: "person.details.age" } },
-          },
-        }).map((item) => item.person.name),
-      ).toEqual(["Omar", "Luna", "Zara"]);
-    });
-
-    it("handles string by in evaluate form", () => {
-      const data = [
-        { name: "Charlie", age: 4 },
-        { name: "Alice", age: 3 },
-        { name: "Bob", age: 5 },
-      ];
-
-      expect(
-        evaluate({
-          $sort: {
-            array: data,
-            by: "age",
-          },
-        }).map((item) => item.name),
-      ).toEqual(["Alice", "Charlie", "Bob"]);
-    });
-
-    it("handles desc flag in evaluate form", () => {
-      const data = [
-        { name: "Charlie", age: 4 },
-        { name: "Alice", age: 3 },
-        { name: "Bob", age: 5 },
-      ];
-
-      expect(
-        evaluate({
-          $sort: {
-            array: data,
-            by: "age",
-            desc: true,
-          },
-        }).map((item) => item.name),
-      ).toEqual(["Bob", "Charlie", "Alice"]);
-    });
   });
 
   describe("error handling and validation", () => {
     it("handles malformed operands gracefully", () => {
-      expect(() => evaluate({ $pipe: [] })).toThrow();
-      expect(() => evaluate({ $sort: [] })).toThrow();
-    });
-
-    it("provides helpful error messages", () => {
-      expect(() => evaluate({ $pipe: "string" })).toThrow(
-        "$pipe evaluate form requires object operand: { expressions, inputData }",
-      );
-      expect(() => evaluate({ $sort: "string" })).toThrow(
-        "$sort evaluate form requires object operand: { array, by, desc? }",
-      );
-    });
-
-    it("handles missing required properties consistently", () => {
-      const partialPipe = { $pipe: { expressions: [] } };
-      const partialSort = { $sort: { array: [] } };
-
-      expect(() => evaluate(partialPipe)).toThrow(/requires.*properties/);
-      expect(() => evaluate(partialSort)).toThrow(/requires.*properties/);
+      expect(() => apply({ $pipe: "string" }, {})).toThrow();
+      expect(() => apply({ $sort: [] }, []));
     });
   });
 
@@ -1315,25 +981,36 @@ describe("flow expressions - edge cases", () => {
       ]);
     });
 
-    it("maintains consistent behavior across apply and evaluate forms", () => {
-      const testData = { numbers: [3, 1, 4, 1, 5] };
+    it("maintains consistent behavior for sorting", () => {
+      const testData = {
+        items: [
+          { value: 3 },
+          { value: 1 },
+          { value: 4 },
+          { value: 1 },
+          { value: 5 },
+        ],
+      };
 
-      // $pipe consistency
+      // $pipe with sorting
       expect(
-        apply({ $pipe: [{ $get: "numbers" }, { $sort: "value" }] }, testData),
-      ).toEqual(
-        evaluate({
-          $pipe: {
-            expressions: [{ $get: "numbers" }, { $sort: "value" }],
-            inputData: testData,
-          },
-        }),
-      );
+        apply({ $pipe: [{ $get: "items" }, { $sort: "value" }] }, testData),
+      ).toEqual([
+        { value: 1 },
+        { value: 1 },
+        { value: 3 },
+        { value: 4 },
+        { value: 5 },
+      ]);
 
-      // $sort consistency
-      expect(apply({ $sort: "value" }, testData.numbers)).toEqual(
-        evaluate({ $sort: { array: testData.numbers, by: "value" } }),
-      );
+      // $sort with objects
+      expect(apply({ $sort: "value" }, testData.items)).toEqual([
+        { value: 1 },
+        { value: 1 },
+        { value: 3 },
+        { value: 4 },
+        { value: 5 },
+      ]);
     });
   });
 });

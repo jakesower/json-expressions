@@ -7,8 +7,9 @@
  * - Object introspection ($keys, $values, $pairs, $fromPairs)
  */
 
-const createKeyInclusionExpression = (keepFn, expressionName) => ({
-  apply: (operand, inputData, { apply }) => {
+const createKeyInclusionExpression =
+  (keepFn, expressionName) =>
+  (operand, inputData, { apply }) => {
     if (!Array.isArray(operand)) {
       throw new Error(
         `${expressionName} operand must be an array of property names`,
@@ -28,27 +29,10 @@ const createKeyInclusionExpression = (keepFn, expressionName) => ({
     });
 
     return result;
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        `${expressionName} evaluate form requires object operand: { object, properties }`,
-      );
-    }
+  };
 
-    const { object, properties } = operand;
-    if (object === undefined || properties === undefined) {
-      throw new Error(
-        `${expressionName} evaluate form requires 'object' and 'properties' properties`,
-      );
-    }
-
-    return apply({ [expressionName]: properties }, object);
-  },
-});
-
-const createObjectExtractionExpression = (fn, expressionName) => ({
-  apply: (operand, inputData) => {
+const createObjectExtractionExpression =
+  (fn, expressionName) => (_, inputData) => {
     if (
       !inputData ||
       typeof inputData !== "object" ||
@@ -57,48 +41,23 @@ const createObjectExtractionExpression = (fn, expressionName) => ({
       throw new Error(`${expressionName} can only be applied to objects`);
     }
     return fn(inputData);
-  },
-  evaluate: (operand, { evaluate }) => {
-    const result = evaluate(operand);
-    if (!result || typeof result !== "object") {
-      throw new Error(`${expressionName} can only be applied to objects`);
-    }
-    return fn(result);
-  },
-});
+  };
 
-const $merge = {
-  apply: (operand, inputData, { apply }) => {
-    if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
-      throw new Error("$merge can only be applied to objects");
-    }
+const $merge = (operand, inputData, { apply }) => {
+  if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+    throw new Error("$merge can only be applied to objects");
+  }
 
-    const resolvedOperand = apply(operand, inputData);
-    if (!resolvedOperand || typeof resolvedOperand !== "object" || Array.isArray(resolvedOperand)) {
-      throw new Error("$merge operand must resolve to an object");
-    }
+  const resolvedOperand = apply(operand, inputData);
+  if (
+    !resolvedOperand ||
+    typeof resolvedOperand !== "object" ||
+    Array.isArray(resolvedOperand)
+  ) {
+    throw new Error("$merge operand must resolve to an object");
+  }
 
-    return Object.assign({}, inputData, resolvedOperand);
-  },
-  evaluate: (operand, { evaluate }) => {
-    if (!Array.isArray(operand)) {
-      throw new Error("$merge evaluate form requires array of objects to merge");
-    }
-
-    if (operand.length === 0) {
-      return {};
-    }
-
-    const resolvedObjects = operand.map(obj => {
-      const resolved = evaluate(obj);
-      if (!resolved || typeof resolved !== "object" || Array.isArray(resolved)) {
-        throw new Error("$merge operand must be an array of objects to merge");
-      }
-      return resolved;
-    });
-
-    return Object.assign({}, ...resolvedObjects);
-  },
+  return Object.assign({}, inputData, resolvedOperand);
 };
 
 const $omit = createKeyInclusionExpression(
@@ -112,47 +71,23 @@ const $keys = createObjectExtractionExpression(Object.keys, "$keys");
 const $values = createObjectExtractionExpression(Object.values, "$values");
 const $pairs = createObjectExtractionExpression(Object.entries, "$pairs");
 
-const $fromPairs = {
-  apply: (operand, inputData) => {
-    if (!Array.isArray(inputData)) {
-      throw new Error(
-        "$fromPairs can only be applied to arrays of [key, value] pairs",
-      );
+const $fromPairs = (_, inputData) => {
+  if (!Array.isArray(inputData)) {
+    throw new Error(
+      "$fromPairs can only be applied to arrays of [key, value] pairs",
+    );
+  }
+
+  const result = {};
+  inputData.forEach((pair) => {
+    if (!Array.isArray(pair) || pair.length !== 2) {
+      throw new Error("$fromPairs requires array of [key, value] pairs");
     }
+    const [key, value] = pair;
+    result[key] = value;
+  });
 
-    const result = {};
-    inputData.forEach((pair) => {
-      if (!Array.isArray(pair) || pair.length !== 2) {
-        throw new Error("$fromPairs requires array of [key, value] pairs");
-      }
-      const [key, value] = pair;
-      result[key] = value;
-    });
-
-    return result;
-  },
-  evaluate: (operand, { evaluate }) => {
-    const evaluatedPairs = evaluate(operand);
-
-    if (!Array.isArray(evaluatedPairs)) {
-      throw new Error(
-        "$fromPairs can only be applied to arrays of [key, value] pairs",
-      );
-    }
-
-    const result = {};
-    evaluatedPairs.forEach((pair) => {
-      if (!Array.isArray(pair) || pair.length !== 2) {
-        throw new Error(
-          "$fromPairs can only be applied to arrays of [key, value] pairs",
-        );
-      }
-      const [key, value] = pair;
-      result[key] = value;
-    });
-
-    return result;
-  },
+  return result;
 };
 
 // Individual exports for tree shaking

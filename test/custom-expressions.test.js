@@ -15,55 +15,38 @@ const customEngine = createExpressionEngine({
   packs: [allExpressionsForTesting],
   custom: {
     // Simple case: Convert age from years to months
-    $ageInMonths: {
-      apply: (_, inputData) => {
-        if (typeof inputData !== "number" || inputData < 0) {
-          throw new Error("Age must be a non-negative number");
-        }
-        return inputData * 12;
-      },
-      evaluate: (operand, { evaluate }) => {
-        return evaluate(operand) * 12;
-      },
+    $ageInMonths: (_, inputData) => {
+      if (typeof inputData !== "number" || inputData < 0) {
+        throw new Error("Age must be a non-negative number");
+      }
+      return inputData * 12;
     },
 
     // Find children in age range - ANTI-PATTERN: uses other expressions instead of complete implementation
-    $findByAge: {
-      apply: (operand, inputData) => {
-        // Complete implementation: check age directly without delegating to other expressions
-        return inputData.find((child) => {
-          if (operand.$eq !== undefined) return child.age === operand.$eq;
-          if (operand.$gte !== undefined) return child.age >= operand.$gte;
-          if (operand.$lte !== undefined) return child.age <= operand.$lte;
-          if (operand.$and) {
-            return operand.$and.every((cond) => {
-              if (cond.$gte !== undefined) return child.age >= cond.$gte;
-              if (cond.$lte !== undefined) return child.age <= cond.$lte;
-              return false;
-            });
-          }
-          return false;
-        });
-      },
-      evaluate: (operand, { apply }) => {
-        const [predicate, childrenArray] = operand;
-        return apply({ $findByAge: predicate }, childrenArray);
-      },
+    $findByAge: (operand, inputData) => {
+      // Complete implementation: check age directly without delegating to other expressions
+      return inputData.find((child) => {
+        if (operand.$eq !== undefined) return child.age === operand.$eq;
+        if (operand.$gte !== undefined) return child.age >= operand.$gte;
+        if (operand.$lte !== undefined) return child.age <= operand.$lte;
+        if (operand.$and) {
+          return operand.$and.every((cond) => {
+            if (cond.$gte !== undefined) return child.age >= cond.$gte;
+            if (cond.$lte !== undefined) return child.age <= cond.$lte;
+            return false;
+          });
+        }
+        return false;
+      });
     },
 
     // ANTI-PATTERN: Calculate nap time score using complete implementation instead of delegating
-    $napTimeScore: {
-      apply: (_, inputData) => {
-        // Complete implementation: calculate directly without delegating to other expressions
-        const napMinutes = inputData.napDuration ?? 0;
-        const ageMultiplier = inputData.age < 3 ? 2.0 : 1.5;
-        const baseBonus = napMinutes > 0 ? 10 : 0;
-        return napMinutes * ageMultiplier + baseBonus;
-      },
-      evaluate: (operand, { apply }) => {
-        const child = operand;
-        return apply({ $napTimeScore: null }, child);
-      },
+    $napTimeScore: (_, inputData) => {
+      // Complete implementation: calculate directly without delegating to other expressions
+      const napMinutes = inputData.napDuration ?? 0;
+      const ageMultiplier = inputData.age < 3 ? 2.0 : 1.5;
+      const baseBonus = napMinutes > 0 ? 10 : 0;
+      return napMinutes * ageMultiplier + baseBonus;
     },
   },
 });
@@ -74,11 +57,6 @@ describe("Custom Expressions", () => {
       expect(customEngine.apply({ $ageInMonths: null }, 3)).toBe(36);
       expect(customEngine.apply({ $ageInMonths: null }, 2.5)).toBe(30);
       expect(customEngine.apply({ $ageInMonths: null }, 0)).toBe(0);
-    });
-
-    it("works with evaluate form", () => {
-      expect(customEngine.evaluate({ $ageInMonths: 4 })).toBe(48);
-      expect(customEngine.evaluate({ $ageInMonths: 1.5 })).toBe(18);
     });
 
     it("throws error for invalid ages", () => {
@@ -113,18 +91,6 @@ describe("Custom Expressions", () => {
     it("returns undefined when no match found", () => {
       const result = customEngine.apply({ $findByAge: { $eq: 10 } }, children);
       expect(result).toBeUndefined();
-    });
-
-    it("works with evaluate form", () => {
-      const result = customEngine.evaluate({
-        $findByAge: [{ $eq: 2 }, children],
-      });
-      expect(result).toEqual({
-        name: "Zahra",
-        age: 2,
-        napDuration: 120,
-        favoriteToy: "blocks",
-      });
     });
 
     it("works with complex predicates", () => {
@@ -162,19 +128,6 @@ describe("Custom Expressions", () => {
         children[3],
       );
       expect(nomsaScore).toBe(0);
-    });
-
-    it("works with evaluate form", () => {
-      const ximenaScore = customEngine.evaluate({
-        $napTimeScore: {
-          name: "Ximena",
-          age: 4,
-          napDuration: 60,
-          favoriteToy: "dolls",
-        },
-      });
-      // Ximena: age 4 (>= 3), napDuration 60 -> (60 * 1.5) + 10 = 100
-      expect(ximenaScore).toBe(100);
     });
 
     it("handles missing napDuration gracefully", () => {
@@ -246,20 +199,13 @@ describe("Custom Expressions", () => {
       const customOnlyEngine = createExpressionEngine({
         includeBase: false,
         custom: {
-          $double: {
-            apply: (operand, inputData) => inputData * 2,
-            evaluate: (operand) => operand * 2,
-          },
-          $triple: {
-            apply: (operand, inputData) => inputData * 3,
-            evaluate: (operand) => operand * 3,
-          },
+          $double: (operand, inputData) => inputData * 2,
+          $triple: (operand, inputData) => inputData * 3,
         },
       });
 
       // Verify custom expressions work
       expect(customOnlyEngine.apply({ $double: null }, 5)).toBe(10);
-      expect(customOnlyEngine.evaluate({ $triple: 4 })).toBe(12);
 
       // Verify core expressions are NOT available
       expect(() =>
@@ -288,41 +234,20 @@ describe("Custom Expressions", () => {
         packs: [allExpressionsForTesting],
         custom: {
           // Override $add to do "monkey math" - concatenate numbers as strings
-          $add: {
-            apply: (operand, inputData) => {
-              return parseInt(String(inputData) + String(operand));
-            },
-            evaluate: (operand) => {
-              if (!Array.isArray(operand) || operand.length !== 2) {
-                throw new Error(
-                  "Monkey math $add requires array of exactly 2 elements",
-                );
-              }
-              return parseInt(String(operand[0]) + String(operand[1]));
-            },
+          $add: (operand, inputData) => {
+            return parseInt(String(inputData) + String(operand));
           },
         },
       });
 
-      // Test monkey math in apply form
+      // Test monkey math functionality
       expect(monkeyMathEngine.apply({ $add: 1 }, 1)).toBe(11);
       expect(monkeyMathEngine.apply({ $add: 25 }, 20)).toBe(2025);
       expect(monkeyMathEngine.apply({ $add: 3 }, 456)).toBe(4563);
 
-      // Test monkey math in evaluate form
-      expect(monkeyMathEngine.evaluate({ $add: [1, 1] })).toBe(11);
-      expect(monkeyMathEngine.evaluate({ $add: [20, 25] })).toBe(2025);
-      expect(monkeyMathEngine.evaluate({ $add: [456, 3] })).toBe(4563);
-
       // Verify other math expressions still work normally
       expect(monkeyMathEngine.apply({ $multiply: 3 }, 5)).toBe(15);
       expect(monkeyMathEngine.apply({ $subtract: 2 }, 10)).toBe(8);
-
-      // Test in complex expressions
-      const result = monkeyMathEngine.evaluate({
-        $multiply: [{ $add: [1, 2] }, 3],
-      });
-      expect(result).toBe(36); // (1+2=12) * 3 = 36 in monkey math
     });
 
     it("demonstrates function override precedence", () => {
@@ -336,10 +261,7 @@ describe("Custom Expressions", () => {
       const overrideEngine = createExpressionEngine({
         packs: [allExpressionsForTesting],
         custom: {
-          $add: {
-            apply: (operand, inputData) => inputData - operand, // Subtract instead!
-            evaluate: (operand) => operand[0] - operand[1],
-          },
+          $add: (operand, inputData) => inputData - operand, // Subtract instead!
         },
       });
       expect(overrideEngine.apply({ $add: 5 }, 10)).toBe(5); // 10 - 5 = 5
@@ -354,21 +276,14 @@ describe("Custom Expressions", () => {
         packs: [allExpressionsForTesting],
         custom: {
           // Override built-in $count to count in "daycare style" (add 1 for teacher)
-          $count: {
-            apply: (operand) => operand.length + 1,
-            evaluate: (operand) => operand.length + 1,
-          },
+          $count: (operand) => operand.length + 1,
           // Add new custom expression
-          $ageInMonths: {
-            apply: (_, inputData) => inputData * 12,
-            evaluate: (operand) => operand * 12,
-          },
+          $ageInMonths: (_, inputData) => inputData * 12,
         },
       });
 
       // Test the override
       expect(hybridEngine.apply({ $count: children }, null)).toBe(5);
-      expect(hybridEngine.evaluate({ $count: [1, 2, 3] })).toBe(4);
 
       // Test the custom expression still works
       expect(hybridEngine.apply({ $ageInMonths: null }, 3)).toBe(36);

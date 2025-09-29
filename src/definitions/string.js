@@ -10,21 +10,20 @@
  * Creates a string transformation expression.
  *
  * @param {function(string): any} transformFn - Function that transforms the string
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createStringTransformExpression = (transformFn) => ({
-  apply: (operand, inputData) => transformFn(inputData),
-  evaluate: (operand, { evaluate }) => transformFn(evaluate(operand)),
-});
+const createStringTransformExpression = (transformFn) => (operand, inputData) =>
+  transformFn(inputData);
 
 /**
  * Creates a string operation expression with parameters.
  *
  * @param {function(string, ...any): any} operationFn - Function that operates on string with params
- * @returns {object} Expression object with apply and evaluate methods
+ * @returns {object} Expression object with apply method
  */
-const createStringOperationExpression = (operationFn) => ({
-  apply: (operand, inputData, { apply }) => {
+const createStringOperationExpression =
+  (operationFn) =>
+  (operand, inputData, { apply }) => {
     if (Array.isArray(operand)) {
       const [param, ...rest] = operand;
       return operationFn(
@@ -34,12 +33,7 @@ const createStringOperationExpression = (operationFn) => ({
       );
     }
     return operationFn(inputData, apply(operand, inputData));
-  },
-  evaluate: (operand, { evaluate }) => {
-    const [str, ...params] = evaluate(operand);
-    return operationFn(str, ...params);
-  },
-});
+  };
 
 const $lowercase = createStringTransformExpression((str) => str.toLowerCase());
 

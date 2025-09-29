@@ -10,13 +10,7 @@
 
 // Import aggregative expressions
 import { $groupBy, $first, $last } from "../definitions/array.js";
-import {
-  $count,
-  $max,
-  $mean,
-  $min,
-  $sum,
-} from "../definitions/math.js";
+import { $count, $max, $mean, $min, $sum } from "../definitions/math.js";
 
 // Export as grouped object (alphabetized)
 export const aggregation = {

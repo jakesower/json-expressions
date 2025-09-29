@@ -1,10 +1,8 @@
 # JSON Expressions Reference
 
-This document provides comprehensive documentation for all expressions available in the JSON Expressions library. All examples show **apply mode** - expressions that operate on input data.
+This document provides comprehensive documentation for all expressions available in the JSON Expressions library. All examples show expressions operating on input data.
 
 > **Looking for pack information?** See the **[Pack Reference](packs.md)** to understand which expressions are available in each pack.
->
-> **Need dual-mode support?** For advanced scenarios requiring both apply and evaluate modes, see the **[Evaluate Method](evaluate-method.md)** and **[Dual-Mode Expressions](dual-mode-expressions.md)** guides.
 
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most languages do not distinguish between the two. Therefore, `undefined` and `null` are considered to be **equal** throughout the library. Use `$exists` if you wish to determine if a key in an object is undefined.
 
@@ -533,7 +531,7 @@ apply(
 
 ## $identity
 
-Returns input data unchanged in apply mode, or evaluates/returns the operand in evaluate mode. This is useful as an identity function in pipelines or when you need to pass through values. `$identity` will evaluate nested expressions except for literals, which will be preserved.
+Returns input data unchanged. This is useful as an identity function in pipelines or when you need to pass through values.
 
 ```javascript
 // Return child data unchanged (identity function)
@@ -541,7 +539,7 @@ const childData = { name: "Chen", age: 4 };
 apply({ $identity: null }, childData);
 // Returns: { name: "Chen", age: 4 }
 
-// Operand is ignored in apply mode (the convention is to use null here)
+// Operand is ignored (the convention is to use null here)
 apply({ $identity: "ignored" }, "hello");
 // Returns: "hello"
 

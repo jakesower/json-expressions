@@ -11,7 +11,7 @@ export interface Expression {
 }
 
 /**
- * Expression engine for evaluating JSON expressions
+ * Expression engine for applying JSON expressions to input data
  */
 export interface ExpressionEngine {
 	/**
@@ -21,19 +21,12 @@ export interface ExpressionEngine {
 	 * @returns The result of the expression
 	 */
 	apply(expression: Expression, inputData: unknown): unknown;
-	
-	/**
-	 * Evaluate an expression without input data (for static expressions)
-	 * @param expression - The expression to evaluate
-	 * @returns The evaluated result
-	 */
-	evaluate(expression: Expression): unknown;
-	
+
 	/**
 	 * Array of available expression names
 	 */
 	expressionNames: string[];
-	
+
 	/**
 	 * Check if a value is an expression
 	 * @param value - The value to check
@@ -45,7 +38,7 @@ export interface ExpressionEngine {
 // === CORE EXPRESSIONS ===
 
 export interface GetExpression {
-	$get: string | { object: unknown; path: string };
+	$get: string;
 }
 
 export interface IdentityExpression {
@@ -58,11 +51,11 @@ export interface LiteralExpression {
 
 
 export interface IsPresentExpression {
-	$isPresent: unknown | boolean;
+	$isPresent: boolean;
 }
 
 export interface IsEmptyExpression {
-	$isEmpty: unknown | boolean;
+	$isEmpty: boolean;
 }
 
 export interface ExistsExpression {
@@ -75,19 +68,19 @@ export interface DebugExpression {
 }
 
 export interface PipeExpression {
-	$pipe: Expression[] | { expressions: Expression[]; inputData: unknown };
+	$pipe: Expression[];
 }
 
 export interface MatchesExpression {
-	$matches: { [path: string]: Expression } | { data: unknown; conditions: { [path: string]: Expression } };
+	$matches: { [path: string]: Expression };
 }
 
 export interface SelectExpression {
-	$select: string[] | { [newKey: string]: Expression } | { object: unknown; selection: string[] | { [newKey: string]: Expression } };
+	$select: { [newKey: string]: Expression };
 }
 
 export interface SortExpression {
-	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | { array: unknown[]; by: string | Expression; desc?: boolean };
+	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }>;
 }
 
 export interface MergeExpression {
@@ -95,31 +88,31 @@ export interface MergeExpression {
 }
 
 export interface PickExpression {
-	$pick: string[] | { object: unknown; properties: string[] };
+	$pick: string[];
 }
 
 export interface OmitExpression {
-	$omit: string[] | { object: unknown; properties: string[] };
+	$omit: string[];
 }
 
 export interface KeysExpression {
-	$keys: null | [unknown];
+	$keys: null;
 }
 
 export interface ValuesExpression {
-	$values: null | [unknown];
+	$values: null;
 }
 
 export interface PairsExpression {
-	$pairs: null | [unknown];
+	$pairs: null;
 }
 
 export interface FromPairsExpression {
-	$fromPairs: null | [unknown[]];
+	$fromPairs: null;
 }
 
 export interface PluckExpression {
-	$pluck: string | Expression | { array: unknown[]; property: string | Expression };
+	$pluck: string | Expression;
 }
 
 export interface DefaultExpression {
@@ -129,54 +122,54 @@ export interface DefaultExpression {
 
 
 export interface UniqueExpression {
-	$unique: null | [unknown[]];
+	$unique: null;
 }
 
 export interface FlattenExpression {
-	$flatten: null | { depth?: number } | unknown[] | { array: unknown[]; depth?: number };
+	$flatten: null | { depth?: number };
 }
 
 export interface GroupByExpression {
-	$groupBy: string | Expression | { array: unknown[]; groupBy: string | Expression };
+	$groupBy: string | Expression;
 }
 
 
 // === COMPARATIVE EXPRESSIONS ===
 
 export interface EqualExpression {
-	$eq: unknown | { left: unknown; right: unknown };
+	$eq: unknown;
 }
 
 export interface NotEqualExpression {
-	$ne: unknown | { left: unknown; right: unknown };
+	$ne: unknown;
 }
 
 export interface GreaterThanExpression {
-	$gt: number | { left: number; right: number };
+	$gt: number;
 }
 
 export interface GreaterThanOrEqualExpression {
-	$gte: number | { left: number; right: number };
+	$gte: number;
 }
 
 export interface LessThanExpression {
-	$lt: number | { left: number; right: number };
+	$lt: number;
 }
 
 export interface LessThanOrEqualExpression {
-	$lte: number | { left: number; right: number };
+	$lte: number;
 }
 
 export interface InExpression {
-	$in: { array: unknown[]; value: unknown };
+	$in: unknown[];
 }
 
 export interface NotInExpression {
-	$nin: { array: unknown[]; value: unknown };
+	$nin: unknown[];
 }
 
 export interface MatchesRegexExpression {
-	$matchesRegex: string | { pattern: string; text: string };
+	$matchesRegex: string;
 }
 
 
@@ -250,65 +243,65 @@ export interface MeanExpression {
 // === ITERATIVE EXPRESSIONS ===
 
 export interface FilterExpression {
-	$filter: Expression | { expression: Expression; array: unknown[] };
+	$filter: Expression;
 }
 
 export interface FilterByExpression {
-	$filterBy: { [path: string]: Expression } | { array: unknown[]; matcher: { [path: string]: Expression } };
+	$filterBy: { [path: string]: Expression };
 }
 
 export interface MapExpression {
-	$map: Expression | { expression: Expression; array: unknown[] };
+	$map: Expression;
 }
 
 export interface FlatMapExpression {
-	$flatMap: Expression | { expression: Expression; array: unknown[] };
+	$flatMap: Expression;
 }
 
 export interface FindExpression {
-	$find: Expression | { expression: Expression; array: unknown[] };
+	$find: Expression;
 }
 
 export interface AllExpression {
-	$all: Expression | { expression: Expression; array: unknown[] };
+	$all: Expression;
 }
 
 export interface AnyExpression {
-	$any: Expression | { expression: Expression; array: unknown[] };
+	$any: Expression;
 }
 
 export interface ConcatExpression {
-	$concat: unknown[] | [unknown[], unknown[]];
+	$concat: unknown[];
 }
 
 export interface JoinExpression {
-	$join: string | { separator: string; array: unknown[] };
+	$join: string;
 }
 
 export interface ReverseExpression {
-	$reverse: {} | unknown[];
+	$reverse: null;
 }
 
 // === MATH EXPRESSIONS ===
 
 export interface AddExpression {
-	$add: number | [number, number];
+	$add: number[];
 }
 
 export interface SubtractExpression {
-	$subtract: number | [number, number];
+	$subtract: [number, number];
 }
 
 export interface MultiplyExpression {
-	$multiply: number | [number, number];
+	$multiply: number[];
 }
 
 export interface DivideExpression {
-	$divide: number | [number, number];
+	$divide: [number, number];
 }
 
 export interface ModuloExpression {
-	$modulo: number | [number, number];
+	$modulo: [number, number];
 }
 
 export interface CeilExpression {
@@ -397,24 +390,25 @@ export type AnyExpression =
 // === MAIN EXPORTS ===
 
 /**
+ * Context object passed to custom expressions
+ */
+export interface ExpressionContext {
+	/** Apply an expression to input data */
+	apply: (expr: Expression, data: unknown) => unknown;
+	/** Check if a value is an expression */
+	isExpression: (value: unknown) => boolean;
+	/** Check if a value is a wrapped literal */
+	isWrappedLiteral: (value: unknown) => boolean;
+}
+
+/**
  * Configuration object for creating an expression engine
  */
 export interface ExpressionEngineConfig {
 	/** Array of expression pack objects to include */
 	packs?: object[];
 	/** Custom expression definitions */
-	custom?: { [k: string]: {
-		apply: (operand: unknown, inputData: unknown, context?: { 
-			apply: (expr: Expression, data: unknown) => unknown;
-			evaluate: (expr: Expression) => unknown;
-			isExpression: (value: unknown) => boolean;
-		}) => unknown;
-		evaluate: (operand: unknown, context?: {
-			apply: (expr: Expression, data: unknown) => unknown;
-			evaluate: (expr: Expression) => unknown;
-			isExpression: (value: unknown) => boolean;
-		}) => unknown;
-	} };
+	custom?: { [k: string]: (operand: unknown, inputData: unknown, context: ExpressionContext) => unknown };
 	/** Whether to include base expressions (default: true) */
 	includeBase?: boolean;
 }

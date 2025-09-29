@@ -173,36 +173,6 @@ engine.apply(
 // Returns: [{ name: "Zoë", age: 6, active: true }]
 ```
 
-## Advanced: Evaluate Method
-
-The expression engine focuses on **apply mode** - expressions that operate on input data. This covers 90%+ of use cases.
-
-For advanced scenarios requiring **static calculations** without input data, the `evaluate` method is available:
-
-```javascript
-import { createExpressionEngine } from "json-expressions";
-
-const engine = createExpressionEngine();
-
-// Primary usage: apply expressions to input data
-engine.apply({ $gt: 18 }, 25); // true (apply mode)
-
-// Advanced: static calculations (no input data needed)
-engine.evaluate({ $add: [10, 20, 30] }); // 60
-engine.evaluate({ $gt: [25, 18] }); // true (evaluate mode)
-```
-
-**When to use evaluate:**
-
-- Template rendering with static data
-- Complex expressions mixing static and dynamic data
-- Compilation scenarios, like turning an expression into SQL
-
-**Stick with apply for:**
-
-- Processing user input, API responses, or database records
-- Building filters, validators, or transformations
-- Working with dynamic data (which is most use cases)
 
 ## Available Expression Packs
 
@@ -234,8 +204,6 @@ const engine = createExpressionEngine({
 - **[Pack Reference](docs/packs.md)** - Complete guide to all expression packs
 - **[Expression Reference](docs/expressions.md)** - Complete list of available expressions
 - **[Custom Expressions](docs/custom-expressions.md)** - Creating your own expressions
-- **[Evaluate Method](docs/evaluate-method.md)** - Advanced static calculations and template expressions
-- **[Dual-Mode Custom Expressions](docs/dual-mode-custom-expressions.md)** - Custom expressions with both apply and evaluate support
 
 ## Performance
 
@@ -244,7 +212,7 @@ JSON Expressions is **optimized for flexibility over raw execution speed**. Expe
 - **Development speed gains** from eliminating deployment cycles
 - **Good performance** for business rules, data transformations, and configuration logic
 - **Execution overhead** compared to native JavaScript functions
-- **Consider caching** for frequently-evaluated complex expressions
+- **Consider caching** for frequently-used complex expressions
 
 Benchmarks show ~3M ops/sec for simple expressions and ~200k ops/sec for complex operations. Run `npm run bench` for detailed performance metrics.
 

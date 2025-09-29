@@ -5,10 +5,10 @@ import { allExpressionsForTesting } from "../../src/packs/all.js";
 const testEngine = createExpressionEngine({
   packs: [allExpressionsForTesting],
 });
-const { apply, evaluate } = testEngine;
+const { apply } = testEngine;
 
 describe("$case", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("matches with boolean predicate", () => {
       expect(
         apply(
@@ -169,84 +169,10 @@ describe("$case", () => {
       ).toEqual("Very small");
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates with boolean predicates", () => {
-      expect(
-        evaluate({
-          $case: [
-            {
-              value: 7,
-              cases: [
-                { when: { $gt: 5 }, then: "Greater than 5" }, // Boolean predicate: is 7 > 5?
-                { when: { $lt: 5 }, then: "Less than 5" }, // Boolean predicate: is 7 < 5?
-              ],
-              default: "Equal to 5",
-            },
-          ],
-        }),
-      ).toEqual("Greater than 5");
-    });
-
-    it("handles literal values in evaluate form", () => {
-      expect(
-        evaluate({
-          $case: [
-            {
-              value: 5,
-              cases: [
-                { when: "not matching", then: "Result" },
-                { when: 5, then: "Found five" },
-              ],
-              default: "Default",
-            },
-          ],
-        }),
-      ).toEqual("Found five");
-    });
-
-    it("supports unified behavior - mixed literal and expression cases", () => {
-      expect(
-        apply(
-          {
-            $case: {
-              value: 4,
-              cases: [
-                { when: "active", then: "Status match" }, // Literal comparison
-                { when: { $gt: 5 }, then: "Greater than 5" }, // Expression predicate
-                { when: 4, then: "Exactly four" }, // Literal comparison
-                { when: { $lt: 3 }, then: "Less than 3" }, // Expression predicate
-              ],
-              default: "No match",
-            },
-          },
-          {},
-        ),
-      ).toEqual("Exactly four");
-    });
-
-    it("expression mode takes precedence over literal for expression-like objects", () => {
-      expect(
-        apply(
-          {
-            $case: {
-              value: 10,
-              cases: [
-                { when: { $gt: 5 }, then: "Expression matched" }, // This should match as expression
-                { when: 10, then: "Literal matched" }, // This would match if reached
-              ],
-              default: "No match",
-            },
-          },
-          {},
-        ),
-      ).toEqual("Expression matched");
-    });
-  });
 });
 
 describe("$case - literal mode (unified behavior)", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("matches first case", () => {
       expect(
         apply(
@@ -560,85 +486,10 @@ describe("$case - literal mode (unified behavior)", () => {
       ).toEqual("Child assignment not found");
     });
   });
-
-  describe("evaluate form", () => {
-    it("evaluates simple case matching", () => {
-      const result = evaluate({
-        $case: [
-          {
-            value: "playing",
-            cases: [
-              { when: "playing", then: "Child is playing" },
-              { when: "napping", then: "Child is napping" },
-            ],
-            default: "Unknown",
-          },
-          "playing",
-        ],
-      });
-      expect(result).toEqual("Child is playing");
-    });
-
-    it("evaluates deep equality with teacher objects in evaluate form", () => {
-      const result = evaluate({
-        $case: [
-          {
-            value: {
-              name: "Kenji Tanaka",
-              room: "rainbow",
-              certification: "early childhood",
-            },
-            cases: [
-              {
-                when: {
-                  name: "Kenji Tanaka",
-                  room: "rainbow",
-                  certification: "early childhood",
-                },
-                then: "Rainbow room teacher",
-              },
-              {
-                when: {
-                  name: "Kenji Tanaka",
-                  room: "sunshine",
-                  certification: "early childhood",
-                },
-                then: "Sunshine room teacher",
-              },
-            ],
-            default: "Teacher not assigned",
-          },
-        ],
-      });
-      expect(result).toEqual("Rainbow room teacher");
-    });
-
-    it("evaluates deep equality with activity schedules in evaluate form", () => {
-      const result = evaluate({
-        $case: [
-          {
-            value: ["circle time", "outdoor play", "snack", "art"],
-            cases: [
-              {
-                when: ["circle time", "outdoor play", "snack", "art"],
-                then: "Morning schedule",
-              },
-              {
-                when: ["story time", "quiet play", "lunch"],
-                then: "Afternoon schedule",
-              },
-            ],
-            default: "Schedule not found",
-          },
-        ],
-      });
-      expect(result).toEqual("Morning schedule");
-    });
-  });
 });
 
 describe("$if", () => {
-  describe("apply form", () => {
+  describe("basic functionality", () => {
     it("handles a true value", () => {
       expect(
         apply(
@@ -703,30 +554,6 @@ describe("$if", () => {
       expect(() => {
         apply({ $if: { if: "Chicken", then: "yep", else: "nope" } }, "Sakura");
       }).toThrowError();
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("evaluates with boolean condition", () => {
-      expect(evaluate({ $if: { if: true, then: "yes", else: "no" } })).toEqual(
-        "yes",
-      );
-      expect(evaluate({ $if: { if: false, then: "yes", else: "no" } })).toEqual(
-        "no",
-      );
-    });
-
-    it("evaluates with expression condition", () => {
-      expect(
-        evaluate({
-          $if: { if: { $eq: [5, 5] }, then: "equal", else: "not equal" },
-        }),
-      ).toEqual("equal");
-      expect(
-        evaluate({
-          $if: { if: { $eq: [5, 3] }, then: "equal", else: "not equal" },
-        }),
-      ).toEqual("not equal");
     });
   });
 });
@@ -871,23 +698,6 @@ describe("conditional expressions - edge cases", () => {
       ).toEqual("Zero");
     });
 
-    it("handles circular references in evaluation (evaluate form)", () => {
-      expect(
-        evaluate({
-          $case: [
-            {
-              value: 5,
-              cases: [
-                { when: { $gt: 3 }, then: "Greater than 3" },
-                { when: { $lt: 10 }, then: "Less than 10" },
-              ],
-              default: "In range",
-            },
-          ],
-        }),
-      ).toEqual("Greater than 3");
-    });
-
     it("handles deeply nested conditional expressions", () => {
       expect(
         apply(
@@ -942,16 +752,6 @@ describe("conditional expressions - edge cases", () => {
     it("throws with non-boolean condition that's not an expression", () => {
       expect(() =>
         apply({ $if: { if: "not boolean", then: "yes", else: "no" } }, {}),
-      ).toThrow(
-        "$if.if must be a boolean or an expression that resolves to one",
-      );
-    });
-
-    it("throws with non-boolean condition in evaluate form", () => {
-      expect(() =>
-        evaluate({
-          $if: { if: { $add: [1, 2] }, then: "yes", else: "no" },
-        }),
       ).toThrow(
         "$if.if must be a boolean or an expression that resolves to one",
       );
