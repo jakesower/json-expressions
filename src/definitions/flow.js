@@ -80,7 +80,7 @@ const $sort = {
       throw new Error("$sort can only be applied to arrays");
     }
 
-    const sortCriteria =
+    const by =
       typeof operand === "string"
         ? [{ by: operand }]
         : Array.isArray(operand)
@@ -88,7 +88,7 @@ const $sort = {
           : [operand];
 
     return Array.from(inputData).sort((a, b) => {
-      for (const sortCriterion of sortCriteria) {
+      for (const sortCriterion of by) {
         if (typeof sortCriterion !== "object" || !("by" in sortCriterion)) {
           throw new Error(
             "$sort operand must be string, object with 'by' property, or array of sort criteria",
@@ -115,17 +115,18 @@ const $sort = {
   evaluate: (operand, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$sort evaluate form requires object operand: { array, sortCriteria }",
+        "$sort evaluate form requires object operand: { array, by, desc? }",
       );
     }
 
-    const { array, sortCriteria } = operand;
-    if (array === undefined || sortCriteria === undefined) {
+    const { array, by, desc } = operand;
+    if (array === undefined || by === undefined) {
       throw new Error(
-        "$sort evaluate form requires 'array' and 'sortCriteria' properties",
+        "$sort evaluate form requires 'array' and 'by' properties",
       );
     }
 
+    const sortCriteria = desc !== undefined ? { by, desc } : by;
     return apply({ $sort: sortCriteria }, array);
   },
 };

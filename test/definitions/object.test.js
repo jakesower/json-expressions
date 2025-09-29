@@ -13,13 +13,13 @@ const children = [
 
 describe("$merge", () => {
   describe("apply form", () => {
-    it("merges multiple objects", () => {
+    it("merges single object", () => {
       const baseData = { name: "Chen", age: 5 };
 
       expect(
         apply(
           {
-            $merge: [baseData, { status: "active", lastSeen: "today" }],
+            $merge: { status: "active", lastSeen: "today" },
           },
           baseData,
         ),
@@ -31,13 +31,13 @@ describe("$merge", () => {
       });
     });
 
-    it("later objects override earlier ones", () => {
+    it("merged object overrides input data properties", () => {
       const baseData = { name: "Chen", age: 5, status: "inactive" };
 
       expect(
         apply(
           {
-            $merge: [baseData, { status: "active", age: 6 }],
+            $merge: { status: "active", age: 6 },
           },
           baseData,
         ),
@@ -48,7 +48,7 @@ describe("$merge", () => {
       });
     });
 
-    it("handles expressions in merge array", () => {
+    it("handles expressions in merge object", () => {
       const userData = {
         profile: { name: "Fatima" },
         meta: { created: "2024-01-01" },
@@ -57,24 +57,26 @@ describe("$merge", () => {
       expect(
         apply(
           {
-            $merge: [
-              { $get: "profile" },
-              { $get: "meta" },
-              { updated: "2024-01-02" },
-            ],
+            $merge: {
+              name: { $get: "profile.name" },
+              created: { $get: "meta.created" },
+              updated: "2024-01-02",
+            },
           },
           userData,
         ),
       ).toEqual({
+        profile: { name: "Fatima" },
+        meta: { created: "2024-01-01" },
         name: "Fatima",
         created: "2024-01-01",
         updated: "2024-01-02",
       });
     });
 
-    it("throws error for non-array operand", () => {
-      expect(() => apply({ $merge: "not an array" }, {})).toThrow(
-        "$merge operand must be an array of objects to merge",
+    it("throws error for non-object operand", () => {
+      expect(() => apply({ $merge: "not an object" }, {})).toThrow(
+        "$merge operand must resolve to an object",
       );
     });
   });
@@ -371,7 +373,14 @@ describe("Integration with other expressions", () => {
     const result = apply(
       {
         $pipe: [
-          { $merge: [{ $get: "profile" }, { $get: "preferences" }] },
+          {
+            $select: {
+              name: { $get: "profile.name" },
+              age: { $get: "profile.age" },
+              snack: { $get: "preferences.snack" },
+              activity: { $get: "preferences.activity" },
+            },
+          },
           { $omit: ["snack"] },
         ],
       },
@@ -386,7 +395,7 @@ describe("Integration with other expressions", () => {
   });
 
   it("roundtrip: object to pairs and back", () => {
-    const original = { classroom: "Rainbow", teacher: "Ms. Chen", count: 15 };
+    const original = { classroom: "Rainbow", teacher: "Mr. O'Brien", count: 15 };
 
     const result = apply(
       {

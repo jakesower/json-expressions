@@ -6,17 +6,17 @@ This document provides comprehensive documentation for all expressions available
 >
 > **Need dual-mode support?** For advanced scenarios requiring both apply and evaluate modes, see the **[Evaluate Method](evaluate-method.md)** and **[Dual-Mode Expressions](dual-mode-expressions.md)** guides.
 
-**Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most do not distinguish between the two. Use `$exists` if you wish to determine if the key of an object is undefined.
+**Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most languages do not distinguish between the two. Therefore, `undefined` and `null` are considered to be **equal** throughout the library. Use `$exists` if you wish to determine if a key in an object is undefined.
 
 ```javascript
-const child = { name: "Zoë", petName: null };
+const child = { name: "Zoë", age: null };
 
 engine.apply({ $eq: [undefined, null] }, {}); // returns true
-engine.apply({ $eq: null }, child.age); // returns true
+engine.apply({ $eq: null }, child.petName); // returns true
 engine.apply({ $eq: [{ $get: "petName" }, { $get: "age" }] }, child); // returns true
 
-engine.apply({ $exists: "petName" }, child); // returns true
-engine.apply({ $exists: "age" }, child); // returns false
+engine.apply({ $exists: "age" }, child); // returns true
+engine.apply({ $exists: "petName" }, child); // returns false
 ```
 
 ## $abs
@@ -24,9 +24,20 @@ engine.apply({ $exists: "age" }, child); // returns false
 Returns the absolute value of a number.
 
 ```javascript
-// Test if child's temperature deviation is concerning
 apply({ $abs: null }, -2.5);
 // Returns: 2.5
+```
+
+## $ceil
+
+Returns the smallest integer greater than or equal to the input number (rounds up).
+
+```javascript
+apply({ $ceil: null }, 4.1);
+// Returns: 5
+
+apply({ $ceil: null }, -4.9);
+// Returns: -4
 ```
 
 ## $add
@@ -45,7 +56,7 @@ apply(
 );
 // Returns: 13 (10 + 3)
 
-// Mixed form: expression + literal
+// Mixed form: expression + literal (expression + expression is OK too)
 apply({ $add: [{ $get: "age" }, 12] }, { age: 4 });
 // Returns: 16 (4 + 12)
 ```
@@ -130,8 +141,6 @@ The `$case` expression automatically determines how to handle each `when` clause
 - **Boolean predicate expressions** (`$gt`, `$eq`, `$and`, etc.) → Applied as predicates with the case value as input
 - **All other values** → Evaluated and compared literally using deep equality
 
-**Apply Form - Mixed literal and predicate conditions:**
-
 ```javascript
 // Flexible activity assignment using both literal and predicate matching
 const child = { age: 4, status: "active" };
@@ -152,8 +161,6 @@ apply(
 );
 // Returns: "Pre-writing skills and group games"
 ```
-
-**Apply Form - Status-based with mixed conditions:**
 
 ```javascript
 // Mix literal status checks with computed conditions
@@ -217,7 +224,7 @@ apply({ $count: null }, children);
 
 ## $debug
 
-Logs a value to console and returns it unchanged (useful for debugging pipelines).
+Logs a value to console and returns it unchanged (useful for debugging pipelines). This is a good expression for custom implementations.
 
 ```javascript
 // Debug intermediate value in pipeline
@@ -236,7 +243,7 @@ apply(
 
 ## $default
 
-Returns a default value if the expression result is null or undefined.
+Returns a default value if the expression result is null (or undefined).
 
 ```javascript
 // Provide default pickup time if not specified
@@ -289,10 +296,6 @@ apply(
   { status: "active", expectedStatus: "active" },
 );
 // Returns: true ("active" === "active")
-
-// Mixed form: expression === literal
-apply({ $eq: [{ $get: "activity" }, "nap"] }, { activity: "nap" });
-// Returns: true ("nap" === "nap")
 ```
 
 ## $exists
@@ -337,10 +340,10 @@ Filters arrays by object property conditions (shorthand for $filter + $matches).
 const children = [
   { name: "Aria", age: 4, active: true },
   { name: "Kai", age: 5, active: true },
-  { name: "Zara", age: 3, active: false },
+  { name: "Zara", age: 5, active: false },
   { name: "Leo", age: 6, active: true },
 ];
-apply({ $filterBy: { age: { $gte: 5 }, active: { $eq: true } } }, children);
+apply({ $filterBy: { age: { $gte: 5 }, active: true } }, children);
 // Returns: [{ name: "Kai", age: 5, active: true }, { name: "Leo", age: 6, active: true }]
 ```
 
@@ -355,7 +358,7 @@ const children = [
   { name: "Kai", age: 5 },
   { name: "Zara", age: 6 },
 ];
-apply({ $find: { $pipe: [{ $get: "age" }, { $gte: 5 }] } }, children);
+apply({ $find: { $match: { age: { $gte: 5 } } } }, children);
 // Returns: { name: "Kai", age: 5 }
 ```
 
@@ -368,6 +371,18 @@ Returns the first item in an array.
 const lineup = ["Chen", "Fatima", "Diego", "Luna"];
 apply({ $first: null }, lineup);
 // Returns: "Chen"
+```
+
+## $floor
+
+Returns the largest integer less than or equal to the input number (rounds down).
+
+```javascript
+apply({ $floor: null }, 4.9);
+// Returns: 4
+
+apply({ $floor: null }, -4.1);
+// Returns: -5
 ```
 
 ## $fromPairs
@@ -421,14 +436,9 @@ apply({ $flatten: { depth: 2 } }, nestedBelongings);
 
 ## $get
 
-Retrieves a value from data using dot notation paths or array paths.
+Retrieves a value from data using dot notation paths or array paths. Returns `null` if the path does not exist. Combines well with `$default`.
 
 ```javascript
-// Get child's name with default
-const child = { info: { name: "Amara", age: 4 } };
-apply({ $get: { path: "info.name", default: "Unknown" } }, child);
-// Returns: "Amara"
-
 // Simple path access with dot notation
 apply({ $get: "info.age" }, child);
 // Returns: 4
@@ -531,7 +541,7 @@ const childData = { name: "Chen", age: 4 };
 apply({ $identity: null }, childData);
 // Returns: { name: "Chen", age: 4 }
 
-// Operand is ignored in apply mode
+// Operand is ignored in apply mode (the convention is to use null here)
 apply({ $identity: "ignored" }, "hello");
 // Returns: "hello"
 
@@ -639,8 +649,8 @@ Converts string to lowercase.
 
 ```javascript
 // Normalize child's name input
-apply({ $lowercase: null }, "AMARA");
-// Returns: "amara"
+apply({ $lowercase: null }, "Amara Rodriguez");
+// Returns: "amara holt"
 ```
 
 ## $lt
@@ -695,6 +705,14 @@ const children = [
 ];
 apply({ $map: { $get: "age" } }, children);
 // Returns: [4, 5, 3]
+
+// It's quite versatile about output structure
+apply({
+  $map: {
+    nombre: { $get: "name" },
+    ageInMonths: { $multiply: [{ $get: "age" }, 12] },
+  },
+});
 ```
 
 ## $matches
@@ -724,11 +742,32 @@ apply(
 
 ## $matchesRegex
 
-Tests if string matches a regular expression.
+Tests if string matches a regular expression with support for PCRE-style inline flags.
+
+**Supported flags:**
+
+- `i`: Case insensitive matching
+- `m`: Multiline mode (^ and $ match line boundaries)
+- `s`: Single-line mode (. matches newlines)
+
+**Flag syntax:**
+Use `(?flags)` at the beginning of your pattern to set flags.
 
 ```javascript
-// Validate phone number format
+// Basic pattern matching
 apply({ $matchesRegex: "^\\d{3}-\\d{3}-\\d{4}$" }, "555-123-4567");
+// Returns: true
+
+// Case insensitive matching
+apply({ $matchesRegex: "(?i)^hello" }, "HELLO world");
+// Returns: true
+
+// Multiple flags combined
+apply({ $matchesRegex: "(?ims)test.*end" }, "TEST\nSOMETHING\nEND");
+// Returns: true
+
+// Multiline flag - match line boundaries
+apply({ $matchesRegex: "(?m)^line" }, "first\nline two");
 // Returns: true
 ```
 
@@ -756,13 +795,13 @@ apply({ $mean: null }, napTimes);
 
 ## $merge
 
-Merges multiple objects into a single object.
+Merges an object into the input object, with the merge object properties overriding input object properties.
 
 ```javascript
-// Merge child info with additional data
-const baseInfo = { name: "Aria", age: 4 };
-apply({ $merge: [{ group: "Butterflies" }, { present: true }] }, baseInfo);
-// Returns: { name: "Aria", age: 4, group: "Butterflies", present: true }
+// Merge child info with updates
+const child = { name: "Aria", age: 4, group: "Butterflies" };
+apply({ $merge: { age: 5, present: true } }, child);
+// Returns: { name: "Aria", age: 5, group: "Butterflies", present: true }
 ```
 
 ## $min
@@ -820,7 +859,7 @@ apply({ $multiply: [{ $get: "hours" }, 8] }, { hours: 5 });
 
 ## $ne
 
-Tests inequality using deep comparison. JSON has no notion of `undefined`, which means that `undefined` and `null` will be treated as equal when using `$ne`. If you wish to distinguish between the two, use `$exists` instead.
+Tests inequality using deep comparison. JSON has no notion of `undefined`, which means that `undefined` and `null` will be treated as equal when using `$ne`.
 
 ```javascript
 // Single operand: compare input data
@@ -905,7 +944,7 @@ apply({ $pairs: null }, child);
 
 ## $pick
 
-Returns a new object containing only the specified properties.
+Returns a new object containing only the specified properties by name.
 
 ```javascript
 // Extract only essential child info
@@ -918,7 +957,17 @@ const child = {
 };
 apply({ $pick: ["name", "age", "group"] }, child);
 // Returns: { name: "Aria", age: 4, group: "Butterflies" }
+
+// Works with nested property paths
+const data = {
+  child: { profile: { name: "Luna", age: 3 } },
+  meta: { teacher: "Ms. Smith", room: "A" },
+};
+apply({ $pick: ["child.profile.name", "meta.teacher"] }, data);
+// Returns: { "child.profile.name": "Luna", "meta.teacher": "Ms. Smith" }
 ```
+
+**Note:** Use `$pick` to select properties by name. Use [`$select`](#select) to transform and rename properties.
 
 ## $pluck
 
@@ -937,7 +986,7 @@ apply({ $pluck: "name" }, children);
 
 ## $pipe
 
-Pipes data through multiple expressions in sequence (left-to-right).
+Pipes data through multiple expressions in sequence (left-to-right), starting with the input data then feeding the result of one expression to the next returning the result of the last expression.
 
 ```javascript
 // Process children data through multiple steps
@@ -994,25 +1043,14 @@ apply({ $prepend: ["Aria", "Kai"] }, regularChildren);
 // Returns: ["Aria", "Kai", "Chen", "Diego"]
 ```
 
-## $prop
-
-Retrieves a property from an object using a dynamic property name.
-
-```javascript
-// Get property using variable name
-const child = { name: "Amara", age: 4, group: "Butterflies" };
-apply({ $prop: "group" }, child);
-// Returns: "Butterflies"
-```
-
 ## $replace
 
 Replaces occurrences of a pattern in a string.
 
 ```javascript
 // Clean up child's name input
-apply({ $replace: ["\\s+", " "] }, "Amara   Chen");
-// Returns: "Amara Chen"
+apply({ $replace: ["\\s+", " "] }, "Amara   Rodriguez");
+// Returns: "Amara Rodriguez"
 ```
 
 ## $reverse
@@ -1039,7 +1077,7 @@ apply({ $skip: 2 }, lineup);
 
 ## $select
 
-Creates a new object by selecting and optionally transforming properties.
+Creates a new object by selecting and transforming properties with custom key names.
 
 ```javascript
 // Select and transform child data
@@ -1062,6 +1100,8 @@ apply(
 // Returns: { childName: "Aria", ageInMonths: 48, group: "Butterflies" }
 ```
 
+**Note:** To select properties by name without transformation, use [`$pick`](#pick) instead.
+
 ## $sort
 
 Sorts an array based on specified criteria.
@@ -1079,7 +1119,13 @@ apply({ $sort: { by: "age" } }, children);
 // Sort descending by name
 apply({ $sort: { by: "name", desc: true } }, children);
 // Returns: [{ name: "Zara", age: 3 }, { name: "Kai", age: 5 }, { name: "Aria", age: 4 }]
+
+// Sort by expression - calculated age in months
+apply({ $sort: { by: { $multiply: [{ $get: "age" }, 12] } } }, children);
+// Returns: [{ name: "Zara", age: 3 }, { name: "Aria", age: 4 }, { name: "Kai", age: 5 }]
 ```
+
+**Note:** The `by` field can be a property name (string) or an expression that computes the sort value.
 
 ## $split
 
@@ -1087,8 +1133,8 @@ Splits a string into an array using a separator.
 
 ```javascript
 // Split child's full name
-apply({ $split: " " }, "Amara Chen Rodriguez");
-// Returns: ["Amara", "Chen", "Rodriguez"]
+apply({ $split: " " }, "Amara Devika Rodriguez");
+// Returns: ["Amara", "Devika", "Rodriguez"]
 ```
 
 ## $sqrt
@@ -1160,8 +1206,8 @@ Removes whitespace from beginning and end of string.
 
 ```javascript
 // Clean up child name input
-apply({ $trim: null }, "  Amara Chen  ");
-// Returns: "Amara Chen"
+apply({ $trim: null }, "  Amara Rodriguez  ");
+// Returns: "Amara Rodriguez"
 ```
 
 ## $uppercase
@@ -1170,7 +1216,7 @@ Converts string to uppercase.
 
 ```javascript
 // Format child's name for name tag
-apply({ $uppercase: null }, "amara");
+apply({ $uppercase: null }, "Amara");
 // Returns: "AMARA"
 ```
 

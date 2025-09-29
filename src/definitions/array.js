@@ -153,31 +153,37 @@ const $filterBy = {
     });
   },
   evaluate: (operand, { apply, evaluate }) => {
-    if (!Array.isArray(operand) || operand.length !== 2) {
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
       throw new Error(
-        "$filterBy evaluate form requires array operand: [data, conditions]",
+        "$filterBy evaluate form requires object operand: { array, matcher }",
       );
     }
 
-    const [data, conditions] = operand;
-    const evaluatedData = evaluate(data);
-    const evaluatedConditions = evaluate(conditions);
+    const { array, matcher } = operand;
+    if (array === undefined || matcher === undefined) {
+      throw new Error(
+        "$filterBy evaluate form requires 'array' and 'matcher' properties",
+      );
+    }
 
-    if (!Array.isArray(evaluatedData)) {
-      throw new Error("$filterBy first argument must be an array");
+    const evaluatedArray = evaluate(array);
+    const evaluatedMatcher = evaluate(matcher);
+
+    if (!Array.isArray(evaluatedArray)) {
+      throw new Error("$filterBy array must be an array");
     }
 
     if (
-      !evaluatedConditions ||
-      typeof evaluatedConditions !== "object" ||
-      Array.isArray(evaluatedConditions)
+      !evaluatedMatcher ||
+      typeof evaluatedMatcher !== "object" ||
+      Array.isArray(evaluatedMatcher)
     ) {
       throw new Error(
-        "$filterBy conditions must be an object with property conditions",
+        "$filterBy matcher must be an object with property conditions",
       );
     }
 
-    return apply({ $filterBy: evaluatedConditions }, evaluatedData);
+    return apply({ $filterBy: evaluatedMatcher }, evaluatedArray);
   },
 };
 

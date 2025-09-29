@@ -82,107 +82,6 @@ describe("$get", () => {
 
 // $isDefined removed - replaced with semantic expressions $isPresent/$isEmpty/$exists
 
-describe("$prop", () => {
-  describe("apply form", () => {
-    it("gets simple property", () => {
-      expect(apply({ $prop: "name" }, { name: "Kenji", age: 25 })).toEqual(
-        "Kenji",
-      );
-    });
-
-    it("gets property using expression", () => {
-      expect(
-        apply({ $prop: { $literal: "age" } }, { name: "Yuki", age: 30 }),
-      ).toEqual(30);
-    });
-
-    it("returns undefined for missing property", () => {
-      expect(apply({ $prop: "missing" }, { name: "Sato" })).toBeUndefined();
-    });
-
-    it("returns undefined when accessing property on null", () => {
-      expect(apply({ $prop: "name" }, null)).toBeUndefined();
-    });
-
-    it("returns undefined when accessing property on undefined", () => {
-      expect(apply({ $prop: "name" }, undefined)).toBeUndefined();
-    });
-
-    it("works with numeric properties", () => {
-      expect(apply({ $prop: 0 }, ["first", "second"])).toEqual("first");
-      expect(apply({ $prop: "length" }, ["a", "b", "c"])).toEqual(3);
-    });
-
-    it("works with symbol properties", () => {
-      const sym = Symbol("test");
-      const obj = { [sym]: "symbol value" };
-      expect(apply({ $prop: { $literal: sym } }, obj)).toEqual("symbol value");
-    });
-  });
-
-  describe("evaluate form", () => {
-    it("gets property from object", () => {
-      expect(
-        evaluate({
-          $prop: { object: { name: "Chen", age: 28 }, property: "name" },
-        }),
-      ).toEqual("Chen");
-    });
-
-    it("gets numeric property", () => {
-      expect(
-        evaluate({ $prop: { object: ["zero", "one", "two"], property: 1 } }),
-      ).toEqual("one");
-    });
-
-    it("returns undefined for missing property", () => {
-      expect(
-        evaluate({ $prop: { object: { age: 25 }, property: "name" } }),
-      ).toBeUndefined();
-    });
-
-    it("returns undefined when object is null", () => {
-      expect(
-        evaluate({ $prop: { object: null, property: "name" } }),
-      ).toBeUndefined();
-    });
-
-    it("returns undefined when object is undefined", () => {
-      expect(
-        evaluate({
-          $prop: { object: { $literal: undefined }, property: "name" },
-        }),
-      ).toBeUndefined();
-    });
-
-    it("throws with non-array operand", () => {
-      expect(() => {
-        evaluate({ $prop: "name" });
-      }).toThrowError(
-        "$prop evaluate form requires object operand: { object, property }",
-      );
-    });
-
-    it("throws with incomplete object", () => {
-      expect(() => {
-        evaluate({ $prop: { object: { someKey: "value" } } });
-      }).toThrowError(
-        "$prop evaluate form requires 'object' and 'property' properties",
-      );
-    });
-
-    it("works with computed property names", () => {
-      expect(
-        evaluate({
-          $prop: {
-            object: { a: "value-a", b: "value-b" },
-            property: { $literal: "a" },
-          },
-        }),
-      ).toEqual("value-a");
-    });
-  });
-});
 
 describe("$select", () => {
   const children = [
@@ -192,18 +91,6 @@ describe("$select", () => {
   ];
 
   describe("apply form", () => {
-    it("selects properties using array form", () => {
-      expect(apply({ $select: ["name", "age"] }, children[0])).toEqual({
-        name: "Chen",
-        age: 5,
-      });
-    });
-
-    it("skips null properties in array form", () => {
-      expect(apply({ $select: ["name", "missing"] }, children[0])).toEqual({
-        name: "Chen",
-      });
-    });
 
     it("renames and transforms properties using object form", () => {
       expect(
@@ -224,24 +111,10 @@ describe("$select", () => {
       });
     });
 
-    it("works with nested property paths", () => {
-      const data = {
-        user: { profile: { name: "Fatima", age: 28 } },
-        meta: { created: "2024-01-01" },
-      };
-
-      expect(
-        apply({ $select: ["user.profile.name", "meta.created"] }, data),
-      ).toEqual({
-        "user.profile.name": "Fatima",
-        "meta.created": "2024-01-01",
-      });
-    });
-
     it("combines well with map for array projection", () => {
       const result = apply(
         {
-          $map: { $select: ["name", "status"] },
+          $map: { $select: { name: { $get: "name" }, status: { $get: "status" } } },
         },
         children,
       );
@@ -255,7 +128,7 @@ describe("$select", () => {
 
     it("throws error for invalid operand", () => {
       expect(() => apply({ $select: "not valid" }, {})).toThrow(
-        "$select operand must be array of paths or object with key mappings",
+        "$select operand must be an object with key mappings",
       );
     });
   });
@@ -266,7 +139,7 @@ describe("$select", () => {
 
       expect(
         evaluate({
-          $select: { object: child, selection: ["name", "age"] },
+          $select: { object: child, selection: { name: { $get: "name" }, age: { $get: "age" } } },
         }),
       ).toEqual({
         name: "Kenji",
@@ -279,7 +152,7 @@ describe("$select", () => {
 
       expect(
         evaluate({
-          $select: { object: child, selection: ["name", "age"] },
+          $select: { object: child, selection: { name: { $get: "name" }, age: { $get: "age" } } },
         }),
       ).toEqual({
         name: "Zara",
@@ -449,134 +322,14 @@ describe("access expressions - edge cases", () => {
     });
   });
 
-  describe("$prop edge cases", () => {
-    it("handles computed property names with expressions", () => {
-      const data = { name: "Noor", age: 5, propertyName: "age" };
-      expect(apply({ $prop: { $get: "propertyName" } }, data)).toBe(5);
-    });
-
-    it("handles falsy property values", () => {
-      const data = { zero: 0, empty: "", false: false, null: null };
-      expect(apply({ $prop: "zero" }, data)).toBe(0);
-      expect(apply({ $prop: "empty" }, data)).toBe("");
-      expect(apply({ $prop: "false" }, data)).toBe(false);
-      expect(apply({ $prop: "null" }, data)).toBe(null);
-    });
-
-    it("works with non-string property keys", () => {
-      const data = {
-        0: "first",
-        1: "second",
-        true: "boolean key",
-        123: "numeric key",
-      };
-      expect(apply({ $prop: 0 }, data)).toBe("first");
-      expect(apply({ $prop: true }, data)).toBe("boolean key");
-      expect(apply({ $prop: 123 }, data)).toBe("numeric key");
-    });
-
-    it("handles property access on arrays", () => {
-      const arr = ["a", "b", "c"];
-      expect(apply({ $prop: 0 }, arr)).toBe("a");
-      expect(apply({ $prop: "length" }, arr)).toBe(3);
-      expect(apply({ $prop: "push" }, arr)).toEqual(expect.any(Function));
-    });
-
-    it("handles property access on primitives with boxing", () => {
-      expect(apply({ $prop: "length" }, "hello")).toBe(5);
-      expect(apply({ $prop: "toString" }, 123)).toEqual(expect.any(Function));
-    });
-
-    it("safely handles property access on null/undefined without throwing", () => {
-      expect(apply({ $prop: "anything" }, null)).toBe(undefined);
-      expect(apply({ $prop: "anything" }, undefined)).toBe(undefined);
-    });
-
-    // Evaluate form edge cases
-    it("throws when missing object property in evaluate form", () => {
-      expect(() => evaluate({ $prop: { property: "name" } })).toThrow(
-        "$prop evaluate form requires 'object' and 'property' properties",
-      );
-    });
-
-    it("throws when missing property property in evaluate form", () => {
-      expect(() => evaluate({ $prop: { object: { name: "test" } } })).toThrow(
-        "$prop evaluate form requires 'object' and 'property' properties",
-      );
-    });
-
-    it("handles null/undefined properties in evaluate form", () => {
-      expect(() =>
-        evaluate({ $prop: { object: undefined, property: null } }),
-      ).toThrow(
-        "$prop evaluate form requires 'object' and 'property' properties",
-      );
-    });
-
-    it("works with dynamic property resolution in evaluate form", () => {
-      expect(
-        evaluate({
-          $prop: {
-            object: { a: "first", b: "second", key: "b" },
-            property: "key",
-          },
-        }),
-      ).toBe("b");
-    });
-
-    it("handles array access in evaluate form", () => {
-      expect(
-        evaluate({
-          $prop: {
-            object: [{ name: "Taj" }, { name: "Robin" }, { name: "Alex" }],
-            property: 1,
-          },
-        }),
-      ).toEqual({ name: "Robin" });
-    });
-  });
 
   describe("$select edge cases", () => {
-    it("handles empty array selection", () => {
-      const data = { name: "Yuki", age: 3, room: "tulip" };
-      expect(apply({ $select: [] }, data)).toEqual({});
-    });
 
     it("handles empty object selection", () => {
       const data = { name: "Fatima", age: 4 };
       expect(apply({ $select: {} }, data)).toEqual({});
     });
 
-    it("handles expression-based property names in array form", () => {
-      const data = { name: "Kenji", age: 5, fieldName: "name" };
-      expect(apply({ $select: [{ $get: "fieldName" }, "age"] }, data)).toEqual({
-        name: "Kenji",
-        age: 5,
-      });
-    });
-
-    it("handles nested property paths in selection", () => {
-      const data = {
-        child: { profile: { name: "Chen", age: 4 } },
-        meta: { room: "sunshine", teacher: "Sofia" },
-      };
-      expect(
-        apply({ $select: ["child.profile.name", "meta.room"] }, data),
-      ).toEqual({
-        "child.profile.name": "Chen",
-        "meta.room": "sunshine",
-      });
-    });
-
-    it("skips properties that resolve to null", () => {
-      const data = { name: "Amara", age: 3 };
-      expect(apply({ $select: ["name", "missing.path", "age"] }, data)).toEqual(
-        {
-          name: "Amara",
-          age: 3,
-        },
-      );
-    });
 
     it("handles complex object transformations", () => {
       const data = {
@@ -612,11 +365,9 @@ describe("access expressions - edge cases", () => {
 
     it("preserves original data when using empty selections", () => {
       const data = { name: "Luna", age: 5 };
-      const result1 = apply({ $select: [] }, data);
-      const result2 = apply({ $select: {} }, data);
+      const result = apply({ $select: {} }, data);
 
-      expect(result1).toEqual({});
-      expect(result2).toEqual({});
+      expect(result).toEqual({});
       expect(data).toEqual({ name: "Luna", age: 5 }); // Original unchanged
     });
 
@@ -642,25 +393,25 @@ describe("access expressions - edge cases", () => {
 
     it("throws for null operand", () => {
       expect(() => apply({ $select: null }, {})).toThrow(
-        "$select operand must be array of paths or object with key mappings",
+        "$select operand must be an object with key mappings",
       );
     });
 
     it("throws for primitive operands", () => {
       expect(() => apply({ $select: "invalid" }, {})).toThrow(
-        "$select operand must be array of paths or object with key mappings",
+        "$select operand must be an object with key mappings",
       );
       expect(() => apply({ $select: 123 }, {})).toThrow(
-        "$select operand must be array of paths or object with key mappings",
+        "$select operand must be an object with key mappings",
       );
       expect(() => apply({ $select: true }, {})).toThrow(
-        "$select operand must be array of paths or object with key mappings",
+        "$select operand must be an object with key mappings",
       );
     });
 
     // Evaluate form edge cases
     it("throws when missing object property in evaluate form", () => {
-      expect(() => evaluate({ $select: { selection: ["name"] } })).toThrow(
+      expect(() => evaluate({ $select: { selection: { name: { $get: "name" } } } })).toThrow(
         "$select evaluate form requires 'object' and 'selection' properties",
       );
     });
@@ -797,16 +548,12 @@ describe("access expressions - edge cases", () => {
   describe("error handling and validation", () => {
     it("handles malformed operands gracefully", () => {
       expect(() => evaluate({ $get: [] })).toThrow();
-      expect(() => evaluate({ $prop: [] })).toThrow();
       expect(() => evaluate({ $select: [] })).toThrow();
     });
 
     it("provides helpful error messages", () => {
       expect(() => evaluate({ $get: "string" })).toThrow(
         "$get evaluate form requires object operand: { object, path }",
-      );
-      expect(() => evaluate({ $prop: "string" })).toThrow(
-        "$prop evaluate form requires object operand: { object, property }",
       );
       expect(() => evaluate({ $select: "string" })).toThrow(
         "$select evaluate form requires object operand: { object, selection }",
@@ -815,11 +562,9 @@ describe("access expressions - edge cases", () => {
 
     it("handles missing required properties consistently", () => {
       const partialGet = { $get: { object: {} } };
-      const partialProp = { $prop: { object: {} } };
       const partialSelect = { $select: { object: {} } };
 
       expect(() => evaluate(partialGet)).toThrow(/requires.*properties/);
-      expect(() => evaluate(partialProp)).toThrow(/requires.*properties/);
       expect(() => evaluate(partialSelect)).toThrow(/requires.*properties/);
     });
   });
@@ -865,14 +610,9 @@ describe("access expressions - edge cases", () => {
         evaluate({ $get: { object: testData, path: "child.name" } }),
       );
 
-      // $prop consistency
-      expect(apply({ $prop: "name" }, testData.child)).toBe(
-        evaluate({ $prop: { object: testData.child, property: "name" } }),
-      );
-
       // $select consistency
-      expect(apply({ $select: ["child.name"] }, testData)).toEqual(
-        evaluate({ $select: { object: testData, selection: ["child.name"] } }),
+      expect(apply({ $select: { childName: { $get: "child.name" } } }, testData)).toEqual(
+        evaluate({ $select: { object: testData, selection: { childName: { $get: "child.name" } } } }),
       );
     });
   });

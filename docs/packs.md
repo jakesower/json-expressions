@@ -217,7 +217,6 @@ const engine = createExpressionEngine({ packs: [objectPack] });
 
 #### Property Access
 
-- [`$prop`](expressions.md#prop) - Access object property (alias for $get) ([evaluate mode](dual-mode-expressions.md#prop))
 - [`$select`](expressions.md#select) - Select and transform object properties ([evaluate mode](dual-mode-expressions.md#select))
 
 #### Property Selection
@@ -471,7 +470,6 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 | `$pluck`        |        |      |            | ✓     |        |        |           | ✓          |             |
 | `$pow`          |        | ✓    |            |       |        |        |           |            |             |
 | `$prepend`      |        |      |            | ✓     |        |        |           |            |             |
-| `$prop`         |        |      |            |       | ✓      |        |           |            |             |
 | `$replace`      |        |      |            |       |        | ✓      |           |            |             |
 | `$reverse`      |        |      |            | ✓     |        |        |           |            |             |
 | `$select`       |        |      |            |       | ✓      |        |           | ✓          |             |
@@ -488,7 +486,7 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 | `$uppercase`    |        |      |            |       |        | ✓      |           | ✓          |             |
 | `$values`       |        |      |            |       | ✓      |        |           |            |             |
 
-> \* The base pack is always included in the expression engine unless explicitly excluded.
+> \* The base pack is included in the expression engine by default. It must explicitly be excluded.
 
 > † The `$debug` expression is not in any packs and must be imported manually.
 

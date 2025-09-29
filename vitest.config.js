@@ -7,6 +7,7 @@ export default defineConfig({
       exclude: [
         "src/packs/**",
         "dist/**",
+        "benchmarks/**",
         "node_modules/**",
         ".nyc_output/**",
         "coverage/**",

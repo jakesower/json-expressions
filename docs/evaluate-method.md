@@ -364,7 +364,7 @@ engine.apply({
 
 ```javascript
 // Strict property access on null/undefined
-engine.apply({ $prop: "name" }, null);
+engine.apply({ $get: "name" }, null);
 // Error: Cannot read properties of null (reading 'name')
 
 // Missing required properties
@@ -563,7 +563,6 @@ Key-value manipulation and object operations:
 - [**$omit**](docs/expressions.md#omit) - Creates object excluding specified properties
 - [**$pairs**](docs/expressions.md#pairs) - Returns array of [key, value] pairs from object
 - [**$pick**](docs/expressions.md#pick) - Creates object with only specified properties
-- [**$prop**](docs/expressions.md#prop) - Gets property value from object by dynamic key
 - [**$values**](docs/expressions.md#values) - Returns array of object property values
 
 #### Math Pack

@@ -519,7 +519,7 @@ describe("$sort", () => {
       ];
 
       const result = evaluate({
-        $sort: { array: data, sortCriteria: "age" },
+        $sort: { array: data, by: "age" },
       });
 
       expect(result.map((c) => c.name)).toEqual(["Omar", "Lila", "Yuki"]);
@@ -535,7 +535,7 @@ describe("$sort", () => {
       const result = evaluate({
         $sort: {
           array: data,
-          sortCriteria: [{ by: "status" }, { by: "score", desc: true }],
+          by: [{ by: "status" }, { by: "score", desc: true }],
         },
       });
 
@@ -550,7 +550,7 @@ describe("$sort", () => {
       ];
 
       const result = evaluate({
-        $sort: { array: data, sortCriteria: { by: "age" } },
+        $sort: { array: data, by: { by: "age" } },
       });
 
       expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
@@ -558,7 +558,7 @@ describe("$sort", () => {
 
     it("throws error for invalid operand format", () => {
       expect(() => evaluate({ $sort: "not an array" })).toThrow(
-        "$sort evaluate form requires object operand: { array, sortCriteria }",
+        "$sort evaluate form requires object operand: { array, by, desc? }",
       );
     });
   });
@@ -1177,22 +1177,22 @@ describe("flow expressions - edge cases", () => {
 
     // Evaluate form edge cases
     it("throws when missing array property in evaluate form", () => {
-      expect(() => evaluate({ $sort: { sortCriteria: "name" } })).toThrow(
-        "$sort evaluate form requires 'array' and 'sortCriteria' properties",
+      expect(() => evaluate({ $sort: { by: "name" } })).toThrow(
+        "$sort evaluate form requires 'array' and 'by' properties",
       );
     });
 
-    it("throws when missing sortCriteria property in evaluate form", () => {
+    it("throws when missing by property in evaluate form", () => {
       expect(() => evaluate({ $sort: { array: [{ name: "test" }] } })).toThrow(
-        "$sort evaluate form requires 'array' and 'sortCriteria' properties",
+        "$sort evaluate form requires 'array' and 'by' properties",
       );
     });
 
     it("handles null/undefined properties in evaluate form", () => {
       expect(() =>
-        evaluate({ $sort: { array: null, sortCriteria: undefined } }),
+        evaluate({ $sort: { array: null, by: undefined } }),
       ).toThrow(
-        "$sort evaluate form requires 'array' and 'sortCriteria' properties",
+        "$sort evaluate form requires 'array' and 'by' properties",
       );
     });
 
@@ -1207,13 +1207,13 @@ describe("flow expressions - edge cases", () => {
         evaluate({
           $sort: {
             array: data,
-            sortCriteria: { by: { $get: "person.details.age" } },
+            by: { by: { $get: "person.details.age" } },
           },
         }).map((item) => item.person.name),
       ).toEqual(["Omar", "Luna", "Zara"]);
     });
 
-    it("handles string sortCriteria in evaluate form", () => {
+    it("handles string by in evaluate form", () => {
       const data = [
         { name: "Charlie", age: 4 },
         { name: "Alice", age: 3 },
@@ -1224,10 +1224,28 @@ describe("flow expressions - edge cases", () => {
         evaluate({
           $sort: {
             array: data,
-            sortCriteria: "age",
+            by: "age",
           },
         }).map((item) => item.name),
       ).toEqual(["Alice", "Charlie", "Bob"]);
+    });
+
+    it("handles desc flag in evaluate form", () => {
+      const data = [
+        { name: "Charlie", age: 4 },
+        { name: "Alice", age: 3 },
+        { name: "Bob", age: 5 },
+      ];
+
+      expect(
+        evaluate({
+          $sort: {
+            array: data,
+            by: "age",
+            desc: true,
+          },
+        }).map((item) => item.name),
+      ).toEqual(["Bob", "Charlie", "Alice"]);
     });
   });
 
@@ -1242,7 +1260,7 @@ describe("flow expressions - edge cases", () => {
         "$pipe evaluate form requires object operand: { expressions, inputData }",
       );
       expect(() => evaluate({ $sort: "string" })).toThrow(
-        "$sort evaluate form requires object operand: { array, sortCriteria }",
+        "$sort evaluate form requires object operand: { array, by, desc? }",
       );
     });
 
@@ -1314,7 +1332,7 @@ describe("flow expressions - edge cases", () => {
 
       // $sort consistency
       expect(apply({ $sort: "value" }, testData.numbers)).toEqual(
-        evaluate({ $sort: { array: testData.numbers, sortCriteria: "value" } }),
+        evaluate({ $sort: { array: testData.numbers, by: "value" } }),
       );
     });
   });

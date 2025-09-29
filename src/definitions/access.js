@@ -4,7 +4,6 @@
  * Operations for accessing and extracting data from input:
  * - Basic access ($get)
  * - Identity access ($identity)
- * - Property access ($prop)
  * - Object selection/projection ($select)
  */
 
@@ -46,51 +45,16 @@ const $identity = {
     isWrappedLiteral(operand) ? operand : evaluate(operand),
 };
 
-const $prop = {
-  apply: (operand, inputData, { apply }) => {
-    const resolvedOperand = apply(operand, inputData);
-    return inputData?.[resolvedOperand];
-  },
-  evaluate: (operand, { apply }) => {
-    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-      throw new Error(
-        "$prop evaluate form requires object operand: { object, property }",
-      );
-    }
-
-    const { object, property } = operand;
-    if (object === undefined || property === undefined) {
-      throw new Error(
-        "$prop evaluate form requires 'object' and 'property' properties",
-      );
-    }
-
-    return apply({ $prop: property }, object);
-  },
-};
 
 const $select = {
   apply: (operand, inputData, { apply }) => {
-    if (Array.isArray(operand)) {
-      // Array of property names - return object with only those properties
-      const result = {};
-      operand.forEach((prop) => {
-        const key = typeof prop === "string" ? prop : apply(prop, inputData);
-        const value = get(inputData, key);
-        if (value !== null) {
-          result[key] = value;
-        }
-      });
-      return result;
+    if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+      throw new Error(
+        "$select operand must be an object with key mappings",
+      );
     }
 
-    if (typeof operand === "object" && operand !== null) {
-      return mapValues(operand, (expr) => apply(expr, inputData));
-    }
-
-    throw new Error(
-      "$select operand must be array of paths or object with key mappings",
-    );
+    return mapValues(operand, (expr) => apply(expr, inputData));
   },
   evaluate: (operand, { apply }) => {
     if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
@@ -111,4 +75,4 @@ const $select = {
 };
 
 // Individual exports for tree shaking (alphabetized)
-export { $get, $identity, $prop, $select };
+export { $get, $identity, $select };

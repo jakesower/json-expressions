@@ -56,9 +56,6 @@ export interface LiteralExpression {
 	$literal: unknown;
 }
 
-export interface PropExpression {
-	$prop: string | number | symbol | { object: unknown; property: string | number | symbol };
-}
 
 export interface IsPresentExpression {
 	$isPresent: unknown | boolean;
@@ -90,11 +87,11 @@ export interface SelectExpression {
 }
 
 export interface SortExpression {
-	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | { array: unknown[]; sortCriteria: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> };
+	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }> | { array: unknown[]; by: string | Expression; desc?: boolean };
 }
 
 export interface MergeExpression {
-	$merge: unknown[] | [unknown[]];
+	$merge: unknown | unknown[];
 }
 
 export interface PickExpression {
@@ -257,7 +254,7 @@ export interface FilterExpression {
 }
 
 export interface FilterByExpression {
-	$filterBy: { [path: string]: Expression } | [unknown[], { [path: string]: Expression }] | { array: unknown[]; conditions: { [path: string]: Expression } };
+	$filterBy: { [path: string]: Expression } | { array: unknown[]; matcher: { [path: string]: Expression } };
 }
 
 export interface MapExpression {
@@ -314,6 +311,14 @@ export interface ModuloExpression {
 	$modulo: number | [number, number];
 }
 
+export interface CeilExpression {
+	$ceil: unknown;
+}
+
+export interface FloorExpression {
+	$floor: unknown;
+}
+
 
 
 
@@ -324,7 +329,6 @@ export type AnyExpression =
 	| GetExpression
 	| IdentityExpression
 	| LiteralExpression
-	| PropExpression
 	| IsPresentExpression
 	| IsEmptyExpression
 	| ExistsExpression
@@ -386,7 +390,9 @@ export type AnyExpression =
 	| SubtractExpression
 	| MultiplyExpression
 	| DivideExpression
-	| ModuloExpression;
+	| ModuloExpression
+	| CeilExpression
+	| FloorExpression;
 
 // === MAIN EXPORTS ===
 

@@ -304,10 +304,10 @@ describe("$filterBy", () => {
         { name: "Carol", active: true },
       ];
       const result = evaluate({
-        $filterBy: [
-          testData,
-          { active: true }, // Simple literal comparison
-        ],
+        $filterBy: {
+          array: testData,
+          matcher: { active: true }, // Simple literal comparison
+        },
       });
       expect(result).toEqual([
         { name: "Alice", active: true },
@@ -317,14 +317,14 @@ describe("$filterBy", () => {
 
     it("works with literal conditions in evaluate form", () => {
       const result = evaluate({
-        $filterBy: [
-          [
+        $filterBy: {
+          array: [
             { name: "Alice", status: "active" },
             { name: "Bob", status: "inactive" },
             { name: "Carol", status: "active" },
           ],
-          { status: "active" }, // Literal string comparison
-        ],
+          matcher: { status: "active" }, // Literal string comparison
+        },
       });
       expect(result).toEqual([
         { name: "Alice", status: "active" },
@@ -334,22 +334,22 @@ describe("$filterBy", () => {
 
     it("throws error with invalid evaluate operand", () => {
       expect(() => evaluate({ $filterBy: "invalid" })).toThrow(
-        "$filterBy evaluate form requires array operand: [data, conditions]",
+        "$filterBy evaluate form requires object operand: { array, matcher }",
       );
-      expect(() => evaluate({ $filterBy: [students] })).toThrow(
-        "$filterBy evaluate form requires array operand: [data, conditions]",
+      expect(() => evaluate({ $filterBy: { array: students } })).toThrow(
+        "$filterBy evaluate form requires 'array' and 'matcher' properties",
       );
     });
 
     it("throws error when first argument is not array", () => {
       expect(() =>
-        evaluate({ $filterBy: [{ not: "array" }, { age: { $gt: 5 } }] }),
-      ).toThrow();
+        evaluate({ $filterBy: { array: { not: "array" }, matcher: { status: "active" } } }),
+      ).toThrow("$filterBy array must be an array");
     });
 
-    it("throws error when conditions are not object", () => {
-      expect(() => evaluate({ $filterBy: [students, "invalid"] })).toThrow(
-        "$filterBy conditions must be an object with property conditions",
+    it("throws error when matcher is not object", () => {
+      expect(() => evaluate({ $filterBy: { array: students, matcher: "invalid" } })).toThrow(
+        "$filterBy matcher must be an object with property conditions",
       );
     });
   });
@@ -1197,27 +1197,27 @@ describe("array expressions - edge cases", () => {
       ).toEqual([{ name: "Ravi", age: 28, department: "engineering" }]);
     });
 
-    it("throws error for invalid evaluate form operand length", () => {
-      expect(() => evaluate({ $filterBy: [1] })).toThrow(
-        "$filterBy evaluate form requires array operand: [data, conditions]",
+    it("throws error for invalid evaluate form operand type", () => {
+      expect(() => evaluate({ $filterBy: "invalid" })).toThrow(
+        "$filterBy evaluate form requires object operand: { array, matcher }",
       );
       expect(() => evaluate({ $filterBy: [1, 2, 3] })).toThrow(
-        "$filterBy evaluate form requires array operand: [data, conditions]",
+        "$filterBy evaluate form requires object operand: { array, matcher }",
       );
     });
 
-    it("throws error when first argument is not an array in evaluate form", () => {
+    it("throws error when array property is not an array in evaluate form", () => {
       expect(() =>
-        evaluate({ $filterBy: ["not array", { status: "active" }] }),
-      ).toThrow("$filterBy first argument must be an array");
+        evaluate({ $filterBy: { array: "not array", matcher: { status: "active" } } }),
+      ).toThrow("$filterBy array must be an array");
     });
 
-    it("throws error for invalid conditions in evaluate form", () => {
-      expect(() => evaluate({ $filterBy: [[], null] })).toThrow(
-        "$filterBy conditions must be an object with property conditions",
+    it("throws error for invalid matcher in evaluate form", () => {
+      expect(() => evaluate({ $filterBy: { array: [], matcher: null } })).toThrow(
+        "$filterBy matcher must be an object with property conditions",
       );
-      expect(() => evaluate({ $filterBy: [[], []] })).toThrow(
-        "$filterBy conditions must be an object with property conditions",
+      expect(() => evaluate({ $filterBy: { array: [], matcher: [] } })).toThrow(
+        "$filterBy matcher must be an object with property conditions",
       );
     });
   });

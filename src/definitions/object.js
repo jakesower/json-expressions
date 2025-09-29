@@ -7,8 +7,6 @@
  * - Object introspection ($keys, $values, $pairs, $fromPairs)
  */
 
-import { createDualExpression } from "../helpers.js";
-
 const createKeyInclusionExpression = (keepFn, expressionName) => ({
   apply: (operand, inputData, { apply }) => {
     if (!Array.isArray(operand)) {
@@ -69,14 +67,39 @@ const createObjectExtractionExpression = (fn, expressionName) => ({
   },
 });
 
-const $merge = createDualExpression((operand, applyOrEvaluate) => {
-  if (!Array.isArray(operand)) {
-    throw new Error("$merge operand must be an array of objects to merge");
-  }
+const $merge = {
+  apply: (operand, inputData, { apply }) => {
+    if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+      throw new Error("$merge can only be applied to objects");
+    }
 
-  const resolvedObjects = operand.map((op) => applyOrEvaluate(op));
-  return Object.assign({}, ...resolvedObjects);
-});
+    const resolvedOperand = apply(operand, inputData);
+    if (!resolvedOperand || typeof resolvedOperand !== "object" || Array.isArray(resolvedOperand)) {
+      throw new Error("$merge operand must resolve to an object");
+    }
+
+    return Object.assign({}, inputData, resolvedOperand);
+  },
+  evaluate: (operand, { evaluate }) => {
+    if (!Array.isArray(operand)) {
+      throw new Error("$merge evaluate form requires array of objects to merge");
+    }
+
+    if (operand.length === 0) {
+      return {};
+    }
+
+    const resolvedObjects = operand.map(obj => {
+      const resolved = evaluate(obj);
+      if (!resolved || typeof resolved !== "object" || Array.isArray(resolved)) {
+        throw new Error("$merge operand must be an array of objects to merge");
+      }
+      return resolved;
+    });
+
+    return Object.assign({}, ...resolvedObjects);
+  },
+};
 
 const $omit = createKeyInclusionExpression(
   (set, key) => !set.has(key),

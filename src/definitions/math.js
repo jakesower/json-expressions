@@ -64,6 +64,16 @@ const $abs = {
   evaluate: (operand, { evaluate }) => Math.abs(evaluate(operand)),
 };
 
+const $ceil = {
+  apply: (operand, inputData) => Math.ceil(inputData),
+  evaluate: (operand, { evaluate }) => Math.ceil(evaluate(operand)),
+};
+
+const $floor = {
+  apply: (operand, inputData) => Math.floor(inputData),
+  evaluate: (operand, { evaluate }) => Math.floor(evaluate(operand)),
+};
+
 const $add = createMathExpression((left, right) => left + right);
 const $subtract = createMathExpression((left, right) => left - right);
 const $multiply = createMathExpression((left, right) => left * right);
@@ -122,8 +132,10 @@ const $sum = createAggregativeExpression((values) => {
 export {
   $abs,
   $add,
+  $ceil,
   $count,
   $divide,
+  $floor,
   $max,
   $mean,
   $min,

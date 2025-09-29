@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get up and running with JSON Expressions in minutes. This guide focuses on **apply mode** - expressions that operate on your input data.
+Get up and running with JSON Expressions in minutes. This guide focuses on **apply mode** - expressions that operate on input data like a function.
 
 ## Installation
 
@@ -26,14 +26,20 @@ const engine = createExpressionEngine({
 > **Need help choosing packs?** See the **[Pack Reference](packs.md)** for a complete guide to all available packs and their expressions.
 
 ```javascript
-// Most users start with basePack for essential expressions
+// The basePack is included in every expression engine automatically.
 import { createExpressionEngine, basePack } from "json-expressions";
-const engine = createExpressionEngine({ packs: [basePack] });
+
+// these two are equivalent
+const engine = createExpressionEngine();
+const explicitEngine = createExpressionEngine({ packs: [basePack] });
+
+// this will have no expressions loaded in (except $literal)
+const uselessEngine = createExpressionEngine({ includeBase: false });
 ```
 
 ## Your First Expression
 
-Let's start with a simple daycare scenario:
+Let's start with a straightforward daycare scenario:
 
 ```javascript
 const child = { name: "Ximena", age: 4 };
@@ -105,7 +111,7 @@ Filter and transform lists of children:
 
 ```javascript
 const classroom = {
-  teacher: "Ms. Chen",
+  teacher: "Mr. O'Brien",
   children: [
     { name: "Ximena", age: 4, group: "preschool" },
     { name: "Yousef", age: 5, group: "preschool" },
@@ -121,7 +127,7 @@ const preschoolers = engine.apply(
       { $get: "children" },
       {
         $filter: {
-          $matches: { group: "preschool" },
+          $matches: { group: "preschool" }, // $filter/$matches pattern
         },
       },
     ],
@@ -135,11 +141,7 @@ const preschoolNames = engine.apply(
   {
     $pipe: [
       { $get: "children" },
-      {
-        $filter: {
-          $matches: { group: "preschool" },
-        },
-      },
+      { $filterBy: { group: "preschool" } }, // more compact $filterBy pattern (replaces $filter/$matches)
       { $map: { $get: "name" } },
     ],
   },
@@ -168,10 +170,10 @@ const avgActivities = engine.apply(
       { $get: "children" },
       {
         $map: {
-          $pipe: [{ $get: "activities" }, { $count: { $identity: null } }],
+          $pipe: [{ $get: "activities" }, { $count: null }],
         },
       },
-      { $mean: { $identity: null } },
+      { $mean: null },
     ],
   },
   activityReport,
@@ -186,12 +188,12 @@ const mostActive = engine.apply(
       {
         $sort: {
           by: {
-            $pipe: [{ $get: "activities" }, { $count: { $identity: null } }],
+            $pipe: [{ $get: "activities" }, { $count: null }],
           },
           desc: true,
         },
       },
-      { $first: { $identity: null } },
+      { $first: null },
       { $get: "name" },
     ],
   },
@@ -221,7 +223,7 @@ const snackType = engine.apply(
 // Returns: "allergy-safe snack"
 
 // Complex case logic
-const classroom = { name: "rainbow", teacher: "Ms. Chen", size: 12 };
+const classroom = { name: "rainbow", teacher: "Mr. O'Brien", size: 12 };
 
 const status = engine.apply(
   {
@@ -248,7 +250,7 @@ Here's a complete example that generates a daily classroom report:
 const dayData = {
   date: "2024-03-15",
   classroom: "Rainbow Room",
-  teacher: "Ms. Chen",
+  teacher: "Mr. O'Brien",
   children: [
     {
       name: "Ximena",
@@ -281,18 +283,18 @@ const attendanceReport = engine.apply(
       $pipe: [
         { $get: "children" },
         { $filter: { $get: "present" } },
-        { $count: { $identity: null } },
+        { $count: null },
       ],
     },
     absent: {
       $pipe: [
         { $get: "children" },
         { $filter: { $not: { $get: "present" } } },
-        { $count: { $identity: null } },
+        { $count: null },
       ],
     },
     total: {
-      $pipe: [{ $get: "children" }, { $count: { $identity: null } }],
+      $pipe: [{ $get: "children" }, { $count: null }],
     },
   },
   dayData,
@@ -329,20 +331,20 @@ const needsAttention = engine.apply(
 
 ## Common Patterns Cheat Sheet
 
-| Goal                   | Expression Pattern                                                  |
-| ---------------------- | ------------------------------------------------------------------- |
-| Get property           | `{ $get: "propertyName" }`                                          |
-| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                                    |
-| Multiple conditions    | `{ $and: [condition1, condition2] }`                                |
-| Object matching        | `{ $matches: { prop1: condition1, prop2: condition2 } }`            |
-| Filter array           | `{ $filter: condition }`                                            |
-| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }`           |
-| Transform array        | `{ $map: transformation }`                                          |
-| Count items            | `{ $count: { $identity: null } }`                                   |
-| Get first/last         | `{ $first: { $identity: null } }`, `{ $last: { $identity: null } }` |
-| Sort array             | `{ $sort: { by: "property" } }`                                     |
-| Chain operations       | `{ $pipe: [step1, step2, step3] }`                                  |
-| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`            |
+| Goal                   | Expression Pattern                                        |
+| ---------------------- | --------------------------------------------------------- |
+| Get property           | `{ $get: "propertyName" }`                                |
+| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                          |
+| Multiple conditions    | `{ $and: [condition1, condition2] }`                      |
+| Object matching        | `{ $matches: { prop1: condition1, prop2: condition2 } }`  |
+| Filter array           | `{ $filter: condition }`                                  |
+| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }` |
+| Transform array        | `{ $map: transformation }`                                |
+| Count items            | `{ $count: null }`                                        |
+| Get first/last         | `{ $first: null }`, `{ $last: null }`                     |
+| Sort array             | `{ $sort: { by: "property" } }`                           |
+| Chain operations       | `{ $pipe: [step1, step2, step3] }`                        |
+| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`  |
 
 ## Next Steps
 

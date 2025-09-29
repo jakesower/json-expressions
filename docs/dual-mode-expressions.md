@@ -41,6 +41,26 @@ evaluate({ $abs: -1.8 });
 // Returns: 1.8
 ```
 
+## $ceil
+
+Returns the smallest integer greater than or equal to the input number (rounds up).
+
+**Apply Form:**
+
+```javascript
+// Round up child's height measurement
+apply({ $ceil: null }, 4.1);
+// Returns: 5
+```
+
+**Evaluate Form:**
+
+```javascript
+// Calculate ceiling of a calculated value
+evaluate({ $ceil: { $divide: [22, 7] } });
+// Returns: 4
+```
+
 ## $add
 
 Performs addition of two numbers.
@@ -273,7 +293,14 @@ const parent = {
   emergency: "555-1234",
 };
 apply(
-  { $coalesce: [{ $get: "phone" }, { $get: "email" }, { $get: "emergency" }] },
+  {
+    $coalesce: [
+      { $get: "phone" },
+      { $get: "pager" },
+      { $get: "email" },
+      { $get: "emergency" },
+    ],
+  },
   parent,
 );
 // Returns: "parent@example.com"
@@ -424,16 +451,16 @@ apply({ $exists: "missing" }, student);
 evaluate({
   $exists: {
     object: { name: "Chen", age: 5, allergies: null },
-    path: "allergies"
-  }
+    path: "allergies",
+  },
 });
 // Returns: true
 
 evaluate({
   $exists: {
     object: { name: "Maya", age: 4 },
-    path: "allergies"
-  }
+    path: "allergies",
+  },
 });
 // Returns: false
 ```
@@ -459,7 +486,12 @@ apply({ $filter: { $get: "needsHelp" } }, children);
 
 ```javascript
 // Filter numbers greater than threshold
-evaluate({ $filter: [{ $gt: 3 }, [2, 4, 1, 5, 3, 6]] });
+evaluate({
+  $filter: {
+    expression: { $gt: 3 },
+    array: [2, 4, 1, 5, 3, 6],
+  },
+});
 // Returns: [4, 5, 6]
 ```
 
@@ -486,14 +518,14 @@ apply({ $filterBy: { age: { $gte: 5 }, active: { $eq: true } } }, children);
 ```javascript
 // Filter students by multiple criteria
 evaluate({
-  $filterBy: [
-    [
+  $filterBy: {
+    array: [
       { name: "Alice", score: 85, grade: "A" },
       { name: "Bob", score: 65, grade: "C" },
       { name: "Carol", score: 95, grade: "A" },
     ],
-    { score: { $gte: 80 }, grade: { $eq: "A" } },
-  ],
+    matcher: { score: { $gte: 80 }, grade: { $eq: "A" } },
+  },
 });
 // Returns: [{ name: "Alice", score: 85, grade: "A" }, { name: "Carol", score: 95, grade: "A" }]
 ```
@@ -598,17 +630,42 @@ apply({ $flatten: { depth: 2 } }, deeplyNested);
 
 ```javascript
 // Flatten static nested array
-evaluate({ $flatten: [["morning", "snack"], ["lunch", ["dessert", "fruit"]], ["dinner"]] });
+evaluate({
+  $flatten: [["morning", "snack"], ["lunch", ["dessert", "fruit"]], ["dinner"]],
+});
 // Returns: ["morning", "snack", "lunch", ["dessert", "fruit"], "dinner"]
 
 // Flatten with depth control
 evaluate({
   $flatten: {
-    array: [["breakfast", ["cereal", "milk"]], [["sandwich", "chips"], "juice"]],
+    array: [
+      ["breakfast", ["cereal", "milk"]],
+      [["sandwich", "chips"], "juice"],
+    ],
     depth: 2,
   },
 });
 // Returns: ["breakfast", "cereal", "milk", "sandwich", "chips", "juice"]
+```
+
+## $floor
+
+Returns the largest integer less than or equal to the input number (rounds down).
+
+**Apply Form:**
+
+```javascript
+// Round down child's age in months to years
+apply({ $floor: null }, 4.9);
+// Returns: 4
+```
+
+**Evaluate Form:**
+
+```javascript
+// Calculate floor of a calculated value
+evaluate({ $floor: { $divide: [22, 7] } });
+// Returns: 3
 ```
 
 ## $fromPairs
@@ -636,8 +693,8 @@ evaluate({
   $fromPairs: [
     ["snackTime", "10:30"],
     ["lunchTime", "12:00"],
-    ["napTime", "13:30"]
-  ]
+    ["napTime", "13:30"],
+  ],
 });
 // Returns: { snackTime: "10:30", lunchTime: "12:00", napTime: "13:30" }
 ```
@@ -733,7 +790,7 @@ const children = [
   { name: "Aria", age: 4 },
   { name: "Kai", age: 5 },
   { name: "Zara", age: 4 },
-  { name: "Maya", age: 5 }
+  { name: "Maya", age: 5 },
 ];
 apply({ $groupBy: "age" }, children);
 // Returns: {
@@ -751,10 +808,10 @@ evaluate({
     array: [
       { activity: "art", duration: 30 },
       { activity: "reading", duration: 20 },
-      { activity: "art", duration: 25 }
+      { activity: "art", duration: 25 },
     ],
-    key: "activity"
-  }
+    key: "activity",
+  },
 });
 // Returns: {
 //   "art": [{ activity: "art", duration: 30 }, { activity: "art", duration: 25 }],
@@ -933,8 +990,8 @@ evaluate({
     schedule: "09:00",
     snackTime: "10:30",
     lunchTime: "12:00",
-    napTime: "13:30"
-  }
+    napTime: "13:30",
+  },
 });
 // Returns: ["schedule", "snackTime", "lunchTime", "napTime"]
 ```
@@ -1067,30 +1124,29 @@ evaluate({ $map: [{ $multiply: 2 }, [1, 2, 3, 4]] });
 
 ## $merge
 
-Merges multiple objects into a single object, with later objects overriding earlier ones.
+Merges an object into another object, with the merge object properties overriding base object properties.
 
 **Apply Form:**
 
 ```javascript
 // Merge child record with updates
 const child = { name: "Zara", age: 4, group: "Butterflies" };
-const updates = { age: 5, allergies: "nuts" };
-apply({ $merge: [updates] }, child);
+apply({ $merge: { age: 5, allergies: "nuts" } }, child);
 // Returns: { name: "Zara", age: 5, group: "Butterflies", allergies: "nuts" }
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Merge static objects
+// Merge multiple objects
 evaluate({
   $merge: [
     { breakfast: "8:00", lunch: "12:00" },
     { snack: "10:30", lunch: "12:30" },
-    { dinner: "17:00" }
-  ]
+    { dinner: "18:00" },
+  ],
 });
-// Returns: { breakfast: "8:00", snack: "10:30", lunch: "12:30", dinner: "17:00" }
+// Returns: { breakfast: "8:00", lunch: "12:30", snack: "10:30", dinner: "18:00" }
 ```
 
 ## $matches
@@ -1121,21 +1177,53 @@ evaluate({
 
 ## $matchesRegex
 
-Tests if string matches a regular expression.
+Tests if string matches a regular expression with support for PCRE-style inline flags.
+
+**Supported flags:**
+
+- `i`: Case insensitive matching
+- `m`: Multiline mode (^ and $ match line boundaries)
+- `s`: Single-line mode (. matches newlines)
+
+**Flag syntax:**
+Use `(?flags)` at the beginning of your pattern to set flags.
 
 **Apply Form:**
 
 ```javascript
-// Validate phone number format
+// Basic pattern validation
 apply({ $matchesRegex: "^\\d{3}-\\d{3}-\\d{4}$" }, "555-123-4567");
+// Returns: true
+
+// Case insensitive matching
+apply({ $matchesRegex: "(?i)^sunshine" }, "SUNSHINE Daycare");
+// Returns: true
+
+// Multiline matching for text with line breaks
+apply({ $matchesRegex: "(?m)^Care" }, "Sunshine Daycare\nCare Instructions");
 // Returns: true
 ```
 
 **Evaluate Form:**
 
 ```javascript
-// Regex pattern matching
-evaluate({ $matchesRegex: ["(?i)^child", "Child Development Center"] });
+// Basic pattern matching
+evaluate({ $matchesRegex: { pattern: "\\d{4}", text: "Year 2024" } });
+// Returns: true
+
+// Case insensitive matching
+evaluate({
+  $matchesRegex: { pattern: "(?i)^child", text: "Child Development Center" },
+});
+// Returns: true
+
+// Multiple flags for complex text matching
+evaluate({
+  $matchesRegex: {
+    pattern: "(?ims)daycare.*activities",
+    text: "DAYCARE CENTER\nMultiple\nActivities Available",
+  },
+});
 // Returns: true
 ```
 
@@ -1337,7 +1425,12 @@ Creates a new object with specified properties removed.
 
 ```javascript
 // Remove sensitive fields from child record
-const child = { name: "Zara", age: 4, ssn: "123-45-6789", group: "Butterflies" };
+const child = {
+  name: "Zara",
+  age: 4,
+  ssn: "123-45-6789",
+  group: "Butterflies",
+};
 apply({ $omit: ["ssn"] }, child);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
 ```
@@ -1348,9 +1441,14 @@ apply({ $omit: ["ssn"] }, child);
 // Remove properties from static object
 evaluate({
   $omit: {
-    object: { schedule: "9:00", location: "Room A", private: "secret", instructor: "Ms. Smith" },
-    keys: ["private"]
-  }
+    object: {
+      schedule: "9:00",
+      location: "Room A",
+      private: "secret",
+      instructor: "Ms. Smith",
+    },
+    keys: ["private"],
+  },
 });
 // Returns: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith" }
 ```
@@ -1376,23 +1474,37 @@ evaluate({
   $pairs: {
     breakfast: "8:00",
     snack: "10:30",
-    lunch: "12:00"
-  }
+    lunch: "12:00",
+  },
 });
 // Returns: [["breakfast", "8:00"], ["snack", "10:30"], ["lunch", "12:00"]]
 ```
 
 ## $pick
 
-Creates a new object with only the specified properties.
+Creates a new object with only the specified properties by name.
 
 **Apply Form:**
 
 ```javascript
 // Pick only essential fields from child record
-const child = { name: "Zara", age: 4, ssn: "123-45-6789", group: "Butterflies", notes: "Very creative" };
+const child = {
+  name: "Zara",
+  age: 4,
+  ssn: "123-45-6789",
+  group: "Butterflies",
+  notes: "Very creative",
+};
 apply({ $pick: ["name", "age", "group"] }, child);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
+
+// Works with nested property paths
+const enrollmentData = {
+  child: { info: { name: "Diego", age: 5 } },
+  emergency: { contact: "Maria Rodriguez", phone: "555-0123" },
+};
+apply({ $pick: ["child.info.name", "emergency.contact"] }, enrollmentData);
+// Returns: { "child.info.name": "Diego", "emergency.contact": "Maria Rodriguez" }
 ```
 
 **Evaluate Form:**
@@ -1401,12 +1513,19 @@ apply({ $pick: ["name", "age", "group"] }, child);
 // Pick properties from static object
 evaluate({
   $pick: {
-    object: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith", capacity: 20 },
-    keys: ["schedule", "location"]
-  }
+    object: {
+      schedule: "9:00",
+      location: "Room A",
+      instructor: "Ms. Smith",
+      capacity: 20,
+    },
+    properties: ["schedule", "location"],
+  },
 });
 // Returns: { schedule: "9:00", location: "Room A" }
 ```
+
+**Note:** Use `$pick` to select properties by name. Use `$select` to transform and rename properties.
 
 ## $pipe
 
@@ -1511,7 +1630,7 @@ Extracts values of a specified property from all objects in an array.
 const children = [
   { name: "Aria", age: 4 },
   { name: "Kai", age: 5 },
-  { name: "Zara", age: 4 }
+  { name: "Zara", age: 4 },
 ];
 apply({ $pluck: "name" }, children);
 // Returns: ["Aria", "Kai", "Zara"]
@@ -1526,34 +1645,12 @@ evaluate({
     array: [
       { activity: "art", duration: 30 },
       { activity: "reading", duration: 20 },
-      { activity: "music", duration: 25 }
+      { activity: "music", duration: 25 },
     ],
-    property: "duration"
-  }
+    property: "duration",
+  },
 });
 // Returns: [30, 20, 25]
-```
-
-## $prop
-
-Retrieves a property from an object using a dynamic property name.
-
-**Apply Form:**
-
-```javascript
-// Get property using variable name
-const child = { name: "Amara", age: 4, group: "Butterflies" };
-apply({ $prop: "group" }, child);
-// Returns: "Butterflies"
-```
-
-**Evaluate Form:**
-
-```javascript
-// Access object property dynamically
-const daycare = { morning: 12, afternoon: 8, evening: 4 };
-evaluate({ $prop: [daycare, "afternoon"] });
-// Returns: 8
 ```
 
 ## $replace
@@ -1599,20 +1696,23 @@ evaluate({ $reverse: [1, 2, 3, 4, 5] });
 
 ## $select
 
-Selects and transforms object properties into a new structure.
+Selects and transforms object properties into a new structure with custom key names.
 
 **Apply Form:**
 
 ```javascript
 // Select and rename child properties
 const child = { name: "Zara", age: 4, allergies: "none", group: "Butterflies" };
-apply({
-  $select: {
-    fullName: { $get: "name" },
-    years: { $get: "age" },
-    classroom: { $get: "group" }
-  }
-}, child);
+apply(
+  {
+    $select: {
+      fullName: { $get: "name" },
+      years: { $get: "age" },
+      classroom: { $get: "group" },
+    },
+  },
+  child,
+);
 // Returns: { fullName: "Zara", years: 4, classroom: "Butterflies" }
 ```
 
@@ -1623,12 +1723,12 @@ apply({
 evaluate({
   $select: {
     object: { schedule: "9:00", location: "Room A", instructor: "Ms. Smith" },
-    fields: {
+    selection: {
       startTime: { $get: "schedule" },
       room: { $get: "location" },
-      teacher: { $get: "instructor" }
-    }
-  }
+      teacher: { $get: "instructor" },
+    },
+  },
 });
 // Returns: { startTime: "9:00", room: "Room A", teacher: "Ms. Smith" }
 ```
@@ -1685,10 +1785,30 @@ Sorts an array by specified criteria.
 const children = [
   { name: "Zara", age: 4 },
   { name: "Kai", age: 5 },
-  { name: "Aria", age: 3 }
+  { name: "Aria", age: 3 },
 ];
 apply({ $sort: "age" }, children);
 // Returns: [{ name: "Aria", age: 3 }, { name: "Zara", age: 4 }, { name: "Kai", age: 5 }]
+
+// Sort by expression - priority based on age group
+apply(
+  {
+    $sort: {
+      by: {
+        $case: {
+          value: { $get: "age" },
+          cases: [
+            { when: { $lt: 3 }, then: 1 }, // Toddlers first
+            { when: { $lt: 5 }, then: 2 }, // Preschoolers second
+          ],
+          default: 3, // Kindergarten last
+        },
+      },
+    },
+  },
+  children,
+);
+// Returns sorted by age group priority, then by original order
 ```
 
 **Evaluate Form:**
@@ -1697,12 +1817,42 @@ apply({ $sort: "age" }, children);
 // Sort static array
 evaluate({
   $sort: {
-    array: [{ activity: "art", duration: 30 }, { activity: "reading", duration: 20 }],
-    key: "duration"
-  }
+    array: [
+      { activity: "art", duration: 30 },
+      { activity: "reading", duration: 20 },
+    ],
+    by: "duration",
+  },
 });
 // Returns: [{ activity: "reading", duration: 20 }, { activity: "art", duration: 30 }]
+
+// Sort by expression in evaluate mode
+evaluate({
+  $sort: {
+    array: [
+      { name: "Zara", age: 4 },
+      { name: "Kai", age: 5 },
+    ],
+    by: { $multiply: [{ $get: "age" }, -1] }, // Reverse age order
+  },
+});
+// Returns: [{ name: "Kai", age: 5 }, { name: "Zara", age: 4 }]
+
+// Sort with descending order
+evaluate({
+  $sort: {
+    array: [
+      { name: "Aria", age: 3 },
+      { name: "Kai", age: 5 },
+    ],
+    by: "age",
+    desc: true,
+  },
+});
+// Returns: [{ name: "Kai", age: 5 }, { name: "Aria", age: 3 }]
 ```
+
+**Note:** The `by` field can be a property name (string) or an expression that computes the sort value. Both apply and evaluate forms support the same `by` and `desc` structure.
 
 ## $sqrt
 
@@ -1889,8 +2039,8 @@ evaluate({
     breakfast: "8:00",
     snack: "10:30",
     lunch: "12:00",
-    napTime: "13:30"
-  }
+    napTime: "13:30",
+  },
 });
 // Returns: ["8:00", "10:30", "12:00", "13:30"]
 ```
