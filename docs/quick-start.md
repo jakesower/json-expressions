@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get up and running with JSON Expressions in minutes. This guide focuses on **apply mode** - expressions that operate on input data like a function.
+Get started with JSON Expressions. This guide covers expressions that operate on input data like functions.
 
 ## Installation
 

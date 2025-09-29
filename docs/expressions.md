@@ -704,7 +704,7 @@ const children = [
 apply({ $map: { $get: "age" } }, children);
 // Returns: [4, 5, 3]
 
-// It's quite versatile about output structure
+// Transform to different output structure
 apply({
   $map: {
     nombre: { $get: "name" },

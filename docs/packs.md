@@ -18,7 +18,7 @@ Choose packs based on your application's needs:
 
 ### basePack - Essential Expressions
 
-**Use case:** Near-universal expressions for most applications. Includes data access, basic conditionals, comparisons, boolean logic, and common array operations.
+**Use case:** Essential expressions for most applications. Includes data access, basic conditionals, comparisons, boolean logic, and common array operations.
 
 **When to use:** Start here for almost all applications. This pack covers 80% of common use cases.
 
@@ -145,7 +145,7 @@ const engine = createExpressionEngine({ packs: [comparisonPack] });
 
 ### arrayPack - Array Manipulation
 
-**Use case:** Complete array manipulation toolkit for data transformation and processing.
+**Use case:** Array manipulation toolkit for data transformation and processing.
 
 **When to use:** Applications that work extensively with arrays, lists, or collections requiring transformation, filtering, or manipulation.
 
@@ -264,7 +264,7 @@ const engine = createExpressionEngine({ packs: [stringPack] });
 
 ### filteringPack - Data Filtering Toolkit
 
-**Use case:** Comprehensive WHERE clause logic and data filtering operations.
+**Use case:** WHERE clause logic and data filtering operations.
 
 **When to use:** Applications with complex filtering requirements, search functionality, or business rule evaluation.
 
@@ -407,88 +407,6 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 
 - [`$debug`](expressions.md#debug) - Debug helper for development (available in all engines)
 
-## Expression Coverage by Pack
-
-| Expression      | base\* | math | comparison | array | object | string | filtering | projection | aggregation |
-| --------------- | ------ | ---- | ---------- | ----- | ------ | ------ | --------- | ---------- | ----------- |
-| `$abs`          |        | ✓    |            |       |        |        |           |            |             |
-| `$add`          |        | ✓    |            |       |        |        |           |            |             |
-| `$all`          |        |      |            | ✓     |        |        | ✓         |            |             |
-| `$and`          | ✓      |      |            |       |        |        | ✓         |            |             |
-| `$any`          |        |      |            | ✓     |        |        | ✓         |            |             |
-| `$append`       |        |      |            | ✓     |        |        |           |            |             |
-| `$between`      |        |      | ✓          |       |        |        | ✓         |            |             |
-| `$case`         | ✓      |      |            |       |        |        |           | ✓          |             |
-| `$coalesce`     |        |      |            | ✓     |        |        |           |            |             |
-| `$concat`       |        |      |            | ✓     |        |        |           | ✓          |             |
-| `$count`        |        | ✓    |            |       |        |        |           |            | ✓           |
-| `$debug`†       |        |      |            |       |        |        |           |            |             |
-| `$default`      | ✓      |      |            |       |        |        |           |            |             |
-| `$divide`       |        | ✓    |            |       |        |        |           |            |             |
-| `$eq`           | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$exists`       | ✓      |      | ✓          |       |        |        | ✓         |            |             |
-| `$filter`       | ✓      |      |            | ✓     |        |        | ✓         | ✓          |             |
-| `$filterBy`     | ✓      |      |            | ✓     |        |        | ✓         |            |             |
-| `$find`         |        |      |            | ✓     |        |        | ✓         |            |             |
-| `$first`        |        |      |            | ✓     |        |        |           |            | ✓           |
-| `$flatMap`      |        |      |            | ✓     |        |        |           | ✓          |             |
-| `$flatten`      |        |      |            | ✓     |        |        |           |            |             |
-| `$fromPairs`    |        |      |            |       | ✓      |        |           |            |             |
-| `$get`          | ✓      |      |            |       |        |        |           | ✓          |             |
-| `$groupBy`      |        |      |            | ✓     |        |        |           |            | ✓           |
-| `$gt`           | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$gte`          | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$identity`     | ✓      |      |            |       |        |        |           |            |             |
-| `$if`           | ✓      |      |            |       |        |        |           | ✓          |             |
-| `$in`           |        |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$isEmpty`      | ✓      |      | ✓          |       |        |        | ✓         |            |             |
-| `$isPresent`    | ✓      |      | ✓          |       |        |        | ✓         |            |             |
-| `$join`         |        |      |            | ✓     |        |        |           | ✓          |             |
-| `$keys`         |        |      |            |       | ✓      |        |           |            |             |
-| `$last`         |        |      |            | ✓     |        |        |           |            | ✓           |
-| `$literal`      | ✓      |      |            |       |        |        |           |            |             |
-| `$lowercase`    |        |      |            |       |        | ✓      |           | ✓          |             |
-| `$lt`           | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$lte`          | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$map`          | ✓      |      |            | ✓     |        |        |           | ✓          |             |
-| `$matches`      | ✓      |      |            |       |        |        | ✓         |            |             |
-| `$matchesRegex` |        |      |            |       |        |        | ✓         |            |             |
-| `$max`          |        | ✓    |            |       |        |        |           |            | ✓           |
-| `$mean`         |        | ✓    |            |       |        |        |           |            | ✓           |
-| `$merge`        |        |      |            |       | ✓      |        |           |            |             |
-| `$min`          |        | ✓    |            |       |        |        |           |            | ✓           |
-| `$modulo`       |        | ✓    |            |       |        |        |           |            |             |
-| `$multiply`     |        | ✓    |            |       |        |        |           |            |             |
-| `$ne`           | ✓      |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$nin`          |        |      | ✓          |       |        |        | ✓         | ✓          |             |
-| `$not`          | ✓      |      |            |       |        |        | ✓         |            |             |
-| `$omit`         |        |      |            |       | ✓      |        |           |            |             |
-| `$or`           | ✓      |      |            |       |        |        | ✓         |            |             |
-| `$pairs`        |        |      |            |       | ✓      |        |           |            |             |
-| `$pick`         |        |      |            |       | ✓      |        |           |            |             |
-| `$pipe`         | ✓      |      |            |       |        |        |           |            |             |
-| `$pluck`        |        |      |            | ✓     |        |        |           | ✓          |             |
-| `$pow`          |        | ✓    |            |       |        |        |           |            |             |
-| `$prepend`      |        |      |            | ✓     |        |        |           |            |             |
-| `$replace`      |        |      |            |       |        | ✓      |           |            |             |
-| `$reverse`      |        |      |            | ✓     |        |        |           |            |             |
-| `$select`       |        |      |            |       | ✓      |        |           | ✓          |             |
-| `$skip`         |        |      |            | ✓     |        |        |           |            |             |
-| `$sort`         | ✓      |      |            |       |        |        |           |            |             |
-| `$split`        |        |      |            |       |        | ✓      |           |            |             |
-| `$sqrt`         |        | ✓    |            |       |        |        |           |            |             |
-| `$substring`    |        |      |            |       |        | ✓      |           | ✓          |             |
-| `$subtract`     |        | ✓    |            |       |        |        |           |            |             |
-| `$sum`          |        | ✓    |            |       |        |        |           |            | ✓           |
-| `$take`         |        |      |            | ✓     |        |        |           |            |             |
-| `$trim`         |        |      |            |       |        | ✓      |           |            |             |
-| `$unique`       |        |      |            | ✓     |        |        |           | ✓          |             |
-| `$uppercase`    |        |      |            |       |        | ✓      |           | ✓          |             |
-| `$values`       |        |      |            |       | ✓      |        |           |            |             |
-
-> \* The base pack is included in the expression engine by default. It must explicitly be excluded.
-
-> † The `$debug` expression is not in any packs and must be imported manually.
 
 ---
 

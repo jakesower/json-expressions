@@ -2,15 +2,13 @@
 
 This guide covers creating custom expressions for the apply-only JSON Expressions engine. Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the declarative nature of the expression system.
 
-> **Need built-in expressions?** Check the **[Pack Reference](packs.md)** for comprehensive coverage of all available expression packs.
->
-> **Note:** This guide covers function-based custom expressions for the apply mode expression engine.
+> **Need built-in expressions?** Check the **[Pack Reference](packs.md)** for coverage of all available expression packs.
 
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most languages do not distinguish between the two. Therefore, `undefined` and `null` are considered to be **equal** throughout the library. Use `$exists` if you wish to determine if a key in an object is undefined.
 
 ## Overview
 
-Custom expressions in apply mode are functions that operate on input data. They receive an operand (the expression's parameter), the input data being processed, and a context object with access to the expression engine's core functions.
+Custom expressions are functions that operate on input data. They receive an operand (the expression's parameter), the input data being processed, and a context object with access to the expression engine's core functions.
 
 ## Basic Custom Expression Structure
 
@@ -112,9 +110,9 @@ engine.apply({ $ageGroup: null }, child);
 // Note: This example uses $matchesRegex which requires the filtering pack
 import { createExpressionEngine, filteringPack } from "json-expressions";
 
-// ANTI-PATTERN: This example delegates to other expressions instead of complete implementation
+// This example delegates to other expressions This is an anti-pattern because
+// expressions can be overwritten. Doing full implementations keeps things decoupled.
 const $validateChild = (operand, inputData) => {
-  // Complete implementation: validate directly without delegating to other expressions
   const errors = Object.entries(operand.rules)
     .map(([field, rule]) => {
       const value = field.includes(".")
@@ -169,11 +167,9 @@ const validationResult = engine.apply(
 ### Example 3: Complex Data Transformation
 
 ```javascript
-// ANTI-PATTERN: This example delegates to other expressions instead of complete implementation
 const $enrichChild = (operand, inputData) => {
   const child = inputData;
 
-  // Complete implementation: calculate directly without delegating to other expressions
   let ageGroup;
   if (child.age < 1) ageGroup = "infant";
   else if (child.age < 3) ageGroup = "toddler";
@@ -202,134 +198,20 @@ const enriched = engine.apply({ $enrichChild: null }, child);
 // }
 ```
 
-## Advanced Patterns
-
-### Recursive Expression Processing
-
-```javascript
-// ANTI-PATTERN: This example delegates to other expressions instead of complete implementation
-const $deepTransform = (operand, inputData) => {
-  if (Array.isArray(inputData)) {
-    // Complete implementation: process arrays directly without delegation
-    return inputData.map((item) => {
-      if (typeof item === "object" && item !== null) {
-        return Object.entries(item).reduce((result, [key, value]) => {
-          // Apply basic transformations directly
-          if (operand[key] === "uppercase" && typeof value === "string") {
-            return { ...result, [key]: value.toUpperCase() };
-          } else if (operand[key] === "double" && typeof value === "number") {
-            return { ...result, [key]: value * 2 };
-          }
-          return { ...result, [key]: value };
-        }, {});
-      }
-      return item;
-    });
-  }
-
-  if (typeof inputData === "object" && inputData !== null) {
-    return Object.entries(inputData).reduce((result, [key, value]) => {
-      // Apply basic transformations directly
-      if (operand[key] === "uppercase" && typeof value === "string") {
-        return { ...result, [key]: value.toUpperCase() };
-      } else if (operand[key] === "double" && typeof value === "number") {
-        return { ...result, [key]: value * 2 };
-      }
-      return { ...result, [key]: value };
-    }, {});
-  }
-
-  return inputData;
-};
-
-// Usage: Apply transformations recursively to nested data
-const children = [
-  { name: "aria", age: 4 },
-  { name: "kai", age: 5 },
-];
-const result = engine.apply(
-  {
-    $deepTransform: {
-      name: { $uppercase: null },
-    },
-  },
-  children,
-);
-// Returns: [{ name: "ARIA", age: 4 }, { name: "KAI", age: 5 }]
-```
-
-### Conditional Expression Execution
-
-```javascript
-// ANTI-PATTERN: This example delegates to other expressions instead of complete implementation
-const $conditional = (operand, inputData) => {
-  // Complete implementation: evaluate condition directly without delegation
-  let condition = false;
-  if (operand.if?.age !== undefined) {
-    condition = inputData.age >= operand.if.age;
-  } else if (operand.if?.$gte !== undefined) {
-    const path = operand.if.path || "age";
-    const value = path.includes(".")
-      ? path.split(".").reduce((obj, key) => obj?.[key], inputData)
-      : inputData[path];
-    condition = value >= operand.if.$gte;
-  }
-
-  if (condition) {
-    if (operand.then?.toUpperCase) {
-      return typeof inputData === "string"
-        ? inputData.toUpperCase()
-        : inputData;
-    } else if (operand.then?.toLowerCase) {
-      return typeof inputData === "string"
-        ? inputData.toLowerCase()
-        : inputData;
-    }
-    return operand.then ?? inputData;
-  } else {
-    if (operand.else?.toUpperCase) {
-      return typeof inputData === "string"
-        ? inputData.toUpperCase()
-        : inputData;
-    } else if (operand.else?.toLowerCase) {
-      return typeof inputData === "string"
-        ? inputData.toLowerCase()
-        : inputData;
-    }
-    return operand.else ?? inputData;
-  }
-};
-
-// Usage: Conditional transformation
-const child = { name: "Kai", age: 5 };
-const result = engine.apply(
-  {
-    $conditional: {
-      if: { $pipe: [{ $get: "age" }, { $gte: 5 }] },
-      then: { $pipe: [{ $get: "name" }, { $uppercase: null }] },
-      else: { $pipe: [{ $get: "name" }, { $lowercase: null }] },
-    },
-  },
-  child,
-);
-// Returns: "KAI" (since age >= 5)
-```
-
 ## Best Practices
 
-### 1. AVOID Delegation Anti-Pattern
-
-**ANTI-PATTERN**: Do NOT delegate to other expressions within custom expressions. This creates unnecessary complexity and defeats the purpose of custom expressions.
+### 1. Delegation Anti-Pattern
+Do NOT delegate to other expressions within custom expressions. This creates unnecessary complexity and defeats the purpose of custom expressions. Expressions can be overwritten and keeping them self-contained help avoid subtle bugs.
 
 ```javascript
-// ANTI-PATTERN: Delegates to other expressions
+// Anti-Pattern: Delegates to other expressions
 const $badExample = (operand, inputData, { apply }) => {
   const childAge = apply({ $get: "age" }, inputData); // WRONG: delegates to $get
   const threshold = apply({ $add: 2 }, operand.baseAge); // WRONG: delegates to $add
   return apply({ $gte: threshold }, childAge); // WRONG: delegates to $gte
 };
 
-// GOOD: Complete implementation
+// Good: Complete implementation
 const $goodExample = (operand, inputData) => {
   const childAge = inputData.age; // Direct property access
   const threshold = operand.baseAge + 2; // Direct calculation
@@ -337,23 +219,7 @@ const $goodExample = (operand, inputData) => {
 };
 ```
 
-### 2. Implement Logic Directly
-
-Custom expressions should contain complete implementations, not delegate to other expressions:
-
-```javascript
-// GOOD: Complete implementation
-const $smartProcess = (operand, inputData) => {
-  // Direct property access instead of delegation
-  const childAge = inputData.age;
-  const baseAge = operand.baseAge;
-  const threshold = baseAge + 2;
-
-  return childAge >= threshold;
-};
-```
-
-### 3. Maintain Determinism
+### 2. Maintain Determinism (When Possible)
 
 Custom expressions should be deterministic whenever possible - same inputs always produce same outputs:
 
@@ -371,14 +237,13 @@ const $addTimestamp = (operand, inputData) => {
 };
 ```
 
-Some expressions have side effects by their nature. A `$random` expression that returns a random number is non-deterministic. Expressions like this should be clearly labeled to preserve user expectations.
+Some expressions have side effects by their nature. A `$random` expression that returns a random number is non-deterministic. Expressions like this should be clearly labeled to preserve user expectations. A single non-deterministic expression contaminates every expression that uses it. That said, it can absolutely be worth the tradeoff. Only do it with care.
 
-### 4. Error Handling
+### 3. Error Handling
 
 Provide clear error messages:
 
 ```javascript
-// ANTI-PATTERN: This example delegates to $get instead of complete implementation
 const $safeGet = (operand, inputData) => {
   if (!operand || typeof operand !== "string") {
     throw new Error("$safeGet operand must be a string path");

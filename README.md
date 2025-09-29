@@ -1,8 +1,8 @@
 # JSON Expressions
 
-A powerful JavaScript expression engine for JSON-based dynamic computations and function composition. JSON Expressions provides a declarative syntax for creating complex logic, transformations, and calculations that can be serialized, stored, and executed safely.
+A JavaScript expression engine for JSON-based dynamic computations and function composition. JSON Expressions provides a declarative syntax for creating complex logic, transformations, and calculations that can be serialized, stored, and executed safely.
 
-Perfect for configuration-driven applications, business rules engines, and anywhere you need dynamic logic represented as data.
+Well-suited for configuration-driven applications, business rules engines, and anywhere you need dynamic logic represented as data.
 
 ## Quick Start
 
@@ -11,7 +11,11 @@ npm install json-expressions
 ```
 
 ```javascript
-import { createExpressionEngine, mathPack, comparisonPack } from "json-expressions";
+import {
+  createExpressionEngine,
+  mathPack,
+  comparisonPack,
+} from "json-expressions";
 
 // Create an engine with the packs you need
 const engine = createExpressionEngine({ packs: [mathPack, comparisonPack] });
@@ -76,22 +80,37 @@ engine.apply({ $isValidEmail: null }, "user@example.com"); // true
 
 [Read more](docs/custom-expressions.md) about creating custom expressions.
 
+## Design Philosophy
+
+JSON Expressions prioritizes **flexibility over raw performance**. This library is designed for scenarios where dynamic, data-driven logic is more valuable than execution speed. Performance is an important design goal to enable as many uses as possible, but it will never be a replacement for performance tuned code.
 
 ## Why JSON Expressions?
 
-### Excellent fit for:
+### Appropriate for:
 
 - **Configuration-driven applications** - Store complex logic as data in databases
 - **Business rules that change frequently** - Avoid code deployments for logic updates
 - **Multi-tenant SaaS applications** - Different customers need different business logic
 - **Cross-platform logic sharing** - Same rules run in frontend and backend
 
-### Key Benefits:
+### When NOT to Use JSON Expressions
+
+- High-frequency operations (>10k ops/sec requirements)
+- Real-time systems with strict latency requirements
+- Simple static logic that doesn't need to change
+- Performance-critical hot paths
+
+### Features:
 
 - **Serializable Logic**: Express complex computations as JSON that can be stored and transmitted
 - **Safe Evaluation**: Controlled execution environment without the risks of `eval()`
 - **Composable**: Build complex logic by combining simple expressions
 - **Extensible**: Add custom expressions through packs and custom definitions
+
+### Limitations:
+
+- **Performance and Memory Overhead**: Interpretation layer adds execution cost compared to native JavaScript
+- **Runtime Validation**: Expression errors discovered at execution time, not compile time
 
 ## Common Patterns
 
@@ -173,7 +192,6 @@ engine.apply(
 // Returns: [{ name: "Zoë", age: 6, active: true }]
 ```
 
-
 ## Available Expression Packs
 
 Import only the functionality you need:
@@ -214,6 +232,6 @@ JSON Expressions is **optimized for flexibility over raw execution speed**. Expe
 - **Execution overhead** compared to native JavaScript functions
 - **Consider caching** for frequently-used complex expressions
 
-Benchmarks show ~3M ops/sec for simple expressions and ~200k ops/sec for complex operations. Run `npm run bench` for detailed performance metrics.
+Benchmarks range from 3k ops/sec (complex data processing) to 3M ops/sec (simple comparisons). Run `npm run bench` for detailed performance metrics.
 
-Perfect for configuration logic, business rules, and data processing. Consider direct JavaScript functions for performance-critical hot paths.
+Well suited for configuration logic, business rules, and data processing. Consider direct JavaScript functions for performance-critical hot paths.
