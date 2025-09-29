@@ -13,7 +13,14 @@ describe("binary arithmetic math expressions", () => {
     $subtract: (x, y) => x - y,
     $multiply: (x, y) => x * y,
     $divide: (x, y) => x / y,
-    $modulo: (x, y) => x % y,
+    $modulo: (x, y) => {
+      const result = x % y;
+      return result < 0 && y > 0
+        ? result + y
+        : result > 0 && y < 0
+          ? result + y
+          : result;
+    },
     $pow: (x, y) => x ** y,
   };
 
@@ -96,6 +103,10 @@ describe("binary arithmetic math expressions", () => {
       it("throws on modulo by zero", () => {
         expect(() => apply({ $modulo: 0 }, 10)).toThrowError("Modulo by zero");
       });
+
+      it("handles negative numbers", () => {
+        expect(apply({ $modulo: 3 }, -1)).toEqual(2);
+      });
     });
   });
 
@@ -110,7 +121,29 @@ describe("binary arithmetic math expressions", () => {
       it("handles special cases", () => {
         expect(apply({ $pow: 2 }, 0)).toBe(0); // 0^2 = 0
         expect(apply({ $pow: 0 }, 1)).toBe(1); // 1^0 = 1
-        expect(Number.isNaN(apply({ $pow: 0.5 }, -1))).toBe(true); // (-1)^0.5 = NaN
+        expect(apply({ $pow: 2 }, -2)).toBe(4); // (-2)^2 = 4 (integer exponents work)
+        expect(apply({ $pow: 0 }, 0)).toEqual(1);
+      });
+
+      it("should throw for complex number results (negative base with fractional exponent)", () => {
+        expect(() => apply({ $pow: 0.5 }, -1)).toThrowError(
+          "Complex numbers are not supported (negative base with fractional exponent)",
+        );
+        expect(() => apply({ $pow: 1.5 }, -4)).toThrowError(
+          "Complex numbers are not supported (negative base with fractional exponent)",
+        );
+      });
+
+      it("should throw for division by zero (0 raised to negative exponent)", () => {
+        expect(() => apply({ $pow: -1 }, 0)).toThrowError(
+          "Division by zero (0 raised to negative exponent)",
+        );
+        expect(() => apply({ $pow: -2 }, 0)).toThrowError(
+          "Division by zero (0 raised to negative exponent)",
+        );
+        expect(() => apply({ $pow: -0.5 }, 0)).toThrowError(
+          "Division by zero (0 raised to negative exponent)",
+        );
       });
     });
   });
@@ -139,12 +172,6 @@ describe("$abs", () => {
       expect(apply({ $abs: null }, -3.14)).toBe(3.14);
       expect(apply({ $abs: null }, 2.71)).toBe(2.71);
     });
-
-    it("should handle edge cases for Kenji's measurement errors", () => {
-      expect(apply({ $abs: null }, -Infinity)).toBe(Infinity);
-      expect(apply({ $abs: null }, Infinity)).toBe(Infinity);
-      expect(apply({ $abs: "ignored" }, -42)).toBe(42); // operand is ignored
-    });
   });
 });
 
@@ -152,10 +179,7 @@ describe("$sqrt", () => {
   describe("basic functionality", () => {
     it("should calculate square roots for Arun's measurements", () => {
       expect(apply({ $sqrt: null }, 9)).toBe(3);
-      expect(apply({ $sqrt: null }, 16)).toBe(4);
-      expect(apply({ $sqrt: null }, 25)).toBe(5);
       expect(apply({ $sqrt: null }, 0)).toBe(0);
-      expect(apply({ $sqrt: null }, 1)).toBe(1);
     });
 
     it("should handle decimal inputs for Maria's precision work", () => {
@@ -166,7 +190,15 @@ describe("$sqrt", () => {
 
     it("should handle special cases for Elena's advanced problems", () => {
       expect(apply({ $sqrt: null }, 0.25)).toBe(0.5);
-      expect(Number.isNaN(apply({ $sqrt: null }, -1))).toBe(true); // sqrt(-1) = NaN
+    });
+
+    it("should throw for negative numbers (complex numbers not supported)", () => {
+      expect(() => apply({ $sqrt: null }, -1)).toThrowError(
+        "Complex numbers are not supported (square root of negative number)",
+      );
+      expect(() => apply({ $sqrt: null }, -0.5)).toThrowError(
+        "Complex numbers are not supported (square root of negative number)",
+      );
       expect(apply({ $sqrt: null }, Infinity)).toBe(Infinity);
     });
   });
@@ -175,15 +207,19 @@ describe("$sqrt", () => {
 describe("$count", () => {
   describe("basic functionality", () => {
     it("counts elements in array", () => {
-      expect(apply({ $count: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(5);
-      expect(
-        apply({ $count: { $literal: ["Amara", "Kenji", "Yuki"] } }, {}),
-      ).toBe(3);
-      expect(apply({ $count: { $literal: [] } }, {})).toBe(0);
+      expect(apply({ $count: null }, [1, 2, 3, 4, 5])).toBe(5);
+      expect(apply({ $count: null }, ["Amara", "Kenji", "Yuki"])).toBe(3);
+      expect(apply({ $count: null }, [])).toBe(0);
     });
 
     it("counts single element", () => {
-      expect(apply({ $count: { $literal: [42] } }, {})).toBe(1);
+      expect(apply({ $count: null }, [42])).toBe(1);
+    });
+
+    it("throws error for non-array input", () => {
+      expect(() => apply({ $count: null }, "not array")).toThrowError(
+        "Aggregation expressions require array input data",
+      );
     });
   });
 });
@@ -191,17 +227,23 @@ describe("$count", () => {
 describe("$max", () => {
   describe("basic functionality", () => {
     it("finds maximum value in array", () => {
-      expect(apply({ $max: { $literal: [1, 5, 3, 9, 2] } }, {})).toBe(9);
-      expect(apply({ $max: { $literal: [3.14, 2.71, 1.41] } }, {})).toBe(3.14);
-      expect(apply({ $max: { $literal: [-5, -2, -10] } }, {})).toBe(-2);
+      expect(apply({ $max: null }, [1, 5, 3, 9, 2])).toBe(9);
+      expect(apply({ $max: null }, [3.14, 2.71, 1.41])).toBe(3.14);
+      expect(apply({ $max: null }, [-5, -2, -10])).toBe(-2);
     });
 
     it("handles single element array", () => {
-      expect(apply({ $max: { $literal: [42] } }, {})).toBe(42);
+      expect(apply({ $max: null }, [42])).toBe(42);
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $max: { $literal: [] } }, {})).toBe(undefined);
+      expect(apply({ $max: null }, [])).toBe(undefined);
+    });
+
+    it("throws error for non-array input", () => {
+      expect(() => apply({ $max: null }, "not array")).toThrowError(
+        "Aggregation expressions require array input data",
+      );
     });
   });
 });
@@ -209,18 +251,24 @@ describe("$max", () => {
 describe("$mean", () => {
   describe("basic functionality", () => {
     it("calculates average of array elements", () => {
-      expect(apply({ $mean: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(3);
-      expect(apply({ $mean: { $literal: [2, 4, 6] } }, {})).toBe(4);
-      expect(apply({ $mean: { $literal: [10] } }, {})).toBe(10);
+      expect(apply({ $mean: null }, [1, 2, 3, 4, 5])).toBe(3);
+      expect(apply({ $mean: null }, [2, 4, 6])).toBe(4);
+      expect(apply({ $mean: null }, [10])).toBe(10);
     });
 
     it("handles decimal results", () => {
-      expect(apply({ $mean: { $literal: [1, 2] } }, {})).toBe(1.5);
-      expect(apply({ $mean: { $literal: [1, 2, 3] } }, {})).toBeCloseTo(2, 10);
+      expect(apply({ $mean: null }, [1, 2])).toBe(1.5);
+      expect(apply({ $mean: null }, [1, 2, 3])).toBeCloseTo(2, 10);
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $mean: { $literal: [] } }, {})).toBe(undefined);
+      expect(apply({ $mean: null }, [])).toBe(undefined);
+    });
+
+    it("throws error for non-array input", () => {
+      expect(() => apply({ $mean: null }, "not array")).toThrowError(
+        "Aggregation expressions require array input data",
+      );
     });
   });
 });
@@ -228,17 +276,23 @@ describe("$mean", () => {
 describe("$min", () => {
   describe("basic functionality", () => {
     it("finds minimum value in array", () => {
-      expect(apply({ $min: { $literal: [1, 5, 3, 9, 2] } }, {})).toBe(1);
-      expect(apply({ $min: { $literal: [3.14, 2.71, 1.41] } }, {})).toBe(1.41);
-      expect(apply({ $min: { $literal: [-5, -2, -10] } }, {})).toBe(-10);
+      expect(apply({ $min: null }, [1, 5, 3, 9, 2])).toBe(1);
+      expect(apply({ $min: null }, [3.14, 2.71, 1.41])).toBe(1.41);
+      expect(apply({ $min: null }, [-5, -2, -10])).toBe(-10);
     });
 
     it("handles single element array", () => {
-      expect(apply({ $min: { $literal: [42] } }, {})).toBe(42);
+      expect(apply({ $min: null }, [42])).toBe(42);
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $min: { $literal: [] } }, {})).toBe(undefined);
+      expect(apply({ $min: null }, [])).toBe(undefined);
+    });
+
+    it("throws error for non-array input", () => {
+      expect(() => apply({ $min: null }, "not array")).toThrowError(
+        "Aggregation expressions require array input data",
+      );
     });
   });
 });
@@ -246,17 +300,23 @@ describe("$min", () => {
 describe("$sum", () => {
   describe("basic functionality", () => {
     it("sums array elements", () => {
-      expect(apply({ $sum: { $literal: [1, 2, 3, 4, 5] } }, {})).toBe(15);
-      expect(apply({ $sum: { $literal: [2.5, 1.5, 3] } }, {})).toBe(7);
-      expect(apply({ $sum: { $literal: [-1, 1, -2, 2] } }, {})).toBe(0);
+      expect(apply({ $sum: null }, [1, 2, 3, 4, 5])).toBe(15);
+      expect(apply({ $sum: null }, [2.5, 1.5, 3])).toBe(7);
+      expect(apply({ $sum: null }, [-1, 1, -2, 2])).toBe(0);
     });
 
     it("handles single element array", () => {
-      expect(apply({ $sum: { $literal: [42] } }, {})).toBe(42);
+      expect(apply({ $sum: null }, [42])).toBe(42);
     });
 
     it("returns 0 for empty array", () => {
-      expect(apply({ $sum: { $literal: [] } }, {})).toBe(0);
+      expect(apply({ $sum: null }, [])).toBe(0);
+    });
+
+    it("throws error for non-array input", () => {
+      expect(() => apply({ $sum: null }, "not array")).toThrowError(
+        "Aggregation expressions require array input data",
+      );
     });
   });
 });

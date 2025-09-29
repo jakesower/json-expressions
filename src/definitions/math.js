@@ -31,17 +31,17 @@ const createMathExpression =
   };
 
 /**
- * Creates an aggregative expression that applies a calculation function to resolved values.
+ * Creates an aggregative expression that applies a calculation function to input data.
  *
  * @param {function(Array): any} calculateFn - Function that takes an array of values and returns a calculated result
- * @returns {object} Expression object with apply method
+ * @returns {function} Expression function that operates directly on input data
  */
-const createAggregativeExpression =
-  (calculateFn) =>
-  (operand, inputData, { apply }) => {
-    const values = apply(operand, inputData);
-    return calculateFn(values);
-  };
+const createAggregativeExpression = (calculateFn) => (operand, inputData) => {
+  if (!Array.isArray(inputData)) {
+    throw new Error("Aggregation expressions require array input data");
+  }
+  return calculateFn(inputData);
+};
 
 const $abs = (operand, inputData) => Math.abs(inputData);
 
@@ -63,7 +63,15 @@ const $divide = createMathExpression(
 );
 
 const $modulo = createMathExpression(
-  (left, right) => left % right,
+  (left, right) => {
+    // Mathematical modulo: result has same sign as divisor
+    const result = left % right;
+    return result < 0 && right > 0
+      ? result + right
+      : result > 0 && right < 0
+        ? result + right
+        : result;
+  },
   (left, right) => {
     if (right === 0) {
       throw new Error("Modulo by zero");
@@ -71,7 +79,21 @@ const $modulo = createMathExpression(
   },
 );
 
-const $pow = createMathExpression((left, right) => Math.pow(left, right));
+const $pow = createMathExpression((left, right) => {
+  // Check for complex number results
+  if (left < 0 && right % 1 !== 0) {
+    throw new Error(
+      "Complex numbers are not supported (negative base with fractional exponent)",
+    );
+  }
+
+  // Check for division by zero (0^negative = 1/0^positive = 1/0)
+  if (left === 0 && right < 0) {
+    throw new Error("Division by zero (0 raised to negative exponent)");
+  }
+
+  return Math.pow(left, right);
+});
 
 const $count = createAggregativeExpression((values) => values.length);
 
@@ -93,7 +115,14 @@ const $min = createAggregativeExpression((values) => {
     : values.reduce((min, v) => Math.min(min, v));
 });
 
-const $sqrt = (operand, inputData) => Math.sqrt(inputData);
+const $sqrt = (operand, inputData) => {
+  if (inputData < 0) {
+    throw new Error(
+      "Complex numbers are not supported (square root of negative number)",
+    );
+  }
+  return Math.sqrt(inputData);
+};
 
 const $sum = createAggregativeExpression((values) => {
   return values.reduce((sum, v) => sum + v, 0);

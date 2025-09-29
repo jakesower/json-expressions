@@ -276,20 +276,20 @@ describe("Custom Expressions", () => {
         packs: [allExpressionsForTesting],
         custom: {
           // Override built-in $count to count in "daycare style" (add 1 for teacher)
-          $count: (operand) => operand.length + 1,
+          $count: (operand, inputData) => inputData.length + 1,
           // Add new custom expression
           $ageInMonths: (_, inputData) => inputData * 12,
         },
       });
 
       // Test the override
-      expect(hybridEngine.apply({ $count: children }, null)).toBe(5);
+      expect(hybridEngine.apply({ $count: null }, children)).toBe(5);
 
       // Test the custom expression still works
       expect(hybridEngine.apply({ $ageInMonths: null }, 3)).toBe(36);
 
       // Test other built-ins are unaffected
-      expect(hybridEngine.apply({ $sum: [1, 2, 3, 4] }, null)).toBe(10);
+      expect(hybridEngine.apply({ $sum: null }, [1, 2, 3, 4])).toBe(10);
     });
   });
 });

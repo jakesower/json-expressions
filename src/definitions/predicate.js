@@ -130,7 +130,7 @@ const $isEmpty = (operand, inputData) => {
 
 const $exists = (operand, inputData, { apply }) => {
   if (typeof inputData !== "object" || inputData === null) {
-    throw new Error("$exists input data must resolve be an object");
+    throw new Error("$exists input data must be an object");
   }
 
   const resolvedPath = apply(operand, inputData);

@@ -4,388 +4,377 @@
 // === CORE TYPES ===
 
 /**
- * A JSON expression that can be evaluated against input data
+ * Generic expression-like object (custom expressions)
  */
-export interface Expression {
-	[key: string]: unknown;
+export interface ExpressionLike {
+  [key: `$${string}`]: unknown;
 }
 
 /**
  * Expression engine for applying JSON expressions to input data
  */
 export interface ExpressionEngine {
-	/**
-	 * Apply an expression with input data
-	 * @param expression - The expression to apply
-	 * @param inputData - The input data context
-	 * @returns The result of the expression
-	 */
-	apply(expression: Expression, inputData: unknown): unknown;
+  /**
+   * Apply an expression with input data
+   * @param expression - The expression to apply
+   * @param inputData - The input data context
+   * @returns The result of the expression
+   */
+  apply(expression: Expression, inputData: unknown): unknown;
 
-	/**
-	 * Array of available expression names
-	 */
-	expressionNames: string[];
+  /**
+   * Array of available expression names
+   */
+  expressionNames: string[];
 
-	/**
-	 * Check if a value is an expression
-	 * @param value - The value to check
-	 * @returns True if the value is an expression
-	 */
-	isExpression(value: unknown): boolean;
+  /**
+   * Check if a value is an expression
+   * @param value - The value to check
+   * @returns True if the value is an expression
+   */
+  isExpression(value: unknown): boolean;
 }
 
 // === CORE EXPRESSIONS ===
 
 export interface GetExpression {
-	$get: string;
+  $get: string | (string | number)[];
 }
 
 export interface IdentityExpression {
-	$identity: unknown;
+  $identity: null;
 }
 
 export interface LiteralExpression {
-	$literal: unknown;
+  $literal: unknown;
 }
 
-
 export interface IsPresentExpression {
-	$isPresent: boolean;
+  $isPresent: boolean;
 }
 
 export interface IsEmptyExpression {
-	$isEmpty: boolean;
+  $isEmpty: boolean;
 }
 
 export interface ExistsExpression {
-	$exists: string;
+  $exists: string | (string | number)[];
 }
 
-
 export interface DebugExpression {
-	$debug: Expression | unknown;
+  $debug: Expression | unknown;
 }
 
 export interface PipeExpression {
-	$pipe: Expression[];
+  $pipe: Expression[];
 }
 
 export interface MatchesExpression {
-	$matches: { [path: string]: Expression };
+  $matches: { [path: string]: Expression | unknown };
 }
 
 export interface SelectExpression {
-	$select: { [newKey: string]: Expression };
+  $select: { [newKey: string]: Expression | unknown };
 }
 
 export interface SortExpression {
-	$sort: string | { by: string | Expression; desc?: boolean } | Array<{ by: string | Expression; desc?: boolean }>;
+  $sort:
+    | string
+    | { by: string | Expression; desc?: boolean }
+    | Array<{ by: string | Expression; desc?: boolean }>;
 }
 
 export interface MergeExpression {
-	$merge: unknown | unknown[];
+  $merge: Record<string, unknown>;
 }
 
 export interface PickExpression {
-	$pick: string[];
+  $pick: string[];
 }
 
 export interface OmitExpression {
-	$omit: string[];
+  $omit: string[];
 }
 
 export interface KeysExpression {
-	$keys: null;
+  $keys: null;
 }
 
 export interface ValuesExpression {
-	$values: null;
+  $values: null;
 }
 
 export interface PairsExpression {
-	$pairs: null;
+  $pairs: null;
 }
 
 export interface FromPairsExpression {
-	$fromPairs: null;
+  $fromPairs: null;
 }
 
 export interface PluckExpression {
-	$pluck: string | Expression;
+  $pluck: string | Expression;
 }
 
 export interface DefaultExpression {
-	$default: { expression: Expression; default: unknown; allowNull?: boolean };
+  $default: { expression: Expression; default: unknown };
 }
 
-
-
 export interface UniqueExpression {
-	$unique: null;
+  $unique: null;
 }
 
 export interface FlattenExpression {
-	$flatten: null | { depth?: number };
+  $flatten: null | { depth?: number };
 }
 
 export interface GroupByExpression {
-	$groupBy: string | Expression;
+  $groupBy: string | Expression;
 }
-
 
 // === COMPARATIVE EXPRESSIONS ===
 
 export interface EqualExpression {
-	$eq: unknown;
+  $eq: unknown | [Expression, unknown];
 }
 
 export interface NotEqualExpression {
-	$ne: unknown;
+  $ne: unknown | [Expression, unknown];
 }
 
 export interface GreaterThanExpression {
-	$gt: number;
+  $gt: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface GreaterThanOrEqualExpression {
-	$gte: number;
+  $gte: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface LessThanExpression {
-	$lt: number;
+  $lt: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface LessThanOrEqualExpression {
-	$lte: number;
+  $lte: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface InExpression {
-	$in: unknown[];
+  $in: unknown[];
 }
 
 export interface NotInExpression {
-	$nin: unknown[];
+  $nin: unknown[];
 }
 
 export interface MatchesRegexExpression {
-	$matchesRegex: string;
+  $matchesRegex: string;
 }
-
 
 // === LOGICAL EXPRESSIONS ===
 
 export interface AndExpression {
-	$and: Expression[];
+  $and: (Expression | boolean)[];
 }
 
 export interface OrExpression {
-	$or: Expression[];
+  $or: (Expression | boolean)[];
 }
 
 export interface NotExpression {
-	$not: Expression | boolean;
+  $not: Expression | boolean;
 }
 
 // === CONDITIONAL EXPRESSIONS ===
 
 export interface IfExpression {
-	$if: {
-		if: Expression | boolean;
-		then: unknown;
-		else: unknown;
-	};
+  $if: {
+    if: Expression | boolean;
+    then: unknown;
+    else: unknown;
+  };
 }
 
-
 export interface CaseExpression {
-	$case: {
-		value: unknown;
-		cases: Array<{
-			when: unknown; // Can be literal value OR boolean predicate expression
-			then: unknown;
-		}>;
-		default: unknown;
-	} | [{
-		value: unknown;
-		cases: Array<{
-			when: unknown; // Can be literal value OR boolean predicate expression
-			then: unknown;
-		}>;
-		default: unknown;
-	}];
+  $case: {
+    value: Expression | unknown;
+    cases: Array<{
+      when: Expression | unknown; // Can be literal value OR boolean predicate expression
+      then: Expression | unknown;
+    }>;
+    default: Expression | unknown;
+  };
 }
 
 // === AGGREGATIVE EXPRESSIONS ===
 
 export interface CountExpression {
-	$count: unknown[];
+  $count: null;
 }
 
 export interface SumExpression {
-	$sum: number[];
+  $sum: null;
 }
 
 export interface MaxExpression {
-	$max: number[];
+  $max: null;
 }
 
 export interface MinExpression {
-	$min: number[];
+  $min: null;
 }
 
 export interface MeanExpression {
-	$mean: number[];
+  $mean: null;
 }
-
-
 
 // === ITERATIVE EXPRESSIONS ===
 
 export interface FilterExpression {
-	$filter: Expression;
+  $filter: Expression;
 }
 
 export interface FilterByExpression {
-	$filterBy: { [path: string]: Expression };
+  $filterBy: { [path: string]: Expression | unknown };
 }
 
 export interface MapExpression {
-	$map: Expression;
+  $map: Expression;
 }
 
 export interface FlatMapExpression {
-	$flatMap: Expression;
+  $flatMap: Expression;
 }
 
 export interface FindExpression {
-	$find: Expression;
+  $find: Expression;
 }
 
 export interface AllExpression {
-	$all: Expression;
+  $all: Expression;
 }
 
 export interface AnyExpression {
-	$any: Expression;
+  $any: Expression;
 }
 
 export interface ConcatExpression {
-	$concat: unknown[];
+  $concat: Expression | unknown[];
 }
 
 export interface JoinExpression {
-	$join: string;
+  $join: string | Expression;
 }
 
 export interface ReverseExpression {
-	$reverse: null;
+  $reverse: null;
 }
 
 // === MATH EXPRESSIONS ===
 
 export interface AddExpression {
-	$add: number[];
+  $add: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface SubtractExpression {
-	$subtract: [number, number];
+  $subtract: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface MultiplyExpression {
-	$multiply: number[];
+  $multiply: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface DivideExpression {
-	$divide: [number, number];
+  $divide: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface ModuloExpression {
-	$modulo: [number, number];
+  $modulo: number | Expression | [number | Expression, number | Expression];
 }
 
 export interface CeilExpression {
-	$ceil: unknown;
+  $ceil: null;
 }
 
 export interface FloorExpression {
-	$floor: unknown;
+  $floor: null;
 }
-
-
-
 
 // === UNION TYPE FOR ALL EXPRESSIONS ===
 
 export type AnyExpression =
-	// Core
-	| GetExpression
-	| IdentityExpression
-	| LiteralExpression
-	| IsPresentExpression
-	| IsEmptyExpression
-	| ExistsExpression
-	| DebugExpression
-	| PipeExpression
-	| DefaultExpression
-	| MatchesExpression
-	| SelectExpression
-	| SortExpression
-	// Object
-	| MergeExpression
-	| PickExpression
-	| OmitExpression
-	| KeysExpression
-	| ValuesExpression
-	| PairsExpression
-	| FromPairsExpression
-	// Array
-	| PluckExpression
-	| UniqueExpression
-	| FlattenExpression
-	| GroupByExpression
-	// Comparative
-	| EqualExpression
-	| NotEqualExpression
-	| GreaterThanExpression
-	| GreaterThanOrEqualExpression
-	| LessThanExpression
-	| LessThanOrEqualExpression
-	| InExpression
-	| NotInExpression
-	| MatchesRegexExpression
-	// Logical
-	| AndExpression
-	| OrExpression
-	| NotExpression
-	// Conditional
-	| IfExpression
-	| CaseExpression
-	// Aggregative
-	| CountExpression
-	| SumExpression
-	| MaxExpression
-	| MinExpression
-	| MeanExpression
-	// Iterative
-	| FilterExpression
-	| FilterByExpression
-	| MapExpression
-	| FlatMapExpression
-	| FindExpression
-	| AllExpression
-	| AnyExpression
-	| ConcatExpression
-	| JoinExpression
-	| ReverseExpression
-	// Math
-	| AddExpression
-	| SubtractExpression
-	| MultiplyExpression
-	| DivideExpression
-	| ModuloExpression
-	| CeilExpression
-	| FloorExpression;
+  // Core
+  | GetExpression
+  | IdentityExpression
+  | LiteralExpression
+  | IsPresentExpression
+  | IsEmptyExpression
+  | ExistsExpression
+  | DebugExpression
+  | PipeExpression
+  | DefaultExpression
+  | MatchesExpression
+  | SelectExpression
+  | SortExpression
+  // Object
+  | MergeExpression
+  | PickExpression
+  | OmitExpression
+  | KeysExpression
+  | ValuesExpression
+  | PairsExpression
+  | FromPairsExpression
+  // Array
+  | PluckExpression
+  | UniqueExpression
+  | FlattenExpression
+  | GroupByExpression
+  // Comparative
+  | EqualExpression
+  | NotEqualExpression
+  | GreaterThanExpression
+  | GreaterThanOrEqualExpression
+  | LessThanExpression
+  | LessThanOrEqualExpression
+  | InExpression
+  | NotInExpression
+  | MatchesRegexExpression
+  // Logical
+  | AndExpression
+  | OrExpression
+  | NotExpression
+  // Conditional
+  | IfExpression
+  | CaseExpression
+  // Aggregative
+  | CountExpression
+  | SumExpression
+  | MaxExpression
+  | MinExpression
+  | MeanExpression
+  // Iterative
+  | FilterExpression
+  | FilterByExpression
+  | MapExpression
+  | FlatMapExpression
+  | FindExpression
+  | AllExpression
+  | AnyExpression
+  | ConcatExpression
+  | JoinExpression
+  | ReverseExpression
+  // Math
+  | AddExpression
+  | SubtractExpression
+  | MultiplyExpression
+  | DivideExpression
+  | ModuloExpression
+  | CeilExpression
+  | FloorExpression;
+
+/**
+ * A JSON expression - either built-in or custom
+ */
+export type Expression = ExpressionLike | AnyExpression;
 
 // === MAIN EXPORTS ===
 
@@ -393,24 +382,35 @@ export type AnyExpression =
  * Context object passed to custom expressions
  */
 export interface ExpressionContext {
-	/** Apply an expression to input data */
-	apply: (expr: Expression, data: unknown) => unknown;
-	/** Check if a value is an expression */
-	isExpression: (value: unknown) => boolean;
-	/** Check if a value is a wrapped literal */
-	isWrappedLiteral: (value: unknown) => boolean;
+  /** Apply an expression to input data */
+  apply: (expr: Expression, data: unknown) => unknown;
+  /** Check if a value is an expression */
+  isExpression: (value: unknown) => boolean;
+  /** Check if a value is a wrapped literal */
+  isWrappedLiteral: (value: unknown) => boolean;
 }
+
+/**
+ * Function template for expressions
+ */
+export type ExpressionDefinition = (
+  operand: unknown,
+  inputData: unknown,
+  context: ExpressionContext,
+) => unknown;
 
 /**
  * Configuration object for creating an expression engine
  */
 export interface ExpressionEngineConfig {
-	/** Array of expression pack objects to include */
-	packs?: object[];
-	/** Custom expression definitions */
-	custom?: { [k: string]: (operand: unknown, inputData: unknown, context: ExpressionContext) => unknown };
-	/** Whether to include base expressions (default: true) */
-	includeBase?: boolean;
+  /** Array of expression pack objects to include */
+  packs?: { [k: string]: ExpressionDefinition }[];
+  /** Custom expression definitions */
+  custom?: {
+    [k: string]: ExpressionDefinition;
+  };
+  /** Whether to include base expressions (default: true) */
+  includeBase?: boolean;
 }
 
 /**
@@ -418,21 +418,22 @@ export interface ExpressionEngineConfig {
  * @param config - Configuration object for the expression engine
  * @returns Expression engine instance
  */
-export function createExpressionEngine(config?: ExpressionEngineConfig): ExpressionEngine;
-
+export function createExpressionEngine(
+  config?: ExpressionEngineConfig,
+): ExpressionEngine;
 
 // === PACK EXPORTS ===
 
-export const aggregation: { [k: string]: unknown };
-export const all: { [k: string]: unknown };
-export const array: { [k: string]: unknown };
-export const base: { [k: string]: unknown };
-export const comparison: { [k: string]: unknown };
-export const filtering: { [k: string]: unknown };
-export const math: { [k: string]: unknown };
-export const object: { [k: string]: unknown };
-export const projection: { [k: string]: unknown };
-export const string: { [k: string]: unknown };
+export const aggregation: { [k: string]: ExpressionDefinition };
+export const all: { [k: string]: ExpressionDefinition };
+export const array: { [k: string]: ExpressionDefinition };
+export const base: { [k: string]: ExpressionDefinition };
+export const comparison: { [k: string]: ExpressionDefinition };
+export const filtering: { [k: string]: ExpressionDefinition };
+export const math: { [k: string]: ExpressionDefinition };
+export const object: { [k: string]: ExpressionDefinition };
+export const projection: { [k: string]: ExpressionDefinition };
+export const string: { [k: string]: ExpressionDefinition };
 
 // === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
 

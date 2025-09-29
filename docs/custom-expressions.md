@@ -1,6 +1,6 @@
 # Custom Expressions Guide
 
-This guide covers creating custom expressions for the apply-only JSON Expressions engine. Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the declarative nature of the expression system.
+This guide covers creating custom expressions for JSON Expressions. Custom expressions allow you to extend JSON Expressions with domain-specific functionality while maintaining the declarative nature of the expression system.
 
 > **Need built-in expressions?** Check the **[Pack Reference](packs.md)** for coverage of all available expression packs.
 

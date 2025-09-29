@@ -264,7 +264,7 @@ describe("$case - literal mode (unified behavior)", () => {
           { activity: "playing", playStatus: "playing" },
         ),
       ).toThrow(
-        "only expressions that return true of false may be used in when clauses",
+        "Only expressions that return true or false may be used in when clauses",
       );
     });
 
@@ -588,7 +588,7 @@ describe("conditional expressions - edge cases", () => {
           {},
         ),
       ).toThrow(
-        "only expressions that return true of false may be used in when clauses",
+        "Only expressions that return true or false may be used in when clauses",
       );
     });
 

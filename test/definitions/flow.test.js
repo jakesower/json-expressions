@@ -181,13 +181,13 @@ describe("$default", () => {
 
     it("throws error for invalid operand", () => {
       expect(() => apply({ $default: "not an object" }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
 
     it("throws error for missing expression property", () => {
       expect(() => apply({ $default: { default: "fallback" } }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
 
@@ -195,7 +195,7 @@ describe("$default", () => {
       expect(() =>
         apply({ $default: { expression: { $get: "name" } } }, {}),
       ).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
   });
@@ -546,25 +546,25 @@ describe("flow expressions - edge cases", () => {
 
     it("handles various operand validation errors", () => {
       expect(() => apply({ $default: null }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
 
       expect(() => apply({ $default: [] }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
 
       expect(() => apply({ $default: "string" }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
 
       expect(() => apply({ $default: 123 }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
 
     it("handles empty object operand", () => {
       expect(() => apply({ $default: {} }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
 
@@ -572,11 +572,11 @@ describe("flow expressions - edge cases", () => {
       expect(() =>
         apply({ $default: { expression: { $literal: "test" } } }, {}),
       ).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
 
       expect(() => apply({ $default: { default: "fallback" } }, {})).toThrow(
-        "$default operand must be on object with { expression, default, allowNull? }",
+        "$default operand must be an object with { expression, default }",
       );
     });
 
@@ -963,7 +963,7 @@ describe("flow expressions - edge cases", () => {
                     name: { $get: "name" },
                     avgScore: {
                       $divide: [
-                        { $sum: { $get: "scores" } },
+                        { $pipe: [{ $get: "scores" }, { $sum: null }] },
                         { $get: "scores.length" },
                       ],
                     },

@@ -137,7 +137,7 @@ Unified conditional expression supporting both literal comparisons and boolean p
 The `$case` expression automatically determines how to handle each `when` clause:
 
 - **Boolean predicate expressions** (`$gt`, `$eq`, `$and`, etc.) → Applied as predicates with the case value as input
-- **All other values** → Evaluated and compared literally using deep equality
+- **All other values** → Compared literally using deep equality
 
 ```javascript
 // Flexible activity assignment using both literal and predicate matching
@@ -170,7 +170,7 @@ apply(
       cases: [
         { when: "napping", then: "Quiet time activities" }, // Literal comparison
         { when: "active", then: "High energy games" }, // Literal comparison
-        { when: { $get: "fallbackStatus" }, then: "Custom activity" }, // Expression evaluated to literal
+        { when: { $get: "fallbackStatus" }, then: "Custom activity" }, // Expression applied to literal
       ],
       default: "Free play",
     },

@@ -23,7 +23,7 @@ const $default = (operand, inputData, { apply }) => {
     !("default" in operand)
   ) {
     throw new Error(
-      "$default operand must be on object with { expression, default, allowNull? }",
+      "$default operand must be an object with { expression, default }",
     );
   }
 

@@ -19,8 +19,6 @@ const $get = (operand, inputData, { apply }) => {
     : get(inputData, resolvedOperand);
 };
 
-// Removed $isDefined - replaced with semantic expressions $isPresent/$isEmpty/$exists
-
 const $identity = (_, inputData) => inputData;
 
 const $select = (operand, inputData, { apply }) => {
