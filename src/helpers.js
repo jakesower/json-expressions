@@ -1,17 +1,43 @@
 import { isEqualWith } from "es-toolkit";
 
 /**
- * @param {Object} obj - The object to query.
- * @param {string | Array} path - The path of the property to get.
- * @param {*} [defaultValue] - The value returned if the resolved value is undefined.
- * @returns {*} Returns the resolved value.
+ * Gets a value from an object using a property path.
+ * Supports the $ wildcard for array element iteration and flattening.
+ *
+ * @param {Object|Array} objOrArray - The object or array to query
+ * @param {string | Array} path - The path of the property to get. Use "$" to iterate over array elements.
+ * @returns {*} Returns the resolved value, or null if not found
+ *
+ * @example
+ * get({ name: "Chen" }, "name") // "Chen"
+ * get({ user: { name: "Amira" } }, "user.name") // "Amira"
+ * get([{ name: "Luna" }, { name: "Kai" }], "$.name") // ["Luna", "Kai"]
+ * get({ items: [{ id: 1 }, { id: 2 }] }, "items.$.id") // [1, 2]
  */
-export function get(obj, path) {
-  // Convert the path to an array if it's not already.
+export function get(objOrArray, path) {
+  if (objOrArray === null || objOrArray === undefined) return null;
+
+  // Convert the path to an array if it's not already
   const pathArray = Array.isArray(path) ? path : path.split(".");
 
-  // Reduce over the path array to find the nested value.
-  return pathArray.reduce((acc, key) => acc && acc[key], obj) ?? null;
+  // Handle empty path after splitting
+  if (pathArray.length === 0 || (pathArray.length === 1 && pathArray[0] === "")) {
+    return objOrArray;
+  }
+
+  // Handle "." as root accessor
+  if (pathArray.length === 1 && pathArray[0] === ".") {
+    return objOrArray;
+  }
+
+  const [head, ...tail] = pathArray;
+
+  if (head === "$") {
+    const asArray = Array.isArray(objOrArray) ? objOrArray : [objOrArray];
+    return asArray.flatMap((item) => get(item, tail));
+  }
+
+  return get(objOrArray[head], tail);
 }
 
 export function isEqual(a, b) {

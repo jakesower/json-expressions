@@ -138,6 +138,58 @@ describe("access expressions - edge cases", () => {
       expect(apply({ $get: "nonexistent.path" }, data)).toBe(null);
     });
 
+    it("uses $ wildcard to iterate over arrays", () => {
+      const data = [
+        { name: "Chen", age: 3 },
+        { name: "Amira", age: 4 },
+        { name: "Diego", age: 5 },
+      ];
+      expect(apply({ $get: "$.name" }, data)).toEqual(["Chen", "Amira", "Diego"]);
+      expect(apply({ $get: "$.age" }, data)).toEqual([3, 4, 5]);
+    });
+
+    it("uses $ wildcard for nested arrays", () => {
+      const data = {
+        children: [
+          { name: "Luna", toys: ["blocks", "dolls"] },
+          { name: "Kai", toys: ["cars", "puzzles"] },
+        ],
+      };
+      expect(apply({ $get: "children.$.name" }, data)).toEqual(["Luna", "Kai"]);
+      // Note: flatMap flattens one level, so arrays of arrays become flattened
+      expect(apply({ $get: "children.$.toys" }, data)).toEqual([
+        "blocks",
+        "dolls",
+        "cars",
+        "puzzles",
+      ]);
+    });
+
+    it("flattens with multiple $ wildcards", () => {
+      const data = {
+        classrooms: [
+          { children: [{ name: "Sofia" }, { name: "Miguel" }] },
+          { children: [{ name: "Zara" }, { name: "Omar" }] },
+        ],
+      };
+      expect(apply({ $get: "classrooms.$.children.$.name" }, data)).toEqual([
+        "Sofia",
+        "Miguel",
+        "Zara",
+        "Omar",
+      ]);
+    });
+
+    it("handles $ wildcard with non-array data", () => {
+      const data = { name: "Iris", age: 3 };
+      expect(apply({ $get: "$.name" }, data)).toEqual(["Iris"]);
+    });
+
+    it("handles $ wildcard with empty arrays", () => {
+      expect(apply({ $get: "$.name" }, [])).toEqual([]);
+      expect(apply({ $get: "items.$.id" }, { items: [] })).toEqual([]);
+    });
+
     it("handles array index access", () => {
       const data = { meals: ["apple", "crackers", "juice"] };
       expect(apply({ $get: "meals.0" }, data)).toBe("apple");
@@ -154,7 +206,8 @@ describe("access expressions - edge cases", () => {
 
     it("handles empty string paths", () => {
       const data = { "": "empty key", name: "Kai" };
-      expect(apply({ $get: "" }, data)).toBe("empty key");
+      // Empty string returns the whole object (root access)
+      expect(apply({ $get: "" }, data)).toEqual(data);
     });
 
     it("handles paths with special characters", () => {

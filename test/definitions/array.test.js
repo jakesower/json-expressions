@@ -1066,13 +1066,31 @@ describe("array expressions - edge cases", () => {
 
 describe("$first", () => {
   describe("basic functionality", () => {
-    it("returns first element from array", () => {
+    it("returns first element from input data array", () => {
       expect(apply({ $first: null }, [1, 2, 3, 4, 5])).toBe(1);
       expect(apply({ $first: null }, ["Amara", "Kenji", "Yuki"])).toBe("Amara");
     });
 
+    it("returns first element from operand array", () => {
+      expect(apply({ $first: [10, 20, 30] }, null)).toBe(10);
+      expect(apply({ $first: { $literal: ["a", "b"] } }, null)).toBe("a");
+    });
+
+    it("returns first element from expression result", () => {
+      expect(
+        apply({ $first: { $get: "scores" } }, { scores: [95, 87, 92] }),
+      ).toBe(95);
+      expect(
+        apply(
+          { $first: { $filter: { $gt: 3 } } },
+          [1, 2, 3, 4, 5],
+        ),
+      ).toBe(4);
+    });
+
     it("returns undefined for empty array", () => {
       expect(apply({ $first: null }, [])).toBe(undefined);
+      expect(apply({ $first: [] }, null)).toBe(undefined);
     });
 
     it("works with single element arrays", () => {
@@ -1084,18 +1102,42 @@ describe("$first", () => {
       expect(apply({ $first: null }, [null, "Elena", 3])).toBe(null);
       expect(apply({ $first: null }, [false, true])).toBe(false);
     });
+
+    it("throws error for non-array input and operand", () => {
+      expect(() => apply({ $first: null }, "not array")).toThrowError(
+        "Array accessor expressions require array operand or input data",
+      );
+    });
   });
 });
 
 describe("$last", () => {
   describe("basic functionality", () => {
-    it("returns last element from array", () => {
+    it("returns last element from input data array", () => {
       expect(apply({ $last: null }, [1, 2, 3, 4, 5])).toBe(5);
       expect(apply({ $last: null }, ["Amara", "Kenji", "Yuki"])).toBe("Yuki");
     });
 
+    it("returns last element from operand array", () => {
+      expect(apply({ $last: [10, 20, 30] }, null)).toBe(30);
+      expect(apply({ $last: { $literal: ["a", "b"] } }, null)).toBe("b");
+    });
+
+    it("returns last element from expression result", () => {
+      expect(
+        apply({ $last: { $get: "scores" } }, { scores: [95, 87, 92] }),
+      ).toBe(92);
+      expect(
+        apply(
+          { $last: { $filter: { $gt: 3 } } },
+          [1, 2, 3, 4, 5],
+        ),
+      ).toBe(5);
+    });
+
     it("returns undefined for empty array", () => {
       expect(apply({ $last: null }, [])).toBe(undefined);
+      expect(apply({ $last: [] }, null)).toBe(undefined);
     });
 
     it("works with single element arrays", () => {
@@ -1106,6 +1148,12 @@ describe("$last", () => {
     it("handles mixed data types", () => {
       expect(apply({ $last: null }, ["Elena", 3, null])).toBe(null);
       expect(apply({ $last: null }, [true, false])).toBe(false);
+    });
+
+    it("throws error for non-array input and operand", () => {
+      expect(() => apply({ $last: null }, "not array")).toThrowError(
+        "Array accessor expressions require array operand or input data",
+      );
     });
   });
 });

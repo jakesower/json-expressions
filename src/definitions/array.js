@@ -180,11 +180,36 @@ const $take = createArrayOperationExpression((count, array) =>
 
 const $unique = createArrayTransformExpression((array) => [...new Set(array)]);
 
-const $first = createArrayTransformExpression((array) => {
+/**
+ * Creates an array accessor expression that operates on either operand or input data.
+ * Similar to aggregative expressions - if operand resolves to an array, use it; otherwise use input data.
+ *
+ * @param {function(Array): any} accessorFn - Function that extracts a value from an array
+ * @returns {function} Expression function that operates on operand or input data
+ */
+const createArrayAccessorExpression =
+  (accessorFn) =>
+  (operand, inputData, { apply, isWrappedLiteral }) => {
+    const resolved = isWrappedLiteral(operand)
+      ? operand.$literal
+      : apply(operand, inputData);
+
+    if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
+      throw new Error(
+        "Array accessor expressions require array operand or input data",
+      );
+    }
+
+    return Array.isArray(resolved)
+      ? accessorFn(resolved)
+      : accessorFn(inputData);
+  };
+
+const $first = createArrayAccessorExpression((array) => {
   return array.length === 0 ? undefined : array[0];
 });
 
-const $last = createArrayTransformExpression((array) => {
+const $last = createArrayAccessorExpression((array) => {
   return array.length === 0 ? undefined : array[array.length - 1];
 });
 

@@ -38,7 +38,7 @@ export interface ExpressionEngine {
 // === CORE EXPRESSIONS ===
 
 export interface GetExpression {
-  $get: string | (string | number)[];
+  $get: string | (string | number)[] | Expression;
 }
 
 export interface IdentityExpression {
@@ -208,23 +208,23 @@ export interface CaseExpression {
 // === AGGREGATIVE EXPRESSIONS ===
 
 export interface CountExpression {
-  $count: null;
+  $count: null | Expression | unknown[];
 }
 
 export interface SumExpression {
-  $sum: null;
+  $sum: null | Expression | number[];
 }
 
 export interface MaxExpression {
-  $max: null;
+  $max: null | Expression | number[];
 }
 
 export interface MinExpression {
-  $min: null;
+  $min: null | Expression | number[];
 }
 
 export interface MeanExpression {
-  $mean: null;
+  $mean: null | Expression | number[];
 }
 
 // === ITERATIVE EXPRESSIONS ===
@@ -267,6 +267,14 @@ export interface JoinExpression {
 
 export interface ReverseExpression {
   $reverse: null;
+}
+
+export interface FirstExpression {
+  $first: null | Expression | unknown[];
+}
+
+export interface LastExpression {
+  $last: null | Expression | unknown[];
 }
 
 // === MATH EXPRESSIONS ===
@@ -362,6 +370,8 @@ export type AnyExpression =
   | ConcatExpression
   | JoinExpression
   | ReverseExpression
+  | FirstExpression
+  | LastExpression
   // Math
   | AddExpression
   | SubtractExpression

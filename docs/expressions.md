@@ -211,12 +211,21 @@ apply({ $concat: [["Zara"], ["Luna", "Diego"]] }, currentChildren);
 
 ## $count
 
-Returns the count of items in an array.
+Returns the count of items in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Count number of children in group
+// Count items in input data array
 const children = ["Amara", "Chen", "Fatima", "Kai"];
 apply({ $count: null }, children);
+// Returns: 4
+
+// Count items in operand array
+apply({ $count: [1, 2, 3, 4, 5] }, null);
+// Returns: 5
+
+// Count items from expression result
+const data = { scores: [95, 87, 92, 88] };
+apply({ $count: { $get: "scores" } }, data);
 // Returns: 4
 ```
 
@@ -362,13 +371,26 @@ apply({ $find: { $match: { age: { $gte: 5 } } } }, children);
 
 ## $first
 
-Returns the first item in an array.
+Returns the first item in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Get first child in lineup
+// Get first item from input data array
 const lineup = ["Chen", "Fatima", "Diego", "Luna"];
 apply({ $first: null }, lineup);
 // Returns: "Chen"
+
+// Get first item from operand array
+apply({ $first: [10, 20, 30] }, null);
+// Returns: 10
+
+// Get first item from expression result
+const data = { scores: [95, 87, 92] };
+apply({ $first: { $get: "scores" } }, data);
+// Returns: 95
+
+// Common pattern: filter then get first
+apply({ $first: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5]);
+// Returns: 4
 ```
 
 ## $floor
@@ -434,7 +456,7 @@ apply({ $flatten: { depth: 2 } }, nestedBelongings);
 
 ## $get
 
-Retrieves a value from data using dot notation paths or array paths. Returns `null` if the path does not exist. Combines well with `$default`.
+Retrieves a value from data using dot notation paths or array paths. Supports the `$` wildcard for array element iteration and flattening. Returns `null` if the path does not exist. Combines well with `$default`.
 
 ```javascript
 // Simple path access with dot notation
@@ -449,6 +471,25 @@ apply({ $get: ["info", "age"] }, child);
 const data = { child: { profile: { contact: { email: "test@example.com" } } } };
 apply({ $get: ["child", "profile", "contact", "email"] }, data);
 // Returns: "test@example.com"
+
+// Array iteration with $ wildcard
+const children = [
+  { name: "Chen", age: 3 },
+  { name: "Amira", age: 4 },
+  { name: "Diego", age: 5 },
+];
+apply({ $get: "$.name" }, children);
+// Returns: ["Chen", "Amira", "Diego"]
+
+// Nested array iteration
+const classrooms = {
+  rooms: [
+    { children: [{ name: "Sofia" }, { name: "Miguel" }] },
+    { children: [{ name: "Zara" }, { name: "Omar" }] },
+  ],
+};
+apply({ $get: "rooms.$.children.$.name" }, classrooms);
+// Returns: ["Sofia", "Miguel", "Zara", "Omar"] (flattened)
 ```
 
 ## $groupBy
@@ -622,13 +663,26 @@ apply({ $keys: null }, child);
 
 ## $last
 
-Returns the last item in an array.
+Returns the last item in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Get last child picked up
+// Get last item from input data array
 const pickupOrder = ["Kai", "Zara", "Amara", "Chen"];
 apply({ $last: null }, pickupOrder);
 // Returns: "Chen"
+
+// Get last item from operand array
+apply({ $last: [10, 20, 30] }, null);
+// Returns: 30
+
+// Get last item from expression result
+const data = { scores: [95, 87, 92] };
+apply({ $last: { $get: "scores" } }, data);
+// Returns: 92
+
+// Common pattern: filter then get last
+apply({ $last: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5]);
+// Returns: 5
 ```
 
 ## $literal
@@ -771,24 +825,42 @@ apply({ $matchesRegex: "(?m)^line" }, "first\nline two");
 
 ## $max
 
-Returns the maximum value in an array.
+Returns the maximum value in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Find oldest child's age
+// Find maximum in input data array
 const ages = [3, 5, 4, 6, 2];
 apply({ $max: null }, ages);
 // Returns: 6
+
+// Find maximum in operand array
+apply({ $max: [10, 25, 15, 30] }, null);
+// Returns: 30
+
+// Find maximum from expression result
+const data = { temperatures: [68, 72, 75, 73, 70] };
+apply({ $max: { $get: "temperatures" } }, data);
+// Returns: 75
 ```
 
 ## $mean
 
-Calculates the arithmetic mean (average) of array values.
+Calculates the arithmetic mean (average) of array values. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Calculate average nap duration
+// Calculate mean of input data array
 const napTimes = [45, 60, 30, 75, 50]; // minutes
 apply({ $mean: null }, napTimes);
 // Returns: 52
+
+// Calculate mean of operand array
+apply({ $mean: [10, 20, 30] }, null);
+// Returns: 20
+
+// Calculate mean from expression result
+const data = { scores: [88, 92, 95, 87] };
+apply({ $mean: { $get: "scores" } }, data);
+// Returns: 90.5
 ```
 
 ## $merge
@@ -804,13 +876,22 @@ apply({ $merge: { age: 5, present: true } }, child);
 
 ## $min
 
-Returns the minimum value in an array.
+Returns the minimum value in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Find youngest child's age
+// Find minimum in input data array
 const ages = [3, 5, 4, 6, 2];
 apply({ $min: null }, ages);
 // Returns: 2
+
+// Find minimum in operand array
+apply({ $min: [10, 25, 15, 30] }, null);
+// Returns: 10
+
+// Find minimum from expression result
+const data = { temperatures: [68, 72, 75, 73, 70] };
+apply({ $min: { $get: "temperatures" } }, data);
+// Returns: 68
 ```
 
 ## $modulo
@@ -1178,13 +1259,22 @@ apply({ $subtract: [{ $get: "age" }, 2] }, { age: 6 });
 
 ## $sum
 
-Calculates the sum of array values.
+Calculates the sum of array values. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Calculate total daily temperatures
+// Calculate sum of input data array
 const temperatures = [68, 72, 75, 73, 70];
 apply({ $sum: null }, temperatures);
 // Returns: 358
+
+// Calculate sum of operand array
+apply({ $sum: [10, 20, 30, 40] }, null);
+// Returns: 100
+
+// Calculate sum from expression result
+const data = { dailySteps: [5000, 7500, 6000, 8000] };
+apply({ $sum: { $get: "dailySteps" } }, data);
+// Returns: 26500
 ```
 
 ## $take

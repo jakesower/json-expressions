@@ -31,17 +31,32 @@ const createMathExpression =
   };
 
 /**
- * Creates an aggregative expression that applies a calculation function to input data.
+ * Creates an aggregative expression that applies a calculation function to either the operand or input data.
+ * Follows the SpectraGraph pattern:
+ * - If operand resolves to an array, aggregate the operand
+ * - Otherwise, aggregate the input data (which must be an array)
+ * - Respects $literal wrapping to prevent unwanted resolution
  *
  * @param {function(Array): any} calculateFn - Function that takes an array of values and returns a calculated result
- * @returns {function} Expression function that operates directly on input data
+ * @returns {function} Expression function that operates on operand or input data
  */
-const createAggregativeExpression = (calculateFn) => (operand, inputData) => {
-  if (!Array.isArray(inputData)) {
-    throw new Error("Aggregation expressions require array input data");
-  }
-  return calculateFn(inputData);
-};
+const createAggregativeExpression =
+  (calculateFn) =>
+  (operand, inputData, { apply, isWrappedLiteral }) => {
+    const resolved = isWrappedLiteral(operand)
+      ? operand.$literal
+      : apply(operand, inputData);
+
+    if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
+      throw new Error(
+        "Aggregation expressions require array operand or input data",
+      );
+    }
+
+    return Array.isArray(resolved)
+      ? calculateFn(resolved)
+      : calculateFn(inputData);
+  };
 
 const $abs = (operand, inputData) => Math.abs(inputData);
 

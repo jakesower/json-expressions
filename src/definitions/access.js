@@ -2,7 +2,7 @@
  * Access Expressions - Data Access Operations
  *
  * Operations for accessing and extracting data from input:
- * - Basic access ($get)
+ * - Basic access ($get) - supports $ wildcard for array iteration
  * - Identity access ($identity)
  * - Object selection/projection ($select)
  */

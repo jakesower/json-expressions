@@ -206,19 +206,30 @@ describe("$sqrt", () => {
 
 describe("$count", () => {
   describe("basic functionality", () => {
-    it("counts elements in array", () => {
+    it("counts elements in array input data", () => {
       expect(apply({ $count: null }, [1, 2, 3, 4, 5])).toBe(5);
       expect(apply({ $count: null }, ["Amara", "Kenji", "Yuki"])).toBe(3);
       expect(apply({ $count: null }, [])).toBe(0);
+    });
+
+    it("counts elements in operand array", () => {
+      expect(apply({ $count: [1, 2, 3] }, null)).toBe(3);
+      expect(apply({ $count: { $literal: [4, 5] } }, null)).toBe(2);
+    });
+
+    it("counts result of expression operand", () => {
+      expect(apply({ $count: { $get: "scores" } }, { scores: [1, 2, 3] })).toBe(
+        3,
+      );
     });
 
     it("counts single element", () => {
       expect(apply({ $count: null }, [42])).toBe(1);
     });
 
-    it("throws error for non-array input", () => {
+    it("throws error for non-array input and operand", () => {
       expect(() => apply({ $count: null }, "not array")).toThrowError(
-        "Aggregation expressions require array input data",
+        "Aggregation expressions require array operand or input data",
       );
     });
   });
@@ -226,10 +237,17 @@ describe("$count", () => {
 
 describe("$max", () => {
   describe("basic functionality", () => {
-    it("finds maximum value in array", () => {
+    it("finds maximum value in array input data", () => {
       expect(apply({ $max: null }, [1, 5, 3, 9, 2])).toBe(9);
       expect(apply({ $max: null }, [3.14, 2.71, 1.41])).toBe(3.14);
       expect(apply({ $max: null }, [-5, -2, -10])).toBe(-2);
+    });
+
+    it("finds maximum value in operand array", () => {
+      expect(apply({ $max: [1, 5, 3] }, null)).toBe(5);
+      expect(apply({ $max: { $get: "scores" } }, { scores: [10, 20, 15] })).toBe(
+        20,
+      );
     });
 
     it("handles single element array", () => {
@@ -240,9 +258,9 @@ describe("$max", () => {
       expect(apply({ $max: null }, [])).toBe(undefined);
     });
 
-    it("throws error for non-array input", () => {
+    it("throws error for non-array input and operand", () => {
       expect(() => apply({ $max: null }, "not array")).toThrowError(
-        "Aggregation expressions require array input data",
+        "Aggregation expressions require array operand or input data",
       );
     });
   });
@@ -250,10 +268,17 @@ describe("$max", () => {
 
 describe("$mean", () => {
   describe("basic functionality", () => {
-    it("calculates average of array elements", () => {
+    it("calculates average of array input data", () => {
       expect(apply({ $mean: null }, [1, 2, 3, 4, 5])).toBe(3);
       expect(apply({ $mean: null }, [2, 4, 6])).toBe(4);
       expect(apply({ $mean: null }, [10])).toBe(10);
+    });
+
+    it("calculates average of operand array", () => {
+      expect(apply({ $mean: [2, 4, 6] }, null)).toBe(4);
+      expect(apply({ $mean: { $get: "values" } }, { values: [10, 20, 30] })).toBe(
+        20,
+      );
     });
 
     it("handles decimal results", () => {
@@ -265,9 +290,9 @@ describe("$mean", () => {
       expect(apply({ $mean: null }, [])).toBe(undefined);
     });
 
-    it("throws error for non-array input", () => {
+    it("throws error for non-array input and operand", () => {
       expect(() => apply({ $mean: null }, "not array")).toThrowError(
-        "Aggregation expressions require array input data",
+        "Aggregation expressions require array operand or input data",
       );
     });
   });
@@ -275,10 +300,17 @@ describe("$mean", () => {
 
 describe("$min", () => {
   describe("basic functionality", () => {
-    it("finds minimum value in array", () => {
+    it("finds minimum value in array input data", () => {
       expect(apply({ $min: null }, [1, 5, 3, 9, 2])).toBe(1);
       expect(apply({ $min: null }, [3.14, 2.71, 1.41])).toBe(1.41);
       expect(apply({ $min: null }, [-5, -2, -10])).toBe(-10);
+    });
+
+    it("finds minimum value in operand array", () => {
+      expect(apply({ $min: [5, 1, 3] }, null)).toBe(1);
+      expect(apply({ $min: { $get: "temps" } }, { temps: [10, -5, 20] })).toBe(
+        -5,
+      );
     });
 
     it("handles single element array", () => {
@@ -289,9 +321,9 @@ describe("$min", () => {
       expect(apply({ $min: null }, [])).toBe(undefined);
     });
 
-    it("throws error for non-array input", () => {
+    it("throws error for non-array input and operand", () => {
       expect(() => apply({ $min: null }, "not array")).toThrowError(
-        "Aggregation expressions require array input data",
+        "Aggregation expressions require array operand or input data",
       );
     });
   });
@@ -299,10 +331,17 @@ describe("$min", () => {
 
 describe("$sum", () => {
   describe("basic functionality", () => {
-    it("sums array elements", () => {
+    it("sums array input data", () => {
       expect(apply({ $sum: null }, [1, 2, 3, 4, 5])).toBe(15);
       expect(apply({ $sum: null }, [2.5, 1.5, 3])).toBe(7);
       expect(apply({ $sum: null }, [-1, 1, -2, 2])).toBe(0);
+    });
+
+    it("sums operand array", () => {
+      expect(apply({ $sum: [1, 2, 3] }, null)).toBe(6);
+      expect(apply({ $sum: { $get: "amounts" } }, { amounts: [10, 20, 30] })).toBe(
+        60,
+      );
     });
 
     it("handles single element array", () => {
@@ -313,9 +352,9 @@ describe("$sum", () => {
       expect(apply({ $sum: null }, [])).toBe(0);
     });
 
-    it("throws error for non-array input", () => {
+    it("throws error for non-array input and operand", () => {
       expect(() => apply({ $sum: null }, "not array")).toThrowError(
-        "Aggregation expressions require array input data",
+        "Aggregation expressions require array operand or input data",
       );
     });
   });
