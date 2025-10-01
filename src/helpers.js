@@ -16,20 +16,10 @@ import { isEqualWith } from "es-toolkit";
  */
 export function get(objOrArray, path) {
   if (objOrArray === null || objOrArray === undefined) return null;
+  if (path === "" || path === "." || path.length === 0) return objOrArray;
 
   // Convert the path to an array if it's not already
   const pathArray = Array.isArray(path) ? path : path.split(".");
-
-  // Handle empty path after splitting
-  if (pathArray.length === 0 || (pathArray.length === 1 && pathArray[0] === "")) {
-    return objOrArray;
-  }
-
-  // Handle "." as root accessor
-  if (pathArray.length === 1 && pathArray[0] === ".") {
-    return objOrArray;
-  }
-
   const [head, ...tail] = pathArray;
 
   if (head === "$") {
