@@ -255,7 +255,7 @@ describe("$max", () => {
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $max: null }, [])).toBe(undefined);
+      expect(apply({ $max: null }, [])).toBe(null);
     });
 
     it("throws error for non-array input and operand", () => {
@@ -287,7 +287,7 @@ describe("$mean", () => {
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $mean: null }, [])).toBe(undefined);
+      expect(apply({ $mean: null }, [])).toBe(null);
     });
 
     it("throws error for non-array input and operand", () => {
@@ -318,7 +318,7 @@ describe("$min", () => {
     });
 
     it("returns undefined for empty array", () => {
-      expect(apply({ $min: null }, [])).toBe(undefined);
+      expect(apply({ $min: null }, [])).toBe(null);
     });
 
     it("throws error for non-array input and operand", () => {

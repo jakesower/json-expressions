@@ -114,19 +114,19 @@ const $count = createAggregativeExpression((values) => values.length);
 
 const $max = createAggregativeExpression((values) => {
   return values.length === 0
-    ? undefined
+    ? null
     : values.reduce((max, v) => Math.max(max, v));
 });
 
 const $mean = createAggregativeExpression((values) => {
   return values.length === 0
-    ? undefined
+    ? null
     : values.reduce((sum, v) => sum + v, 0) / values.length;
 });
 
 const $min = createAggregativeExpression((values) => {
   return values.length === 0
-    ? undefined
+    ? null
     : values.reduce((min, v) => Math.min(min, v));
 });
 
