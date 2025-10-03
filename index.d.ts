@@ -307,6 +307,64 @@ export interface FloorExpression {
   $floor: null;
 }
 
+export interface AbsExpression {
+  $abs: null;
+}
+
+export interface PowExpression {
+  $pow: number | Expression | [number | Expression, number | Expression];
+}
+
+export interface SqrtExpression {
+  $sqrt: null;
+}
+
+// === STRING EXPRESSIONS ===
+
+export interface LowercaseExpression {
+  $lowercase: null;
+}
+
+export interface UppercaseExpression {
+  $uppercase: null;
+}
+
+export interface TrimExpression {
+  $trim: null;
+}
+
+export interface ReplaceExpression {
+  $replace: [string | Expression, string | Expression];
+}
+
+export interface SplitExpression {
+  $split: string | Expression;
+}
+
+export interface SubstringExpression {
+  $substring: [number | Expression] | [number | Expression, number | Expression];
+}
+
+// === ARRAY EXPRESSIONS (ADDITIONAL) ===
+
+export interface SkipExpression {
+  $skip: number | Expression;
+}
+
+export interface TakeExpression {
+  $take: number | Expression;
+}
+
+export interface CoalesceExpression {
+  $coalesce: Expression | unknown[];
+}
+
+// === PREDICATE EXPRESSIONS (ADDITIONAL) ===
+
+export interface BetweenExpression {
+  $between: { min: number | Expression; max: number | Expression };
+}
+
 // === UNION TYPE FOR ALL EXPRESSIONS ===
 
 export type AnyExpression =
@@ -379,7 +437,23 @@ export type AnyExpression =
   | DivideExpression
   | ModuloExpression
   | CeilExpression
-  | FloorExpression;
+  | FloorExpression
+  | AbsExpression
+  | PowExpression
+  | SqrtExpression
+  // String
+  | LowercaseExpression
+  | UppercaseExpression
+  | TrimExpression
+  | ReplaceExpression
+  | SplitExpression
+  | SubstringExpression
+  // Array (Additional)
+  | SkipExpression
+  | TakeExpression
+  | CoalesceExpression
+  // Predicate (Additional)
+  | BetweenExpression;
 
 /**
  * A JSON expression - either built-in or custom

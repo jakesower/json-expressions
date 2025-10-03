@@ -31,22 +31,6 @@ describe("$any", () => {
   });
 });
 
-describe("$append", () => {
-  describe("basic functionality", () => {
-    it("appends elements to arrays", () => {
-      expect(apply({ $append: [4, 5] }, [1, 2, 3])).toEqual([1, 2, 3, 4, 5]);
-      expect(apply({ $append: [] }, [1, 2, 3])).toEqual([1, 2, 3]);
-      expect(apply({ $append: ["d", "e"] }, ["a", "b", "c"])).toEqual([
-        "a",
-        "b",
-        "c",
-        "d",
-        "e",
-      ]);
-    });
-  });
-});
-
 describe("$coalesce", () => {
   describe("basic functionality", () => {
     it("returns first non-null value", () => {
@@ -434,22 +418,6 @@ describe("$pluck", () => {
   });
 });
 
-describe("$prepend", () => {
-  describe("basic functionality", () => {
-    it("prepends elements to arrays", () => {
-      expect(apply({ $prepend: [4, 5] }, [1, 2, 3])).toEqual([4, 5, 1, 2, 3]);
-      expect(apply({ $prepend: [] }, [1, 2, 3])).toEqual([1, 2, 3]);
-      expect(apply({ $prepend: ["a", "b"] }, ["c", "d", "e"])).toEqual([
-        "a",
-        "b",
-        "c",
-        "d",
-        "e",
-      ]);
-    });
-  });
-});
-
 describe("$reverse", () => {
   describe("basic functionality", () => {
     it("reverses arrays", () => {
@@ -569,21 +537,6 @@ describe("array expressions - edge cases", () => {
           data,
         ),
       ).toBe(true);
-    });
-  });
-
-  describe("$append edge cases", () => {
-    it("handles null and undefined values", () => {
-      expect(apply({ $append: [null] }, [1, 2])).toEqual([1, 2, null]);
-      expect(apply({ $append: [undefined] }, [1, 2])).toEqual([
-        1,
-        2,
-        undefined,
-      ]);
-    });
-
-    it("handles nested arrays", () => {
-      expect(apply({ $append: [[3, 4]] }, [1, 2])).toEqual([1, 2, [3, 4]]);
     });
   });
 
@@ -919,25 +872,6 @@ describe("array expressions - edge cases", () => {
           data,
         ),
       ).toEqual([0.05, 0.075]);
-    });
-  });
-
-  describe("$prepend edge cases", () => {
-    it("handles null and undefined values", () => {
-      expect(apply({ $prepend: [null] }, [1, 2])).toEqual([null, 1, 2]);
-      expect(apply({ $prepend: [undefined] }, [1, 2])).toEqual([
-        undefined,
-        1,
-        2,
-      ]);
-    });
-
-    it("handles nested arrays", () => {
-      expect(apply({ $prepend: [[0]] }, [1, 2])).toEqual([[0], 1, 2]);
-    });
-
-    it("handles empty arrays to prepend", () => {
-      expect(apply({ $prepend: [] }, [1, 2])).toEqual([1, 2]);
     });
   });
 

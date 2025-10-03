@@ -4,7 +4,7 @@
  * Operations specifically for array manipulation and processing:
  * - Iteration ($all, $any, $filter, $filterBy, $find, $flatMap, $map)
  * - Transformations ($concat, $flatten, $join, $reverse, $unique)
- * - Slicing ($append, $prepend, $skip, $take)
+ * - Slicing ($skip, $take)
  * - Projection ($pluck)
  * - Grouping ($groupBy)
  * - Accessors ($first, $last)
@@ -45,10 +45,6 @@ const $all = createArrayIterationExpression((array, itemFn) =>
 
 const $any = createArrayIterationExpression((array, itemFn) =>
   array.some(itemFn),
-);
-
-const $append = createArrayOperationExpression((arrayToAppend, baseArray) =>
-  baseArray.concat(arrayToAppend),
 );
 
 const $coalesce = (operand, inputData, { apply }) => {
@@ -162,10 +158,6 @@ const $pluck = (operand, inputData, { apply }) => {
   return inputData.map((item) => apply(operand, item));
 };
 
-const $prepend = createArrayOperationExpression((arrayToPrepend, baseArray) =>
-  arrayToPrepend.concat(baseArray),
-);
-
 const $reverse = createArrayTransformExpression((array) =>
   array.slice().reverse(),
 );
@@ -217,7 +209,6 @@ const $last = createArrayAccessorExpression((array) => {
 export {
   $all,
   $any,
-  $append,
   $coalesce,
   $concat,
   $filter,
@@ -231,7 +222,6 @@ export {
   $last,
   $map,
   $pluck,
-  $prepend,
   $reverse,
   $skip,
   $take,

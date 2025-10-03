@@ -109,17 +109,6 @@ apply({ $any: { $get: "tired" } }, children);
 // Returns: true
 ```
 
-## $append
-
-Appends an array to the end of the input array.
-
-```javascript
-// Add new children to existing group
-const currentGroup = ["Amara", "Kenji", "Sofia"];
-apply({ $append: ["Nina", "Omar"] }, currentGroup);
-// Returns: ["Amara", "Kenji", "Sofia", "Nina", "Omar"]
-```
-
 ## $between
 
 Tests if a value is between two bounds (inclusive).
@@ -1109,17 +1098,6 @@ apply(
 // Mixed form: expression ^ literal
 apply({ $pow: [{ $get: "side" }, 2] }, { side: 5 });
 // Returns: 25 (5^2)
-```
-
-## $prepend
-
-Prepends an array to the beginning of the input array.
-
-```javascript
-// Add priority children to beginning of list
-const regularChildren = ["Chen", "Diego"];
-apply({ $prepend: ["Aria", "Kai"] }, regularChildren);
-// Returns: ["Aria", "Kai", "Chen", "Diego"]
 ```
 
 ## $replace

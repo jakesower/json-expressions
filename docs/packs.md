@@ -173,10 +173,8 @@ const engine = createExpressionEngine({ packs: [arrayPack] });
 
 #### Array Modifications
 
-- [`$append`](expressions.md#append) - Add elements to end of array
 - [`$concat`](expressions.md#concat) - Concatenate multiple arrays
 - [`$join`](expressions.md#join) - Join array elements into string
-- [`$prepend`](expressions.md#prepend) - Add elements to start of array
 - [`$reverse`](expressions.md#reverse) - Reverse array order
 - [`$unique`](expressions.md#unique) - Remove duplicate elements
 
