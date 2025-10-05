@@ -37,11 +37,12 @@ const createMathExpression =
  * - Otherwise, aggregate the input data (which must be an array)
  * - Respects $literal wrapping to prevent unwanted resolution
  *
+ * @param {string} expressionName - Name of the expression for error messages (e.g., "$count", "$max")
  * @param {function(Array): any} calculateFn - Function that takes an array of values and returns a calculated result
  * @returns {function} Expression function that operates on operand or input data
  */
 const createAggregativeExpression =
-  (calculateFn) =>
+  (expressionName, calculateFn) =>
   (operand, inputData, { apply, isWrappedLiteral }) => {
     const resolved = isWrappedLiteral(operand)
       ? operand.$literal
@@ -49,7 +50,7 @@ const createAggregativeExpression =
 
     if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
       throw new Error(
-        "Aggregation expressions require array operand or input data",
+        `${expressionName} requires array operand or input data`,
       );
     }
 
@@ -110,21 +111,21 @@ const $pow = createMathExpression((left, right) => {
   return Math.pow(left, right);
 });
 
-const $count = createAggregativeExpression((values) => values.length);
+const $count = createAggregativeExpression("$count", (values) => values.length);
 
-const $max = createAggregativeExpression((values) => {
+const $max = createAggregativeExpression("$max", (values) => {
   return values.length === 0
     ? null
     : values.reduce((max, v) => Math.max(max, v));
 });
 
-const $mean = createAggregativeExpression((values) => {
+const $mean = createAggregativeExpression("$mean", (values) => {
   return values.length === 0
     ? null
     : values.reduce((sum, v) => sum + v, 0) / values.length;
 });
 
-const $min = createAggregativeExpression((values) => {
+const $min = createAggregativeExpression("$min", (values) => {
   return values.length === 0
     ? null
     : values.reduce((min, v) => Math.min(min, v));
@@ -139,7 +140,7 @@ const $sqrt = (operand, inputData) => {
   return Math.sqrt(inputData);
 };
 
-const $sum = createAggregativeExpression((values) => {
+const $sum = createAggregativeExpression("$sum", (values) => {
   return values.reduce((sum, v) => sum + v, 0);
 });
 

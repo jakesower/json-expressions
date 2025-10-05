@@ -43,7 +43,7 @@ const $pipe = (operand, inputData, { apply }) => {
     throw new Error("$pipe operand must be an array of expressions");
   }
 
-  return operand.reduce((data, expr) => apply(expr, data), inputData);
+  return operand.reduce((data, expr, idx) => apply(expr, data, idx), inputData);
 };
 
 const $sort = (operand, inputData, { apply }) => {

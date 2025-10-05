@@ -1,0 +1,159 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.10.3] - 2025-10-03
+
+### Changed
+- `$get` now returns `null` instead of `undefined` for non-existent paths, aligning with JSON semantics
+- `undefined` and `null` are now treated as equal throughout the library to support JSON-first design
+
+### Fixed
+- Fixed `$get` path resolution edge cases
+
+## [0.10.2] - 2025-10-03
+
+### Removed
+- Removed `$prepend` and `$append` expressions in favor of `$concat` for better API consistency
+
+## [0.10.1] - 2025-10-01
+
+### Added
+- Operand-over-inputData pattern for aggregative expressions (`$count`, `$sum`, `$min`, `$max`, `$mean`, `$first`, `$last`)
+- These expressions can now operate on either an operand expression result or input data
+
+### Changed
+- Aggregative expressions now support more composable patterns without requiring `$pipe`
+
+## [0.9.0] - 2025-09-29
+
+### Added
+- Math operation edge case handling and improvements
+- Comprehensive documentation in `docs/` directory
+  - Quick Start Guide
+  - Expression Reference
+  - Pack Reference
+  - Custom Expressions Guide
+
+### Changed
+- Renamed "Pack" suffix added to all pack exports for consistency (`mathPack`, `arrayPack`, etc.)
+- Improved null/undefined equality handling across all comparison operations
+- Updated documentation to focus on "apply mode" as primary usage pattern
+
+### Fixed
+- Improved test coverage across all expression definitions
+
+## [0.8.0] - 2025-09-27
+
+### Added
+- Array form for binary comparison operators (`$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`)
+- Array form for math operations (`$add`, `$subtract`, `$multiply`, `$divide`, `$modulo`, `$pow`)
+- Support for comparing or computing values from two expressions
+
+### Changed
+- Pack reorganization for better logical grouping
+- Documentation synchronized with pack structure
+
+## [0.7.0] - 2025-09-24
+
+### Added
+- `$identity` expression for identity function pattern
+- `$literal` expression for wrapping values that should not be evaluated
+- `isWrappedLiteral` context function for custom expressions
+
+### Changed
+- Renamed `isLiteral` to `isWrappedLiteral` in expression context for clarity
+- Renamed `all` pack to `allExpressionsForTesting` to clarify its purpose
+
+### Removed
+- Non-deterministic expressions removed from core library
+
+## [0.6.0] - 2025-09-23
+
+### Changed
+- Updated core expression definitions with improvements to evaluation logic
+- Reorganized expression files for better maintainability
+- Combined `$case` and `$switch` into unified `$case` expression supporting both literal and predicate matching
+
+### Breaking Changes
+- `$switch` expression removed; use `$case` instead
+
+## [0.5.0] - 2025-09-06
+
+### Added
+- Packs system for modular expression loading
+- `createExpressionEngine` configuration object supporting:
+  - `packs`: Array of expression pack objects
+  - `custom`: Custom expression definitions
+  - `includeBase`: Option to exclude base expressions
+
+### Changed
+- Moved to packs-based architecture for better tree-shaking and modularity
+- Updated package structure to support selective imports
+
+### Breaking Changes
+- Changed from flat export to pack-based export system
+- Engine creation now requires explicit pack imports
+
+## [0.4.0] - 2025-09-05
+
+### Changed
+- Adjusted `$get` signature for better path handling
+- Improved `.gitignore` for better development workflow
+
+### Fixed
+- `$get` now properly handles default values for missing paths
+
+## [0.3.0] - 2025-09-03
+
+### Added
+- `$prop` expression for property access (later renamed to `$get`)
+- Default value support for `$get` expression
+
+## [0.2.0] - 2025-09-02
+
+### Changed
+- Updated dependencies to latest versions
+- Improved README documentation
+
+## [0.1.0] - 2025-09-02
+
+### Added
+- Initial release of JSON Expressions
+- Core expression engine with `apply` method
+- Basic expression types:
+  - Access: `$get`
+  - Comparison: `$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`
+  - Logic: `$and`, `$or`, `$not`
+  - Math: `$add`, `$subtract`, `$multiply`, `$divide`, `$modulo`, `$abs`, `$ceil`, `$floor`, `$pow`, `$sqrt`
+  - Array: `$filter`, `$map`, `$find`, `$all`, `$any`, `$concat`, `$flatten`, `$unique`, `$sort`, `$reverse`, `$first`, `$last`, `$skip`, `$take`, `$pluck`, `$groupBy`, `$flatMap`
+  - Object: `$pick`, `$omit`, `$merge`, `$keys`, `$values`, `$pairs`, `$fromPairs`, `$select`
+  - String: `$uppercase`, `$lowercase`, `$trim`, `$split`, `$join`, `$replace`, `$substring`
+  - Conditional: `$if`, `$case`
+  - Flow: `$pipe`, `$default`, `$debug`
+  - Predicate: `$matches`, `$filterBy`, `$exists`, `$isEmpty`, `$isPresent`, `$between`, `$matchesRegex`, `$coalesce`
+  - Aggregation: `$count`, `$sum`, `$min`, `$max`, `$mean`
+- MIT License
+- TypeScript definitions
+- Comprehensive test suite
+- Build tooling (Rollup for ESM/CJS)
+- ESLint and Prettier configuration
+
+[Unreleased]: https://github.com/yourusername/json-expressions/compare/v0.10.3...HEAD
+[0.10.3]: https://github.com/yourusername/json-expressions/compare/v0.10.2...v0.10.3
+[0.10.2]: https://github.com/yourusername/json-expressions/compare/v0.10.1...v0.10.2
+[0.10.1]: https://github.com/yourusername/json-expressions/compare/v0.9.0...v0.10.1
+[0.9.0]: https://github.com/yourusername/json-expressions/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/yourusername/json-expressions/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/yourusername/json-expressions/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/yourusername/json-expressions/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/yourusername/json-expressions/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/yourusername/json-expressions/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/yourusername/json-expressions/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/yourusername/json-expressions/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/yourusername/json-expressions/releases/tag/v0.1.0

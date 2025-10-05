@@ -3,9 +3,11 @@ import { base } from "./packs/base.js";
 import { mapValues } from "es-toolkit";
 import { $literal } from "./definitions/flow.js";
 
+const CAUGHT_IN_ENGINE = Symbol("caught in engine");
+
 /**
  * @typedef {object} ExpressionContext
- * @property {function(any, any): any} apply - Apply an expression to input data
+ * @property {function(any, any, number|string|Array<number|string>=): any} apply - Apply an expression to input data. Optional third parameter adds path segment(s) for error tracking. Can be a single step (number/string) or array of steps (e.g., [0, "when"] for $case).
  * @property {function(any): boolean} isExpression - Check if a value is an expression
  * @property {function(any): boolean} isWrappedLiteral - Check if a value is a wrapped literal
  */
@@ -38,6 +40,13 @@ function isWrappedLiteral(val) {
     typeof val === "object" &&
     Object.keys(val).length === 1 &&
     "$literal" in val
+  );
+}
+
+function buildPathStr(path) {
+  return path.reduce(
+    (acc, step) =>
+      `${acc}${typeof step === "number" ? `[${step}]` : `.${step}`}`,
   );
 }
 
@@ -83,29 +92,48 @@ export function createExpressionEngine(config = {}) {
     }
   };
 
-  const apply = (val, inputData) => {
+  const apply = (val, inputData, path) => {
+    const applyWithPath = (crumb) => (val, inputData, step) =>
+      step === undefined
+        ? apply(val, inputData, [...path, crumb])
+        : Array.isArray(step)
+          ? apply(val, inputData, [...path, crumb, ...step])
+          : apply(val, inputData, [...path, crumb, step]);
+
     if (isExpression(val)) {
       const [expressionName, operand] = Object.entries(val)[0];
       const expressionDef = expressions[expressionName];
 
-      return expressionDef(operand, inputData, {
-        apply,
-        isExpression,
-        isWrappedLiteral,
-      });
+      try {
+        return expressionDef(operand, inputData, {
+          apply: applyWithPath(expressionName),
+          isExpression,
+          isWrappedLiteral,
+        });
+      } catch (err) {
+        if (err[CAUGHT_IN_ENGINE]) {
+          throw err;
+        }
+
+        const outErr = Error(
+          `[${buildPathStr([...path, expressionName])}] ${err.message}`,
+        );
+        outErr[CAUGHT_IN_ENGINE] = true;
+        throw outErr;
+      }
     }
 
     checkLooksLikeExpression(val);
 
     return Array.isArray(val)
-      ? val.map((v) => apply(v, inputData))
+      ? val.map((v, idx) => apply(v, inputData, [...path, idx]))
       : val !== null && typeof val === "object"
-        ? mapValues(val, (v) => apply(v, inputData))
+        ? mapValues(val, (v, key) => apply(v, inputData, [...path, key]))
         : val;
   };
 
   return {
-    apply,
+    apply: (val, inputData) => apply(val, inputData, []),
     expressionNames: Object.keys(expressions),
     isExpression,
   };

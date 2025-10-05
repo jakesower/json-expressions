@@ -221,7 +221,7 @@ When designing expressions that **extract or compute values from collections** (
 ```javascript
 // Example: Custom aggregation following the pattern
 const createAggregativeExpression =
-  (calculateFn) =>
+  (expressionName, calculateFn) =>
   (operand, inputData, { apply, isWrappedLiteral }) => {
     // Resolve operand, respecting $literal wrapping
     const resolved = isWrappedLiteral(operand)
@@ -231,7 +231,7 @@ const createAggregativeExpression =
     // Require either operand or input data to be an array
     if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
       throw new Error(
-        "Aggregation expressions require array operand or input data",
+        `${expressionName} requires array operand or input data`,
       );
     }
 
@@ -241,7 +241,7 @@ const createAggregativeExpression =
       : calculateFn(inputData);
   };
 
-const $median = createAggregativeExpression((values) => {
+const $median = createAggregativeExpression("$median", (values) => {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0

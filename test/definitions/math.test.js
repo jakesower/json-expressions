@@ -229,7 +229,7 @@ describe("$count", () => {
 
     it("throws error for non-array input and operand", () => {
       expect(() => apply({ $count: null }, "not array")).toThrowError(
-        "Aggregation expressions require array operand or input data",
+        "$count requires array operand or input data",
       );
     });
   });
@@ -260,7 +260,7 @@ describe("$max", () => {
 
     it("throws error for non-array input and operand", () => {
       expect(() => apply({ $max: null }, "not array")).toThrowError(
-        "Aggregation expressions require array operand or input data",
+        "$max requires array operand or input data",
       );
     });
   });
@@ -292,7 +292,7 @@ describe("$mean", () => {
 
     it("throws error for non-array input and operand", () => {
       expect(() => apply({ $mean: null }, "not array")).toThrowError(
-        "Aggregation expressions require array operand or input data",
+        "$mean requires array operand or input data",
       );
     });
   });
@@ -323,7 +323,7 @@ describe("$min", () => {
 
     it("throws error for non-array input and operand", () => {
       expect(() => apply({ $min: null }, "not array")).toThrowError(
-        "Aggregation expressions require array operand or input data",
+        "$min requires array operand or input data",
       );
     });
   });
@@ -354,7 +354,7 @@ describe("$sum", () => {
 
     it("throws error for non-array input and operand", () => {
       expect(() => apply({ $sum: null }, "not array")).toThrowError(
-        "Aggregation expressions require array operand or input data",
+        "$sum requires array operand or input data",
       );
     });
   });
