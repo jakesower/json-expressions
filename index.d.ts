@@ -521,6 +521,94 @@ export const string: { [k: string]: ExpressionDefinition };
 
 // === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
 
-// All individual expression definitions are exported via export * statements
-// from their respective definition files (access, array, conditional, flow,
-// math, object, predicate, string)
+// Access expressions
+export const $get: ExpressionDefinition;
+export const $identity: ExpressionDefinition;
+
+// Array expressions
+export const $all: ExpressionDefinition;
+export const $any: ExpressionDefinition;
+export const $coalesce: ExpressionDefinition;
+export const $concat: ExpressionDefinition;
+export const $filter: ExpressionDefinition;
+export const $filterBy: ExpressionDefinition;
+export const $find: ExpressionDefinition;
+export const $first: ExpressionDefinition;
+export const $flatMap: ExpressionDefinition;
+export const $flatten: ExpressionDefinition;
+export const $groupBy: ExpressionDefinition;
+export const $join: ExpressionDefinition;
+export const $last: ExpressionDefinition;
+export const $map: ExpressionDefinition;
+export const $pluck: ExpressionDefinition;
+export const $reverse: ExpressionDefinition;
+export const $skip: ExpressionDefinition;
+export const $take: ExpressionDefinition;
+export const $unique: ExpressionDefinition;
+
+// Conditional expressions
+export const $case: ExpressionDefinition;
+export const $if: ExpressionDefinition;
+
+// Flow expressions
+export const $debug: ExpressionDefinition;
+export const $default: ExpressionDefinition;
+export const $literal: ExpressionDefinition;
+export const $pipe: ExpressionDefinition;
+export const $sort: ExpressionDefinition;
+
+// Math expressions
+export const $abs: ExpressionDefinition;
+export const $add: ExpressionDefinition;
+export const $ceil: ExpressionDefinition;
+export const $divide: ExpressionDefinition;
+export const $floor: ExpressionDefinition;
+export const $modulo: ExpressionDefinition;
+export const $multiply: ExpressionDefinition;
+export const $pow: ExpressionDefinition;
+export const $sqrt: ExpressionDefinition;
+export const $subtract: ExpressionDefinition;
+
+// Object expressions
+export const $fromPairs: ExpressionDefinition;
+export const $keys: ExpressionDefinition;
+export const $merge: ExpressionDefinition;
+export const $omit: ExpressionDefinition;
+export const $pairs: ExpressionDefinition;
+export const $pick: ExpressionDefinition;
+export const $select: ExpressionDefinition;
+export const $values: ExpressionDefinition;
+
+// Predicate expressions
+export const $and: ExpressionDefinition;
+export const $between: ExpressionDefinition;
+export const $eq: ExpressionDefinition;
+export const $exists: ExpressionDefinition;
+export const $gt: ExpressionDefinition;
+export const $gte: ExpressionDefinition;
+export const $in: ExpressionDefinition;
+export const $isEmpty: ExpressionDefinition;
+export const $isPresent: ExpressionDefinition;
+export const $lt: ExpressionDefinition;
+export const $lte: ExpressionDefinition;
+export const $matches: ExpressionDefinition;
+export const $matchesRegex: ExpressionDefinition;
+export const $ne: ExpressionDefinition;
+export const $nin: ExpressionDefinition;
+export const $not: ExpressionDefinition;
+export const $or: ExpressionDefinition;
+
+// String expressions
+export const $lowercase: ExpressionDefinition;
+export const $replace: ExpressionDefinition;
+export const $split: ExpressionDefinition;
+export const $substring: ExpressionDefinition;
+export const $trim: ExpressionDefinition;
+export const $uppercase: ExpressionDefinition;
+
+// Aggregation expressions
+export const $count: ExpressionDefinition;
+export const $max: ExpressionDefinition;
+export const $mean: ExpressionDefinition;
+export const $min: ExpressionDefinition;
+export const $sum: ExpressionDefinition;

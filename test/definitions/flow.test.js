@@ -265,6 +265,12 @@ describe("$pipe", () => {
     expect(result).toEqual("Fatoumata");
   });
 
+  it("acts as a noop with an empty operand array", () => {
+    const data = { name: "Zarina" };
+    const result = apply({ $pipe: [] }, data);
+    expect(result).toEqual(data);
+  });
+
   it("throws with an invalid expression", () => {
     expect(() => {
       apply({ $pipe: [{ $in: "should be an array" }] }, { name: "Zarina" });

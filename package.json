@@ -17,10 +17,19 @@
   ],
   "author": "Jake Sower",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jakesower/json-expressions.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jakesower/json-expressions/issues"
+  },
+  "homepage": "https://github.com/jakesower/json-expressions#readme",
   "files": [
     "dist/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "dependencies": {
