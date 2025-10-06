@@ -232,6 +232,18 @@ JSON Expressions is **optimized for flexibility over raw execution speed**. Expe
 - **Execution overhead** compared to native JavaScript functions
 - **Consider caching** for frequently-used complex expressions
 
-Benchmarks range from 3k ops/sec (complex data processing) to 3M ops/sec (simple comparisons). Run `npm run bench` for detailed performance metrics.
+### Benchmark Results
+
+Performance varies based on operation complexity:
+
+| Operation Type | Performance | Example |
+|---------------|-------------|---------|
+| Simple operations | **1-1.6M ops/sec** | `$gt`, `$get`, `$add` |
+| Complex operations | **300-700K ops/sec** | `$matches`, `$filter` |
+| Nested data access | **2.4M ops/sec** | `$get: "user.profile.name"` |
+| Data processing | **70-300K ops/sec** | Pipeline transformations |
+| Large datasets (1000 items) | **1.6-3.9K ops/sec** | Filtering, grouping |
+
+Run `npm run bench` for detailed performance metrics on your hardware.
 
 Well suited for configuration logic, business rules, and data processing. Consider direct JavaScript functions for performance-critical hot paths.
