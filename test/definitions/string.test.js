@@ -192,6 +192,12 @@ describe("String Expressions", () => {
           "Room3",
         ]);
       });
+
+      it("includes parameter index in error path for operand parameter", () => {
+        expect(() =>
+          apply({ $split: { $sqrt: null } }, -1),
+        ).toThrow(/\[\$split\.\$sqrt\]/);
+      });
     });
   });
 
@@ -250,6 +256,18 @@ describe("String Expressions", () => {
           "MARIA and Maria",
         );
       });
+
+      it("includes parameter index in error path for first parameter", () => {
+        expect(() =>
+          apply({ $replace: [{ $sqrt: null }, "replacement"] }, -1),
+        ).toThrow(/\[\$replace\[0\]\.\$sqrt\]/);
+      });
+
+      it("includes parameter index in error path for second parameter", () => {
+        expect(() =>
+          apply({ $replace: ["search", { $sqrt: null }] }, -1),
+        ).toThrow(/\[\$replace\[1\]\.\$sqrt\]/);
+      });
     });
   });
 
@@ -266,6 +284,18 @@ describe("String Expressions", () => {
         expect(apply({ $substring: [5] }, "Elena")).toBe("");
         expect(apply({ $substring: [0, 0] }, "Kenji")).toBe("");
         expect(apply({ $substring: [-1] }, "Sana")).toBe("a");
+      });
+
+      it("includes parameter index in error path for first parameter", () => {
+        expect(() =>
+          apply({ $substring: [{ $sqrt: null }, 3] }, -1),
+        ).toThrow(/\[\$substring\[0\]\.\$sqrt\]/);
+      });
+
+      it("includes parameter index in error path for second parameter", () => {
+        expect(() =>
+          apply({ $substring: [0, { $sqrt: null }] }, -1),
+        ).toThrow(/\[\$substring\[1\]\.\$sqrt\]/);
       });
     });
   });

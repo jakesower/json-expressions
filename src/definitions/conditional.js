@@ -5,9 +5,10 @@ const $case = (
   inputData,
   { apply, isExpression, isWrappedLiteral },
 ) => {
-  const value = apply(operand.value, inputData);
+  const value = apply(operand.value, inputData, "value");
 
-  const found = operand.cases.find((caseItem) => {
+  let foundIdx = -1;
+  const found = operand.cases.find((caseItem, idx) => {
     const { when } = caseItem;
 
     if (when === undefined) {
@@ -15,30 +16,35 @@ const $case = (
     }
 
     if (isWrappedLiteral(when)) {
-      return isEqual(value, when.$literal);
+      const result = isEqual(value, when.$literal);
+      if (result) foundIdx = idx;
+      return result;
     }
 
     if (isExpression(when)) {
-      const applied = apply(when, value);
+      const applied = apply(when, value, ["cases", idx, "when"]);
       if (typeof applied !== "boolean") {
         throw new Error(
           "Only expressions that return true or false may be used in when clauses",
         );
       }
 
+      if (applied) foundIdx = idx;
       return applied;
     }
 
-    return isEqual(value, when);
+    const result = isEqual(value, when);
+    if (result) foundIdx = idx;
+    return result;
   });
 
   return found
-    ? apply(found.then, inputData)
-    : apply(operand.default, inputData);
+    ? apply(found.then, inputData, ["cases", foundIdx, "then"])
+    : apply(operand.default, inputData, "default");
 };
 
 const $if = (operand, inputData, { apply }) => {
-  const condition = apply(operand.if, inputData);
+  const condition = apply(operand.if, inputData, "if");
 
   if (typeof condition !== "boolean") {
     throw new Error(
@@ -47,8 +53,8 @@ const $if = (operand, inputData, { apply }) => {
   }
 
   return condition
-    ? apply(operand.then, inputData)
-    : apply(operand.else, inputData);
+    ? apply(operand.then, inputData, "then")
+    : apply(operand.else, inputData, "else");
 };
 
 // Individual exports for tree shaking

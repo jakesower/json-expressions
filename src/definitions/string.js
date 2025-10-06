@@ -28,8 +28,8 @@ const createStringOperationExpression =
       const [param, ...rest] = operand;
       return operationFn(
         inputData,
-        apply(param, inputData),
-        ...rest.map((r) => apply(r, inputData)),
+        apply(param, inputData, 0),
+        ...rest.map((r, idx) => apply(r, inputData, idx + 1)),
       );
     }
     return operationFn(inputData, apply(operand, inputData));

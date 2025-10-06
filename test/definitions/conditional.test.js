@@ -555,6 +555,51 @@ describe("$if", () => {
         apply({ $if: { if: "Chicken", then: "yep", else: "nope" } }, "Sakura");
       }).toThrowError();
     });
+
+    it("includes property in error path for if clause", () => {
+      expect(() =>
+        apply(
+          {
+            $if: {
+              if: { $sqrt: null },
+              then: "yes",
+              else: "no",
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$if\.if\.\$sqrt\]/);
+    });
+
+    it("includes property in error path for then clause", () => {
+      expect(() =>
+        apply(
+          {
+            $if: {
+              if: true,
+              then: { $sqrt: null },
+              else: "no",
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$if\.then\.\$sqrt\]/);
+    });
+
+    it("includes property in error path for else clause", () => {
+      expect(() =>
+        apply(
+          {
+            $if: {
+              if: false,
+              then: "yes",
+              else: { $sqrt: null },
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$if\.else\.\$sqrt\]/);
+    });
   });
 });
 
@@ -590,6 +635,57 @@ describe("conditional expressions - edge cases", () => {
       ).toThrow(
         "Only expressions that return true or false may be used in when clauses",
       );
+    });
+
+    it("includes case index and property in error path for then clause", () => {
+      expect(() =>
+        apply(
+          {
+            $case: {
+              value: 5,
+              cases: [
+                { when: { $gt: 3 }, then: { $sqrt: null } },
+              ],
+              default: "Default",
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$case.cases\[0\]\.then\.\$sqrt\]/);
+    });
+
+    it("includes property in error path for default clause", () => {
+      expect(() =>
+        apply(
+          {
+            $case: {
+              value: 5,
+              cases: [
+                { when: { $lt: 3 }, then: "First" },
+              ],
+              default: { $sqrt: null },
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$case\.default\.\$sqrt\]/);
+    });
+
+    it("includes property in error path for value clause", () => {
+      expect(() =>
+        apply(
+          {
+            $case: {
+              value: { $sqrt: null },
+              cases: [
+                { when: { $gt: 3 }, then: "First" },
+              ],
+              default: "Default",
+            },
+          },
+          -1,
+        ),
+      ).toThrow(/\[\$case\.value\.\$sqrt\]/);
     });
 
     it("handles null values in when clauses", () => {
