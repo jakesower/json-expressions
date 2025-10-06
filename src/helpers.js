@@ -20,14 +20,31 @@ export function get(objOrArray, path) {
 
   // Convert the path to an array if it's not already
   const pathArray = Array.isArray(path) ? path : path.split(".");
-  const [head, ...tail] = pathArray;
 
-  if (head === "$") {
-    const asArray = Array.isArray(objOrArray) ? objOrArray : [objOrArray];
-    return asArray.flatMap((item) => get(item, tail));
+  let current = objOrArray;
+
+  for (let i = 0; i < pathArray.length; i++) {
+    const segment = pathArray[i];
+
+    // Handle wildcard array iteration
+    if (segment === "$") {
+      const asArray = Array.isArray(current) ? current : [current];
+      const remainingPath = pathArray.slice(i + 1);
+
+      // If no remaining path, return the array
+      if (remainingPath.length === 0) return asArray;
+
+      // Recursively get from each array element (can't avoid this recursion for $)
+      return asArray.flatMap((item) => get(item, remainingPath));
+    }
+
+    // Normal property access
+    current = current?.[segment];
+
+    if (current === null || current === undefined) return null;
   }
 
-  return get(objOrArray[head], tail);
+  return current;
 }
 
 export function isEqual(a, b) {

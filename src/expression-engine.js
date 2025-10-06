@@ -71,13 +71,16 @@ export function createExpressionEngine(config = {}) {
     { $literal },
   ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
 
+  // Convert to Map for faster lookup
+  const expressionMap = new Map(Object.entries(expressions));
+
   const isExpression = (val) =>
-    looksLikeExpression(val) && Object.keys(val)[0] in expressions;
+    looksLikeExpression(val) && expressionMap.has(Object.keys(val)[0]);
 
   const checkLooksLikeExpression = (val) => {
     if (looksLikeExpression(val)) {
       const [invalidOp] = Object.keys(val);
-      const availableOps = Object.keys(expressions);
+      const availableOps = Array.from(expressionMap.keys());
 
       const suggestion = didYouMean(invalidOp, availableOps);
       const helpText = suggestion
@@ -102,7 +105,7 @@ export function createExpressionEngine(config = {}) {
 
     if (isExpression(val)) {
       const [expressionName, operand] = Object.entries(val)[0];
-      const expressionDef = expressions[expressionName];
+      const expressionDef = expressionMap.get(expressionName);
 
       try {
         return expressionDef(operand, inputData, {
@@ -134,7 +137,7 @@ export function createExpressionEngine(config = {}) {
 
   return {
     apply: (val, inputData) => apply(val, inputData, []),
-    expressionNames: Object.keys(expressions),
+    expressionNames: Array.from(expressionMap.keys()),
     isExpression,
   };
 }
