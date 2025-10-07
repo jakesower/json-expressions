@@ -55,6 +55,9 @@
       "require": "./dist/index.cjs"
     }
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
