@@ -1014,12 +1014,9 @@ describe("$first", () => {
       expect(
         apply({ $first: { $get: "scores" } }, { scores: [95, 87, 92] }),
       ).toBe(95);
-      expect(
-        apply(
-          { $first: { $filter: { $gt: 3 } } },
-          [1, 2, 3, 4, 5],
-        ),
-      ).toBe(4);
+      expect(apply({ $first: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5])).toBe(
+        4,
+      );
     });
 
     it("returns undefined for empty array", () => {
@@ -1061,12 +1058,9 @@ describe("$last", () => {
       expect(
         apply({ $last: { $get: "scores" } }, { scores: [95, 87, 92] }),
       ).toBe(92);
-      expect(
-        apply(
-          { $last: { $filter: { $gt: 3 } } },
-          [1, 2, 3, 4, 5],
-        ),
-      ).toBe(5);
+      expect(apply({ $last: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5])).toBe(
+        5,
+      );
     });
 
     it("returns undefined for empty array", () => {

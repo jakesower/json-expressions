@@ -58,19 +58,18 @@ const engine = createExpressionEngine({ packs: [basePack] });
 - [`$filterBy`](expressions.md#filterby) - Filter array by object property criteria
 - [`$map`](expressions.md#map) - Transform array elements
 
-#### Validation & Utility
+#### Validation
 
 - [`$exists`](expressions.md#exists) - Test if object property exists
 - [`$isEmpty`](expressions.md#isempty) - Test if value is empty
 - [`$isPresent`](expressions.md#ispresent) - Test if value is present (not null/undefined)
-- [`$matches`](expressions.md#matches) - Test if object matches criteria
+- [`$matches`](expressions.md#matches) - Test if object matches all property criteria (AND logic)
+- [`$matchesAny`](expressions.md#matchesany) - Test if object matches any property criteria (OR logic)
 
 #### Flow Control
 
 - [`$default`](expressions.md#default) - Provide default value for null/undefined
-- [`$literal`](expressions.md#literal) - Treat value as literal (not expression)
 - [`$pipe`](expressions.md#pipe) - Chain expressions in sequence
-- [`$sort`](expressions.md#sort) - Sort array by criteria
 
 ---
 

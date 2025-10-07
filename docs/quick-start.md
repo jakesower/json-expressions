@@ -35,6 +35,16 @@ const explicitEngine = createExpressionEngine({ packs: [basePack] });
 
 // this will have no expressions loaded in (except $literal)
 const uselessEngine = createExpressionEngine({ includeBase: false });
+
+// exclude specific expressions (useful for security or trimming)
+const restrictedEngine = createExpressionEngine({
+  exclude: ["$debug"], // remove potentially dangerous expressions
+});
+
+// base pack minus array operations
+const simpleEngine = createExpressionEngine({
+  exclude: ["$filter", "$filterBy", "$map"],
+});
 ```
 
 ## Your First Expression

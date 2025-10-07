@@ -144,7 +144,11 @@ describe("access expressions - edge cases", () => {
         { name: "Amira", age: 4 },
         { name: "Diego", age: 5 },
       ];
-      expect(apply({ $get: "$.name" }, data)).toEqual(["Chen", "Amira", "Diego"]);
+      expect(apply({ $get: "$.name" }, data)).toEqual([
+        "Chen",
+        "Amira",
+        "Diego",
+      ]);
       expect(apply({ $get: "$.age" }, data)).toEqual([3, 4, 5]);
     });
 

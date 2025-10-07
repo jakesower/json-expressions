@@ -245,9 +245,9 @@ describe("$max", () => {
 
     it("finds maximum value in operand array", () => {
       expect(apply({ $max: [1, 5, 3] }, null)).toBe(5);
-      expect(apply({ $max: { $get: "scores" } }, { scores: [10, 20, 15] })).toBe(
-        20,
-      );
+      expect(
+        apply({ $max: { $get: "scores" } }, { scores: [10, 20, 15] }),
+      ).toBe(20);
     });
 
     it("handles single element array", () => {
@@ -276,9 +276,9 @@ describe("$mean", () => {
 
     it("calculates average of operand array", () => {
       expect(apply({ $mean: [2, 4, 6] }, null)).toBe(4);
-      expect(apply({ $mean: { $get: "values" } }, { values: [10, 20, 30] })).toBe(
-        20,
-      );
+      expect(
+        apply({ $mean: { $get: "values" } }, { values: [10, 20, 30] }),
+      ).toBe(20);
     });
 
     it("handles decimal results", () => {
@@ -339,9 +339,9 @@ describe("$sum", () => {
 
     it("sums operand array", () => {
       expect(apply({ $sum: [1, 2, 3] }, null)).toBe(6);
-      expect(apply({ $sum: { $get: "amounts" } }, { amounts: [10, 20, 30] })).toBe(
-        60,
-      );
+      expect(
+        apply({ $sum: { $get: "amounts" } }, { amounts: [10, 20, 30] }),
+      ).toBe(60);
     });
 
     it("handles single element array", () => {

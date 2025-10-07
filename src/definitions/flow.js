@@ -16,6 +16,22 @@ const $debug = (operand, inputData, { apply }) => {
 };
 
 const $default = (operand, inputData, { apply }) => {
+  // Support array form: [expression, defaultValue]
+  if (Array.isArray(operand)) {
+    if (operand.length !== 2) {
+      throw new Error(
+        "$default array form must have exactly 2 elements: [expression, default]",
+      );
+    }
+
+    const [expression, defaultValue] = operand;
+    const check = (val) => val != null;
+    const result = apply(expression, inputData);
+
+    return check(result) ? result : apply(defaultValue, inputData);
+  }
+
+  // Support object form: { expression, default }
   if (
     typeof operand !== "object" ||
     operand === null ||
@@ -23,7 +39,7 @@ const $default = (operand, inputData, { apply }) => {
     !("default" in operand)
   ) {
     throw new Error(
-      "$default operand must be an object with { expression, default }",
+      "$default operand must be an object with { expression, default } or array [expression, default]",
     );
   }
 

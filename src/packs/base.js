@@ -3,17 +3,17 @@
  *
  * Essential expressions used across almost all scenarios:
  * - Data access ($get, $identity, $exists, $isPresent, $isEmpty)
- * - Basic conditionals ($if, $case, $matches)
+ * - Basic conditionals ($if, $case, $matches, $matchesAny)
  * - Common comparisons ($eq, $ne, $gt, $gte, $lt, $lte)
  * - Boolean logic ($and, $or, $not)
  * - Operation chaining ($pipe)
- * - Array operations ($filter, $filterBy, $map, $sort)
- * - Utilities ($literal, $default)
+ * - Array operations ($filter, $filterBy, $map)
+ * - Utilities ($default)
  */
 
 // Import the near universal expressions
 import { $get, $identity } from "../definitions/access.js";
-import { $default, $literal, $pipe, $sort } from "../definitions/flow.js";
+import { $default, $pipe } from "../definitions/flow.js";
 import { $if, $case } from "../definitions/conditional.js";
 import {
   $and,
@@ -26,6 +26,7 @@ import {
   $lt,
   $lte,
   $matches,
+  $matchesAny,
   $ne,
   $not,
   $or,
@@ -48,14 +49,13 @@ export const base = {
   $if,
   $isEmpty,
   $isPresent,
-  $literal,
   $lt,
   $lte,
   $map,
   $matches,
+  $matchesAny,
   $ne,
   $not,
   $or,
   $pipe,
-  $sort,
 };

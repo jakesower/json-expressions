@@ -194,9 +194,9 @@ describe("String Expressions", () => {
       });
 
       it("includes parameter index in error path for operand parameter", () => {
-        expect(() =>
-          apply({ $split: { $sqrt: null } }, -1),
-        ).toThrow(/\[\$split\.\$sqrt\]/);
+        expect(() => apply({ $split: { $sqrt: null } }, -1)).toThrow(
+          /\[\$split\.\$sqrt\]/,
+        );
       });
     });
   });
@@ -287,15 +287,15 @@ describe("String Expressions", () => {
       });
 
       it("includes parameter index in error path for first parameter", () => {
-        expect(() =>
-          apply({ $substring: [{ $sqrt: null }, 3] }, -1),
-        ).toThrow(/\[\$substring\[0\]\.\$sqrt\]/);
+        expect(() => apply({ $substring: [{ $sqrt: null }, 3] }, -1)).toThrow(
+          /\[\$substring\[0\]\.\$sqrt\]/,
+        );
       });
 
       it("includes parameter index in error path for second parameter", () => {
-        expect(() =>
-          apply({ $substring: [0, { $sqrt: null }] }, -1),
-        ).toThrow(/\[\$substring\[1\]\.\$sqrt\]/);
+        expect(() => apply({ $substring: [0, { $sqrt: null }] }, -1)).toThrow(
+          /\[\$substring\[1\]\.\$sqrt\]/,
+        );
       });
     });
   });

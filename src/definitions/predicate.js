@@ -7,7 +7,7 @@
  * - Existence checks ($exists, $isEmpty, $isPresent)
  * - Range checks ($between)
  * - Logical operations ($and, $or, $not)
- * - Pattern matching ($matchesRegex)
+ * - Pattern matching ($matches, $matchesAny, $matchesRegex)
  */
 
 import { get, isEqual } from "../helpers.js";
@@ -181,6 +181,28 @@ const $matches = (
   });
 };
 
+const $matchesAny = (
+  operand,
+  inputData,
+  { apply, isExpression, isWrappedLiteral },
+) => {
+  if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+    throw new Error(
+      "$matchesAny operand must be an object with property conditions",
+    );
+  }
+  return Object.entries(operand).some(([path, condition]) => {
+    const value = get(inputData, path);
+
+    if (isWrappedLiteral(condition)) {
+      return isEqual(condition.$literal, value);
+    }
+    if (isExpression(condition)) return apply(condition, value);
+
+    return isEqual(value, condition);
+  });
+};
+
 const $matchesRegex = (operand, inputData, { apply }) => {
   const resolvedOperand = apply(operand, inputData);
   return testRegexPattern(resolvedOperand, inputData);
@@ -215,6 +237,7 @@ export {
   $lt,
   $lte,
   $matches,
+  $matchesAny,
   $matchesRegex,
   $ne,
   $nin,

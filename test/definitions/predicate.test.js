@@ -530,6 +530,236 @@ describe("$not", () => {
   });
 });
 
+describe("$matchesAny", () => {
+  describe("basic functionality", () => {
+    it("returns true when any single property matches", () => {
+      expect(
+        apply({ $matchesAny: { name: "Kenji" } }, { name: "Kenji", age: 4 }),
+      ).toBe(true);
+
+      expect(
+        apply({ $matchesAny: { name: "Kenji" } }, { name: "Amara", age: 4 }),
+      ).toBe(false);
+    });
+
+    it("returns true when at least one property matches", () => {
+      expect(
+        apply(
+          { $matchesAny: { name: "Amara", age: 5 } },
+          { name: "Amara", age: 3, room: "rainbow" },
+        ),
+      ).toBe(true); // name matches
+
+      expect(
+        apply(
+          { $matchesAny: { name: "Kenji", age: 3 } },
+          { name: "Amara", age: 3, room: "rainbow" },
+        ),
+      ).toBe(true); // age matches
+
+      expect(
+        apply(
+          { $matchesAny: { name: "Kenji", age: 5 } },
+          { name: "Amara", age: 3, room: "rainbow" },
+        ),
+      ).toBe(false); // neither matches
+    });
+
+    it("handles nested property paths", () => {
+      expect(
+        apply(
+          {
+            $matchesAny: {
+              "guardian.name": "Fatima",
+              "guardian.phone": "555-9999",
+            },
+          },
+          {
+            name: "Zara",
+            guardian: {
+              name: "Fatima",
+              phone: "555-0123",
+            },
+          },
+        ),
+      ).toBe(true); // name matches even though phone doesn't
+
+      expect(
+        apply(
+          {
+            $matchesAny: {
+              "guardian.name": "Unknown",
+              "guardian.phone": "555-9999",
+            },
+          },
+          {
+            name: "Zara",
+            guardian: { name: "Fatima", phone: "555-0123" },
+          },
+        ),
+      ).toBe(false); // neither matches
+    });
+
+    it("matches with expression conditions", () => {
+      expect(
+        apply(
+          { $matchesAny: { age: { $gt: 5 }, room: "sunshine" } },
+          { name: "Ravi", age: 4, room: "sunshine" },
+        ),
+      ).toBe(true); // room matches even though age doesn't
+
+      expect(
+        apply(
+          { $matchesAny: { age: { $gt: 5 }, room: "tulip" } },
+          { name: "Ravi", age: 4, room: "sunshine" },
+        ),
+      ).toBe(false); // neither matches
+    });
+
+    it("handles $literal wrapped conditions", () => {
+      expect(
+        apply(
+          { $matchesAny: { status: { $literal: { $active: true } }, age: 10 } },
+          { name: "Chen", status: { $active: true }, age: 4 },
+        ),
+      ).toBe(true); // status matches
+
+      expect(
+        apply(
+          { $matchesAny: { status: { $literal: { $active: true } }, age: 10 } },
+          { name: "Chen", status: { $active: false }, age: 4 },
+        ),
+      ).toBe(false); // neither matches
+    });
+
+    it("handles null and undefined values", () => {
+      expect(
+        apply(
+          { $matchesAny: { notes: null, name: "Unknown" } },
+          { name: "Yuki", notes: null },
+        ),
+      ).toBe(true); // notes matches
+
+      expect(
+        apply(
+          { $matchesAny: { notes: null, name: "Unknown" } },
+          { name: "Yuki", notes: "has allergy note" },
+        ),
+      ).toBe(false); // neither matches
+    });
+
+    it("handles empty object conditions", () => {
+      expect(apply({ $matchesAny: {} }, { name: "Ahmed", age: 5 })).toBe(false);
+    });
+
+    it("returns false when no property matches", () => {
+      expect(
+        apply(
+          { $matchesAny: { nonExistent: "value", age: 10 } },
+          { name: "Sakura", age: 3 },
+        ),
+      ).toBe(false);
+    });
+
+    it("throws error with invalid operand types", () => {
+      expect(() => apply({ $matchesAny: null }, {})).toThrow(
+        "$matchesAny operand must be an object with property conditions",
+      );
+
+      expect(() => apply({ $matchesAny: "not object" }, {})).toThrow(
+        "$matchesAny operand must be an object with property conditions",
+      );
+
+      expect(() => apply({ $matchesAny: [] }, {})).toThrow(
+        "$matchesAny operand must be an object with property conditions",
+      );
+    });
+
+    it("handles complex boolean expressions as conditions", () => {
+      expect(
+        apply(
+          {
+            $matchesAny: {
+              age: { $and: [{ $gte: 3 }, { $lt: 6 }] },
+              room: "tulip",
+            },
+          },
+          {
+            name: "Luna",
+            age: 4,
+            room: "rose",
+            guardian: { name: "Sofia", available: true },
+          },
+        ),
+      ).toBe(true); // age condition matches even though room doesn't
+
+      expect(
+        apply(
+          {
+            $matchesAny: {
+              age: { $or: [{ $lt: 2 }, { $gt: 6 }] },
+              room: "tulip",
+            },
+          },
+          { name: "Luna", age: 4, room: "rose" },
+        ),
+      ).toBe(false); // neither matches
+    });
+  });
+
+  describe("edge cases and error handling", () => {
+    it("handles empty conditions object", () => {
+      expect(apply({ $matchesAny: {} }, { name: "Taj", age: 3 })).toBe(false);
+    });
+
+    it("handles non-existent nested paths", () => {
+      expect(
+        apply(
+          { $matchesAny: { "non.existent.path": "value", age: 10 } },
+          { name: "Robin", age: 3 },
+        ),
+      ).toBe(false);
+    });
+
+    it("handles undefined vs null equality", () => {
+      expect(
+        apply(
+          { $matchesAny: { optionalField: undefined, name: "Unknown" } },
+          { name: "Zoe" }, // optionalField is undefined (missing)
+        ),
+      ).toBe(true); // optionalField matches
+
+      expect(
+        apply(
+          { $matchesAny: { optionalField: null, name: "Unknown" } },
+          { name: "Zoe", optionalField: null },
+        ),
+      ).toBe(true); // optionalField matches
+    });
+
+    it("handles type mismatches correctly", () => {
+      expect(
+        apply(
+          { $matchesAny: { age: "4", name: "Maya" } }, // age is string
+          { name: "Maya", age: 4 }, // age is number
+        ),
+      ).toBe(true); // name matches even though age doesn't
+    });
+
+    it("preserves order independence", () => {
+      const childData = { name: "Alex", age: 5, room: "sunflower" };
+
+      expect(apply({ $matchesAny: { age: 10, name: "Alex" } }, childData)).toBe(
+        true,
+      ); // name matches
+
+      expect(
+        apply({ $matchesAny: { name: "Unknown", age: 5 } }, childData),
+      ).toBe(true); // age matches
+    });
+  });
+});
+
 describe("$matches", () => {
   describe("basic functionality", () => {
     it("matches single property with literal value", () => {

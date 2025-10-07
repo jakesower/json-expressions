@@ -55,6 +55,7 @@ function buildPathStr(path) {
  * @property {object[]} [packs] - Array of expression pack objects to include
  * @property {object} [custom] - Custom expression definitions
  * @property {boolean} [includeBase=true] - Whether to include base expressions
+ * @property {string[]} [exclude] - Expression names to exclude (applied after all packs and custom are merged, but before $literal)
  */
 
 /**
@@ -62,14 +63,24 @@ function buildPathStr(path) {
  * @returns {ExpressionEngine}
  */
 export function createExpressionEngine(config = {}) {
-  const { packs = [], custom = {}, includeBase = true } = config;
+  const { packs = [], custom = {}, includeBase = true, exclude = [] } = config;
 
-  const expressions = [
+  const mergedExpressions = [
     ...(includeBase ? [base] : []),
     ...packs,
     custom,
-    { $literal },
   ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
+
+  // Apply exclusions (silently ignore non-existent expressions)
+  exclude.forEach((name) => {
+    delete mergedExpressions[name];
+  });
+
+  // Add $literal last (cannot be excluded)
+  const expressions = {
+    ...mergedExpressions,
+    $literal,
+  };
 
   // Convert to Map for faster lookup
   const expressionMap = new Map(Object.entries(expressions));

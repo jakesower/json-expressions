@@ -643,9 +643,7 @@ describe("conditional expressions - edge cases", () => {
           {
             $case: {
               value: 5,
-              cases: [
-                { when: { $gt: 3 }, then: { $sqrt: null } },
-              ],
+              cases: [{ when: { $gt: 3 }, then: { $sqrt: null } }],
               default: "Default",
             },
           },
@@ -660,9 +658,7 @@ describe("conditional expressions - edge cases", () => {
           {
             $case: {
               value: 5,
-              cases: [
-                { when: { $lt: 3 }, then: "First" },
-              ],
+              cases: [{ when: { $lt: 3 }, then: "First" }],
               default: { $sqrt: null },
             },
           },
@@ -677,9 +673,7 @@ describe("conditional expressions - edge cases", () => {
           {
             $case: {
               value: { $sqrt: null },
-              cases: [
-                { when: { $gt: 3 }, then: "First" },
-              ],
+              cases: [{ when: { $gt: 3 }, then: "First" }],
               default: "Default",
             },
           },

@@ -239,11 +239,20 @@ apply(
 
 ## $default
 
-Returns a default value if the expression result is null (or undefined).
+Returns a default value if the expression result is null (or undefined). Supports both object form and array form.
 
 ```javascript
-// Provide default pickup time if not specified
+// Array form (concise): [expression, defaultValue]
 const child = { name: "Amara", pickupTime: null };
+apply(
+  {
+    $default: [{ $get: "pickupTime" }, "5:00 PM"],
+  },
+  child,
+);
+// Returns: "5:00 PM"
+
+// Object form (legacy): { expression, default }
 apply(
   {
     $default: {
@@ -254,6 +263,19 @@ apply(
   child,
 );
 // Returns: "5:00 PM"
+
+// Works with expression defaults
+apply(
+  {
+    $default: [{ $get: "primaryContact" }, { $get: "secondaryContact" }],
+  },
+  { primaryContact: null, secondaryContact: "555-1234" },
+);
+// Returns: "555-1234"
+
+// Preserves falsy non-null values
+apply({ $default: [{ $get: "count" }, 10] }, { count: 0 });
+// Returns: 0 (not 10, because 0 is not null/undefined)
 ```
 
 ## $divide
@@ -758,7 +780,7 @@ apply({
 
 ## $matches
 
-Tests if an object matches all specified property conditions. Supports literal values, expressions, and $literal-wrapped values for flexible matching.
+Tests if an object matches **all** specified property conditions (AND logic). Supports literal values, expressions, and $literal-wrapped values for flexible matching.
 
 ```javascript
 // Check if child meets multiple criteria
@@ -778,7 +800,44 @@ apply(
   },
   child,
 );
-// Returns: true
+// Returns: true (all conditions match)
+```
+
+## $matchesAny
+
+Tests if an object matches **at least one** specified property condition (OR logic). Supports literal values, expressions, and $literal-wrapped values for flexible matching.
+
+```javascript
+// Check if child meets any of the criteria for special activity
+const child = {
+  name: "Kai",
+  age: 3,
+  hasSpecialNeeds: false,
+  isPremium: true,
+};
+apply(
+  {
+    $matchesAny: {
+      age: { $gte: 5 }, // doesn't match (age is 3)
+      hasSpecialNeeds: true, // doesn't match (false)
+      isPremium: true, // matches!
+    },
+  },
+  child,
+);
+// Returns: true (at least one condition matches)
+
+// All conditions fail
+apply(
+  {
+    $matchesAny: {
+      age: { $gte: 5 }, // doesn't match
+      hasSpecialNeeds: true, // doesn't match
+    },
+  },
+  child,
+);
+// Returns: false (no conditions match)
 ```
 
 ## $matchesRegex

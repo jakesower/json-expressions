@@ -43,7 +43,139 @@ describe("$default", () => {
     },
   };
 
-  describe("basic functionality", () => {
+  describe("array form", () => {
+    it("returns expression result when not null/undefined", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "profile.contact" }, "fallback"],
+          },
+          testData,
+        ),
+      ).toBe("parent@example.com");
+    });
+
+    it("returns default when expression is null", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "profile.email" }, "no-email@example.com"],
+          },
+          testData,
+        ),
+      ).toBe("no-email@example.com");
+    });
+
+    it("returns default when expression is undefined", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "profile.phone" }, "no-phone"],
+          },
+          testData,
+        ),
+      ).toBe("no-phone");
+    });
+
+    it("returns default when path doesn't exist", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "nonexistent" }, "default-value"],
+          },
+          testData,
+        ),
+      ).toBe("default-value");
+    });
+
+    it("works with literal default values", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "missing" }, { $literal: "default value" }],
+          },
+          testData,
+        ),
+      ).toBe("default value");
+    });
+
+    it("works with expression default values", () => {
+      expect(
+        apply(
+          {
+            $default: [{ $get: "profile.email" }, { $get: "profile.contact" }],
+          },
+          testData,
+        ),
+      ).toBe("parent@example.com");
+    });
+
+    it("works with falsy non-null values", () => {
+      const data = { empty: "", zero: 0, falsy: false };
+
+      expect(
+        apply(
+          {
+            $default: [{ $get: "empty" }, "fallback"],
+          },
+          data,
+        ),
+      ).toBe("");
+
+      expect(
+        apply(
+          {
+            $default: [{ $get: "zero" }, "fallback"],
+          },
+          data,
+        ),
+      ).toBe(0);
+
+      expect(
+        apply(
+          {
+            $default: [{ $get: "falsy" }, "fallback"],
+          },
+          data,
+        ),
+      ).toBe(false);
+    });
+
+    it("throws error for wrong array length", () => {
+      expect(() => apply({ $default: [{ $get: "name" }] }, testData)).toThrow(
+        "$default array form must have exactly 2 elements: [expression, default]",
+      );
+
+      expect(() =>
+        apply({ $default: [{ $get: "name" }, "default", "extra"] }, testData),
+      ).toThrow(
+        "$default array form must have exactly 2 elements: [expression, default]",
+      );
+    });
+
+    it("works with nested defaults", () => {
+      const data = { level1: { level2: null } };
+
+      expect(
+        apply(
+          {
+            $default: [
+              {
+                $default: [
+                  { $get: "level1.level2.missing" },
+                  { $get: "level1.level2" },
+                ],
+              },
+              "final fallback",
+            ],
+          },
+          data,
+        ),
+      ).toBe("final fallback");
+    });
+  });
+
+  describe("object form (legacy)", () => {
     it("returns expression result when not null/undefined", () => {
       expect(
         apply(
@@ -181,13 +313,13 @@ describe("$default", () => {
 
     it("throws error for invalid operand", () => {
       expect(() => apply({ $default: "not an object" }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
 
     it("throws error for missing expression property", () => {
       expect(() => apply({ $default: { default: "fallback" } }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
 
@@ -195,7 +327,7 @@ describe("$default", () => {
       expect(() =>
         apply({ $default: { expression: { $get: "name" } } }, {}),
       ).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
   });
@@ -552,25 +684,25 @@ describe("flow expressions - edge cases", () => {
 
     it("handles various operand validation errors", () => {
       expect(() => apply({ $default: null }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
 
       expect(() => apply({ $default: [] }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default array form must have exactly 2 elements: [expression, default]",
       );
 
       expect(() => apply({ $default: "string" }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
 
       expect(() => apply({ $default: 123 }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
 
     it("handles empty object operand", () => {
       expect(() => apply({ $default: {} }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
 
@@ -578,11 +710,11 @@ describe("flow expressions - edge cases", () => {
       expect(() =>
         apply({ $default: { expression: { $literal: "test" } } }, {}),
       ).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
 
       expect(() => apply({ $default: { default: "fallback" } }, {})).toThrow(
-        "$default operand must be an object with { expression, default }",
+        "$default operand must be an object with { expression, default } or array [expression, default]",
       );
     });
 

@@ -73,6 +73,10 @@ export interface MatchesExpression {
   $matches: { [path: string]: Expression | unknown };
 }
 
+export interface MatchesAnyExpression {
+  $matchesAny: { [path: string]: Expression | unknown };
+}
+
 export interface SelectExpression {
   $select: { [newKey: string]: Expression | unknown };
 }
@@ -117,7 +121,7 @@ export interface PluckExpression {
 }
 
 export interface DefaultExpression {
-  $default: { expression: Expression; default: unknown };
+  $default: { expression: Expression; default: unknown } | [Expression, unknown];
 }
 
 export interface UniqueExpression {
@@ -379,6 +383,7 @@ export type AnyExpression =
   | PipeExpression
   | DefaultExpression
   | MatchesExpression
+  | MatchesAnyExpression
   | SelectExpression
   | SortExpression
   // Object
@@ -495,6 +500,8 @@ export interface ExpressionEngineConfig {
   };
   /** Whether to include base expressions (default: true) */
   includeBase?: boolean;
+  /** Expression names to exclude (applied after all packs and custom are merged, but $literal cannot be excluded) */
+  exclude?: string[];
 }
 
 /**
@@ -592,6 +599,7 @@ export const $isPresent: ExpressionDefinition;
 export const $lt: ExpressionDefinition;
 export const $lte: ExpressionDefinition;
 export const $matches: ExpressionDefinition;
+export const $matchesAny: ExpressionDefinition;
 export const $matchesRegex: ExpressionDefinition;
 export const $ne: ExpressionDefinition;
 export const $nin: ExpressionDefinition;

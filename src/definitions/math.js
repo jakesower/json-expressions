@@ -49,9 +49,7 @@ const createAggregativeExpression =
       : apply(operand, inputData);
 
     if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
-      throw new Error(
-        `${expressionName} requires array operand or input data`,
-      );
+      throw new Error(`${expressionName} requires array operand or input data`);
     }
 
     return Array.isArray(resolved)
