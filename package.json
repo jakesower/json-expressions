@@ -1,6 +1,6 @@
 {
   "name": "json-expressions",
-  "version": "0.10.5",
+  "version": "0.11.0",
   "description": "A JavaScript expression engine for JSON-based dynamic computations and function composition",
   "main": "./dist/index.cjs",
   "module": "./dist/index.esm.js",
