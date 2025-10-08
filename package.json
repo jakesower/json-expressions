@@ -33,6 +33,7 @@
   ],
   "sideEffects": false,
   "dependencies": {
+    "date-fns": "^4.1.0",
     "didyoumean": "^1.2.2",
     "es-toolkit": "^1.39.10"
   },

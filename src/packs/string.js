@@ -11,5 +11,5 @@ import * as stringExpressions from "../definitions/string.js";
 
 // Export as grouped object
 export const string = {
-  ...stringExpressions,
+	...stringExpressions,
 };

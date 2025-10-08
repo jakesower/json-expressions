@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2025-10-08
+
+### Added
+- **Temporal Pack** - Comprehensive date/time operations with 38 expressions
+  - Date arithmetic: `$addDays`, `$addMonths`, `$addYears`, `$addHours`, `$addMinutes`, `$addSeconds`, `$subDays`, `$subMonths`, `$subYears`, `$subHours`, `$subMinutes`, `$subSeconds`
+  - Date components: `$year`, `$month`, `$day`, `$hour`, `$minute`, `$second`, `$dayOfWeek`, `$dayOfYear`, `$weekOfYear`
+  - Date boundaries: `$startOfDay`, `$endOfDay`, `$startOfMonth`, `$endOfMonth`, `$startOfYear`, `$endOfYear`, `$startOfWeek`, `$endOfWeek`
+  - Date comparison: `$isBefore`, `$isAfter`, `$isSameDay`, `$isSameMonth`, `$isSameYear`, `$isBetween`
+  - Date predicates: `$isWeekend`, `$isWeekday`, `$isLeapYear`
+  - Date differences: `$diffDays`, `$diffHours`, `$diffMinutes`, `$diffSeconds`, `$diffMonths`, `$diffYears`
+  - Date parsing/formatting: `$formatDate`, `$parseDate`, `$isDateValid`
+- All temporal expressions use ISO 8601 string format for JSON compatibility
+- All temporal expressions support both array form and input data form patterns
+- Added `date-fns` dependency for date parsing and formatting operations
+
+### Changed
+- Temporal expressions use UTC-based operations to ensure consistent behavior across timezones
+
 ## [0.10.3] - 2025-10-03
 
 ### Changed
@@ -144,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build tooling (Rollup for ESM/CJS)
 - ESLint and Prettier configuration
 
-[Unreleased]: https://github.com/jakesower/json-expressions/compare/v0.10.3...HEAD
+[Unreleased]: https://github.com/jakesower/json-expressions/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/jakesower/json-expressions/compare/v0.10.3...v0.12.0
 [0.10.3]: https://github.com/jakesower/json-expressions/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/jakesower/json-expressions/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/jakesower/json-expressions/compare/v0.9.0...v0.10.1

@@ -27,12 +27,12 @@ import * as string from "../definitions/string.js";
 
 // Export as grouped object containing all expressions (alphabetized)
 export const allExpressionsForTesting = {
-  ...access,
-  ...array,
-  ...conditional,
-  ...flow,
-  ...math,
-  ...object,
-  ...predicate,
-  ...string,
+	...access,
+	...array,
+	...conditional,
+	...flow,
+	...math,
+	...object,
+	...predicate,
+	...string,
 };

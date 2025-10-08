@@ -525,6 +525,7 @@ export const math: { [k: string]: ExpressionDefinition };
 export const object: { [k: string]: ExpressionDefinition };
 export const projection: { [k: string]: ExpressionDefinition };
 export const string: { [k: string]: ExpressionDefinition };
+export const temporal: { [k: string]: ExpressionDefinition };
 
 // === INDIVIDUAL EXPRESSION DEFINITION EXPORTS ===
 
@@ -620,3 +621,42 @@ export const $max: ExpressionDefinition;
 export const $mean: ExpressionDefinition;
 export const $min: ExpressionDefinition;
 export const $sum: ExpressionDefinition;
+
+// Temporal expressions
+export const $addDays: ExpressionDefinition;
+export const $addHours: ExpressionDefinition;
+export const $addMinutes: ExpressionDefinition;
+export const $addMonths: ExpressionDefinition;
+export const $addYears: ExpressionDefinition;
+export const $day: ExpressionDefinition;
+export const $dayOfWeek: ExpressionDefinition;
+export const $dayOfYear: ExpressionDefinition;
+export const $diffDays: ExpressionDefinition;
+export const $diffHours: ExpressionDefinition;
+export const $diffMilliseconds: ExpressionDefinition;
+export const $diffMinutes: ExpressionDefinition;
+export const $diffMonths: ExpressionDefinition;
+export const $diffSeconds: ExpressionDefinition;
+export const $diffYears: ExpressionDefinition;
+export const $endOfDay: ExpressionDefinition;
+export const $endOfMonth: ExpressionDefinition;
+export const $endOfYear: ExpressionDefinition;
+export const $formatDate: ExpressionDefinition;
+export const $hour: ExpressionDefinition;
+export const $isAfter: ExpressionDefinition;
+export const $isBefore: ExpressionDefinition;
+export const $isDateValid: ExpressionDefinition;
+export const $isSameDay: ExpressionDefinition;
+export const $isWeekday: ExpressionDefinition;
+export const $isWeekend: ExpressionDefinition;
+export const $minute: ExpressionDefinition;
+export const $month: ExpressionDefinition;
+export const $parseDate: ExpressionDefinition;
+export const $second: ExpressionDefinition;
+export const $startOfDay: ExpressionDefinition;
+export const $startOfMonth: ExpressionDefinition;
+export const $startOfYear: ExpressionDefinition;
+export const $subDays: ExpressionDefinition;
+export const $subMonths: ExpressionDefinition;
+export const $subYears: ExpressionDefinition;
+export const $year: ExpressionDefinition;

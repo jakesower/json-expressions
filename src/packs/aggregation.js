@@ -14,12 +14,12 @@ import { $count, $max, $mean, $min, $sum } from "../definitions/math.js";
 
 // Export as grouped object (alphabetized)
 export const aggregation = {
-  $count,
-  $first,
-  $groupBy,
-  $last,
-  $max,
-  $mean,
-  $min,
-  $sum,
+	$count,
+	$first,
+	$groupBy,
+	$last,
+	$max,
+	$mean,
+	$min,
+	$sum,
 };

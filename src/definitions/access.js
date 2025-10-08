@@ -11,22 +11,22 @@ import { mapValues } from "es-toolkit";
 import { get } from "../helpers.js";
 
 const $get = (operand, inputData, { apply }) => {
-  const resolvedOperand = apply(operand, inputData);
-  return resolvedOperand === "."
-    ? inputData === undefined
-      ? null
-      : inputData
-    : get(inputData, resolvedOperand);
+	const resolvedOperand = apply(operand, inputData);
+	return resolvedOperand === "."
+		? inputData === undefined
+			? null
+			: inputData
+		: get(inputData, resolvedOperand);
 };
 
 const $identity = (_, inputData) => inputData;
 
 const $select = (operand, inputData, { apply }) => {
-  if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
-    throw new Error("$select operand must be an object with key mappings");
-  }
+	if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
+		throw new Error("$select operand must be an object with key mappings");
+	}
 
-  return mapValues(operand, (expr) => apply(expr, inputData));
+	return mapValues(operand, (expr) => apply(expr, inputData));
 };
 
 // Individual exports for tree shaking (alphabetized)

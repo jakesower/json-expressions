@@ -17,53 +17,53 @@ import { $all, $any, $filter, $filterBy, $find } from "../definitions/array.js";
 
 // Import comparison expressions
 import {
-  $eq,
-  $ne,
-  $gt,
-  $gte,
-  $lt,
-  $lte,
-  $in,
-  $nin,
-  $isEmpty,
-  $isPresent,
-  $exists,
-  $and,
-  $or,
-  $not,
-  $matches,
-  $matchesRegex,
-  $between,
+	$eq,
+	$ne,
+	$gt,
+	$gte,
+	$lt,
+	$lte,
+	$in,
+	$nin,
+	$isEmpty,
+	$isPresent,
+	$exists,
+	$and,
+	$or,
+	$not,
+	$matches,
+	$matchesRegex,
+	$between,
 } from "../definitions/predicate.js";
 
 // Export as grouped object
 export const filtering = {
-  // Basic comparisons
-  $between,
-  $eq,
-  $ne,
-  $gt,
-  $gte,
-  $lt,
-  $lte,
-  // Logic operations
-  $and,
-  $or,
-  $not,
-  // Applications
-  $all,
-  $any,
-  $filter,
-  $filterBy,
-  $find,
-  $matches,
-  // Membership tests
-  $in,
-  $nin,
-  // Value and existence checks
-  $isEmpty,
-  $isPresent,
-  $exists,
-  // Pattern matching
-  $matchesRegex,
+	// Basic comparisons
+	$between,
+	$eq,
+	$ne,
+	$gt,
+	$gte,
+	$lt,
+	$lte,
+	// Logic operations
+	$and,
+	$or,
+	$not,
+	// Applications
+	$all,
+	$any,
+	$filter,
+	$filterBy,
+	$find,
+	$matches,
+	// Membership tests
+	$in,
+	$nin,
+	// Value and existence checks
+	$isEmpty,
+	$isPresent,
+	$exists,
+	// Pattern matching
+	$matchesRegex,
 };

@@ -14,6 +14,6 @@ import * as objectExpressions from "../definitions/object.js";
 
 // Export as grouped object
 export const object = {
-  $select,
-  ...objectExpressions,
+	$select,
+	...objectExpressions,
 };

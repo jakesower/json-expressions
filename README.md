@@ -207,6 +207,7 @@ import {
   filteringPack, // $filterBy, $find, $all, $any
   projectionPack, // $select, $pluck
   aggregationPack, // Statistical functions
+  temporalPack, // $addDays, $formatDate, $diffDays, $isAfter, etc.
 } from "json-expressions";
 
 const engine = createExpressionEngine({

@@ -18,5 +18,5 @@ import * as arrayExpressions from "../definitions/array.js";
 
 // Export as grouped object
 export const array = {
-  ...arrayExpressions,
+	...arrayExpressions,
 };

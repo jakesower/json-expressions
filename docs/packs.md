@@ -13,6 +13,7 @@ Choose packs based on your application's needs:
 - **Mathematical Computation**: [mathPack](#mathpack---arithmetic-operations) + [aggregationPack](#aggregationpack---statistical-functions)
 - **String Processing**: [stringPack](#stringpack---string-operations)
 - **Object Manipulation**: [objectPack](#objectpack---key-value-manipulation)
+- **Date & Time Operations**: [temporalPack](#temporalpack---date-and-time-operations)
 
 ## Available Packs
 
@@ -395,6 +396,77 @@ const engine = createExpressionEngine({ packs: [aggregationPack] });
 #### Grouping Operations
 
 - [`$groupBy`](expressions.md#groupby) - Group array elements by criteria
+
+---
+
+### temporalPack - Date and Time Operations
+
+**Use case:** Date and time manipulation, calculations, and formatting. All operations work with ISO 8601 strings.
+
+**When to use:** Applications that need to work with dates and times - scheduling, expiration logic, date formatting, time-based business rules.
+
+```javascript
+import { createExpressionEngine, temporalPack } from "json-expressions";
+const engine = createExpressionEngine({ packs: [temporalPack] });
+```
+
+#### Parsing and Formatting
+
+- [`$parseDate`](expressions.md#parsedate) - Parse date strings with format patterns
+- [`$formatDate`](expressions.md#formatdate) - Format dates with custom patterns
+- [`$isDateValid`](expressions.md#isdatevalid) - Check if a date string is valid
+
+#### Date Arithmetic
+
+- [`$addDays`](expressions.md#adddays) - Add days to a date
+- [`$addMonths`](expressions.md#addmonths) - Add months to a date
+- [`$addYears`](expressions.md#addyears) - Add years to a date
+- [`$addHours`](expressions.md#addhours) - Add hours to a date
+- [`$addMinutes`](expressions.md#addminutes) - Add minutes to a date
+- [`$subDays`](expressions.md#subdays) - Subtract days from a date
+- [`$subMonths`](expressions.md#submonths) - Subtract months from a date
+- [`$subYears`](expressions.md#subyears) - Subtract years from a date
+
+#### Date Differences
+
+- [`$diffDays`](expressions.md#diffdays) - Difference in days between two dates
+- [`$diffMonths`](expressions.md#diffmonths) - Difference in months between two dates
+- [`$diffYears`](expressions.md#diffyears) - Difference in years between two dates
+- [`$diffHours`](expressions.md#diffhours) - Difference in hours between two dates
+- [`$diffMinutes`](expressions.md#diffminutes) - Difference in minutes between two dates
+- [`$diffSeconds`](expressions.md#diffseconds) - Difference in seconds between two dates
+- [`$diffMilliseconds`](expressions.md#diffmilliseconds) - Difference in milliseconds between two dates
+
+#### Date Boundaries
+
+- [`$startOfDay`](expressions.md#startofday) - Get start of day (00:00:00)
+- [`$endOfDay`](expressions.md#endofday) - Get end of day (23:59:59.999)
+- [`$startOfMonth`](expressions.md#startofmonth) - Get first day of month
+- [`$endOfMonth`](expressions.md#endofmonth) - Get last day of month
+- [`$startOfYear`](expressions.md#startofyear) - Get first day of year
+- [`$endOfYear`](expressions.md#endofyear) - Get last day of year
+
+#### Date Comparisons
+
+- [`$isAfter`](expressions.md#isafter) - Check if first date is after second
+- [`$isBefore`](expressions.md#isbefore) - Check if first date is before second
+- [`$isSameDay`](expressions.md#issameday) - Check if dates are on same day
+
+#### Date Predicates
+
+- [`$isWeekend`](expressions.md#isweekend) - Check if date is Saturday or Sunday
+- [`$isWeekday`](expressions.md#isweekday) - Check if date is Monday-Friday
+
+#### Date Components
+
+- [`$year`](expressions.md#year) - Extract year from date
+- [`$month`](expressions.md#month) - Extract month from date (1-12)
+- [`$day`](expressions.md#day) - Extract day from date
+- [`$hour`](expressions.md#hour) - Extract hour from date (0-23)
+- [`$minute`](expressions.md#minute) - Extract minute from date
+- [`$second`](expressions.md#second) - Extract second from date
+- [`$dayOfWeek`](expressions.md#dayofweek) - Get day of week (0=Sunday, 6=Saturday)
+- [`$dayOfYear`](expressions.md#dayofyear) - Get day of year (1-365/366)
 
 ---
 

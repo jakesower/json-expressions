@@ -25,29 +25,29 @@ const CAUGHT_IN_ENGINE = Symbol("caught in engine");
  */
 
 function looksLikeExpression(val) {
-  return (
-    val !== null &&
-    typeof val === "object" &&
-    !Array.isArray(val) &&
-    Object.keys(val).length === 1 &&
-    Object.keys(val)[0].startsWith("$")
-  );
+	return (
+		val !== null &&
+		typeof val === "object" &&
+		!Array.isArray(val) &&
+		Object.keys(val).length === 1 &&
+		Object.keys(val)[0].startsWith("$")
+	);
 }
 
 function isWrappedLiteral(val) {
-  return (
-    val &&
-    typeof val === "object" &&
-    Object.keys(val).length === 1 &&
-    "$literal" in val
-  );
+	return (
+		val &&
+		typeof val === "object" &&
+		Object.keys(val).length === 1 &&
+		"$literal" in val
+	);
 }
 
 function buildPathStr(path) {
-  return path.reduce(
-    (acc, step) =>
-      `${acc}${typeof step === "number" ? `[${step}]` : `.${step}`}`,
-  );
+	return path.reduce(
+		(acc, step) =>
+			`${acc}${typeof step === "number" ? `[${step}]` : `.${step}`}`,
+	);
 }
 
 /**
@@ -63,92 +63,92 @@ function buildPathStr(path) {
  * @returns {ExpressionEngine}
  */
 export function createExpressionEngine(config = {}) {
-  const { packs = [], custom = {}, includeBase = true, exclude = [] } = config;
+	const { packs = [], custom = {}, includeBase = true, exclude = [] } = config;
 
-  const mergedExpressions = [
-    ...(includeBase ? [base] : []),
-    ...packs,
-    custom,
-  ].reduce((acc, pack) => ({ ...acc, ...pack }), {});
+	const mergedExpressions = [
+		...(includeBase ? [base] : []),
+		...packs,
+		custom,
+	].reduce((acc, pack) => ({ ...acc, ...pack }), {});
 
-  // Apply exclusions (silently ignore non-existent expressions)
-  exclude.forEach((name) => {
-    delete mergedExpressions[name];
-  });
+	// Apply exclusions (silently ignore non-existent expressions)
+	exclude.forEach((name) => {
+		delete mergedExpressions[name];
+	});
 
-  // Add $literal last (cannot be excluded)
-  const expressions = {
-    ...mergedExpressions,
-    $literal,
-  };
+	// Add $literal last (cannot be excluded)
+	const expressions = {
+		...mergedExpressions,
+		$literal,
+	};
 
-  // Convert to Map for faster lookup
-  const expressionMap = new Map(Object.entries(expressions));
+	// Convert to Map for faster lookup
+	const expressionMap = new Map(Object.entries(expressions));
 
-  const isExpression = (val) =>
-    looksLikeExpression(val) && expressionMap.has(Object.keys(val)[0]);
+	const isExpression = (val) =>
+		looksLikeExpression(val) && expressionMap.has(Object.keys(val)[0]);
 
-  const checkLooksLikeExpression = (val) => {
-    if (looksLikeExpression(val)) {
-      const [invalidOp] = Object.keys(val);
-      const availableOps = Array.from(expressionMap.keys());
+	const checkLooksLikeExpression = (val) => {
+		if (looksLikeExpression(val)) {
+			const [invalidOp] = Object.keys(val);
+			const availableOps = Array.from(expressionMap.keys());
 
-      const suggestion = didYouMean(invalidOp, availableOps);
-      const helpText = suggestion
-        ? `Did you mean "${suggestion}"?`
-        : `Available operators: ${availableOps
-            .slice(0, 8)
-            .join(", ")}${availableOps.length > 8 ? ", ..." : ""}.`;
+			const suggestion = didYouMean(invalidOp, availableOps);
+			const helpText = suggestion
+				? `Did you mean "${suggestion}"?`
+				: `Available operators: ${availableOps
+						.slice(0, 8)
+						.join(", ")}${availableOps.length > 8 ? ", ..." : ""}.`;
 
-      const message = `Unknown expression operator: "${invalidOp}". ${helpText} Use { $literal: ${JSON.stringify(val)} } if you meant this as a literal value.`;
+			const message = `Unknown expression operator: "${invalidOp}". ${helpText} Use { $literal: ${JSON.stringify(val)} } if you meant this as a literal value.`;
 
-      throw new Error(message);
-    }
-  };
+			throw new Error(message);
+		}
+	};
 
-  const apply = (val, inputData, path) => {
-    const applyWithPath = (crumb) => (val, inputData, step) =>
-      step === undefined
-        ? apply(val, inputData, [...path, crumb])
-        : Array.isArray(step)
-          ? apply(val, inputData, [...path, crumb, ...step])
-          : apply(val, inputData, [...path, crumb, step]);
+	const apply = (val, inputData, path) => {
+		const applyWithPath = (crumb) => (val, inputData, step) =>
+			step === undefined
+				? apply(val, inputData, [...path, crumb])
+				: Array.isArray(step)
+					? apply(val, inputData, [...path, crumb, ...step])
+					: apply(val, inputData, [...path, crumb, step]);
 
-    if (isExpression(val)) {
-      const [expressionName, operand] = Object.entries(val)[0];
-      const expressionDef = expressionMap.get(expressionName);
+		if (isExpression(val)) {
+			const [expressionName, operand] = Object.entries(val)[0];
+			const expressionDef = expressionMap.get(expressionName);
 
-      try {
-        return expressionDef(operand, inputData, {
-          apply: applyWithPath(expressionName),
-          isExpression,
-          isWrappedLiteral,
-        });
-      } catch (err) {
-        if (err[CAUGHT_IN_ENGINE]) {
-          throw err;
-        }
+			try {
+				return expressionDef(operand, inputData, {
+					apply: applyWithPath(expressionName),
+					isExpression,
+					isWrappedLiteral,
+				});
+			} catch (err) {
+				if (err[CAUGHT_IN_ENGINE]) {
+					throw err;
+				}
 
-        const outErr = Error(
-          `[${buildPathStr([...path, expressionName])}] ${err.message}`,
-        );
-        outErr[CAUGHT_IN_ENGINE] = true;
-        throw outErr;
-      }
-    }
+				const outErr = Error(
+					`[${buildPathStr([...path, expressionName])}] ${err.message}`,
+				);
+				outErr[CAUGHT_IN_ENGINE] = true;
+				throw outErr;
+			}
+		}
 
-    checkLooksLikeExpression(val);
+		checkLooksLikeExpression(val);
 
-    return Array.isArray(val)
-      ? val.map((v, idx) => apply(v, inputData, [...path, idx]))
-      : val !== null && typeof val === "object"
-        ? mapValues(val, (v, key) => apply(v, inputData, [...path, key]))
-        : val;
-  };
+		return Array.isArray(val)
+			? val.map((v, idx) => apply(v, inputData, [...path, idx]))
+			: val !== null && typeof val === "object"
+				? mapValues(val, (v, key) => apply(v, inputData, [...path, key]))
+				: val;
+	};
 
-  return {
-    apply: (val, inputData) => apply(val, inputData, []),
-    expressionNames: Array.from(expressionMap.keys()),
-    isExpression,
-  };
+	return {
+		apply: (val, inputData) => apply(val, inputData, []),
+		expressionNames: Array.from(expressionMap.keys()),
+		isExpression,
+	};
 }

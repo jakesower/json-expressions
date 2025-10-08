@@ -12,5 +12,5 @@ import * as mathExpressions from "../definitions/math.js";
 
 // Export as grouped object
 export const math = {
-  ...mathExpressions,
+	...mathExpressions,
 };

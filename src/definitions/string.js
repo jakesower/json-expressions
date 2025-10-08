@@ -13,7 +13,7 @@
  * @returns {object} Expression object with apply method
  */
 const createStringTransformExpression = (transformFn) => (operand, inputData) =>
-  transformFn(inputData);
+	transformFn(inputData);
 
 /**
  * Creates a string operation expression with parameters.
@@ -22,31 +22,31 @@ const createStringTransformExpression = (transformFn) => (operand, inputData) =>
  * @returns {object} Expression object with apply method
  */
 const createStringOperationExpression =
-  (operationFn) =>
-  (operand, inputData, { apply }) => {
-    if (Array.isArray(operand)) {
-      const [param, ...rest] = operand;
-      return operationFn(
-        inputData,
-        apply(param, inputData, 0),
-        ...rest.map((r, idx) => apply(r, inputData, idx + 1)),
-      );
-    }
-    return operationFn(inputData, apply(operand, inputData));
-  };
+	(operationFn) =>
+	(operand, inputData, { apply }) => {
+		if (Array.isArray(operand)) {
+			const [param, ...rest] = operand;
+			return operationFn(
+				inputData,
+				apply(param, inputData, 0),
+				...rest.map((r, idx) => apply(r, inputData, idx + 1)),
+			);
+		}
+		return operationFn(inputData, apply(operand, inputData));
+	};
 
 const $lowercase = createStringTransformExpression((str) => str.toLowerCase());
 
 const $replace = createStringOperationExpression((str, search, replacement) =>
-  str.replace(new RegExp(search, "g"), replacement),
+	str.replace(new RegExp(search, "g"), replacement),
 );
 
 const $split = createStringOperationExpression((str, delimiter) =>
-  str.split(delimiter),
+	str.split(delimiter),
 );
 
 const $substring = createStringOperationExpression((str, start, length) =>
-  length !== undefined ? str.slice(start, start + length) : str.slice(start),
+	length !== undefined ? str.slice(start, start + length) : str.slice(start),
 );
 
 const $trim = createStringTransformExpression((str) => str.trim());
