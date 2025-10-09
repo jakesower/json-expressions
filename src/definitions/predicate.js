@@ -223,7 +223,7 @@ const $or = (operand, inputData, { apply }) => {
 	return operand.some((expr) => apply(expr, inputData));
 };
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export {
 	$and,
 	$between,

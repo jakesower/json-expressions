@@ -453,7 +453,7 @@ const $isDateValid = (operand, inputData, { apply }) => {
 	}
 };
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export {
 	$addDays,
 	$addHours,

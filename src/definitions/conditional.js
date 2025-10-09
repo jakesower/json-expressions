@@ -57,5 +57,5 @@ const $if = (operand, inputData, { apply }) => {
 		: apply(operand.else, inputData, "else");
 };
 
-// Individual exports for tree shaking
+// Individual exports
 export { $case, $if };

@@ -29,5 +29,5 @@ const $select = (operand, inputData, { apply }) => {
 	return mapValues(operand, (expr) => apply(expr, inputData));
 };
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export { $get, $identity, $select };

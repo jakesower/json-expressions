@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Docs
+
+- Removed language around tree shaking
+
 ## [0.12.0] - 2025-10-08
 
 ### Added
@@ -111,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `includeBase`: Option to exclude base expressions
 
 ### Changed
-- Moved to packs-based architecture for better tree-shaking and modularity
+- Moved to packs-based architecture for better modularity and organization
 - Updated package structure to support selective imports
 
 ### Breaking Changes

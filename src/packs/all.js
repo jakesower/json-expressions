@@ -12,7 +12,7 @@
  * - String operations (text processing)
  *
  * ⚠️  This collection is intended for testing only. For production use, import
- * specific packs to enable tree-shaking and reduce bundle size.
+ * specific packs for better organization.
  */
 
 // Import all expressions from all definitions (alphabetized)

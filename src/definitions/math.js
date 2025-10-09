@@ -142,7 +142,7 @@ const $sum = createAggregativeExpression("$sum", (values) => {
 	return values.reduce((sum, v) => sum + v, 0);
 });
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export {
 	$abs,
 	$add,

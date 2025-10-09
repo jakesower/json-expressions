@@ -90,5 +90,5 @@ const $fromPairs = (_, inputData) => {
 	return result;
 };
 
-// Individual exports for tree shaking
+// Individual exports
 export { $merge, $pick, $omit, $keys, $values, $pairs, $fromPairs };

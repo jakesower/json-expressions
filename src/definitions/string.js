@@ -53,5 +53,5 @@ const $trim = createStringTransformExpression((str) => str.trim());
 
 const $uppercase = createStringTransformExpression((str) => str.toUpperCase());
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export { $lowercase, $replace, $split, $substring, $trim, $uppercase };

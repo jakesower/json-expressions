@@ -100,5 +100,5 @@ const $sort = (operand, inputData, { apply }) => {
 	});
 };
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export { $debug, $default, $literal, $pipe, $sort };

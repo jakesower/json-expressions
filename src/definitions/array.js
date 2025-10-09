@@ -205,7 +205,7 @@ const $last = createArrayAccessorExpression((array) => {
 	return array.length === 0 ? undefined : array[array.length - 1];
 });
 
-// Individual exports for tree shaking (alphabetized)
+// Individual exports (alphabetized)
 export {
 	$all,
 	$any,
