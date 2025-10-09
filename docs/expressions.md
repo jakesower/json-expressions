@@ -26,18 +26,6 @@ apply({ $abs: null }, -2.5);
 // Returns: 2.5
 ```
 
-## $ceil
-
-Returns the smallest integer greater than or equal to the input number (rounds up).
-
-```javascript
-apply({ $ceil: null }, 4.1);
-// Returns: 5
-
-apply({ $ceil: null }, -4.9);
-// Returns: -4
-```
-
 ## $add
 
 Performs addition of two numbers.
@@ -57,6 +45,80 @@ apply(
 // Mixed form: expression + literal (expression + expression is OK too)
 apply({ $add: [{ $get: "age" }, 12] }, { age: 4 });
 // Returns: 16 (4 + 12)
+```
+
+## $addDays
+
+Adds a specified number of days to a date.
+
+```javascript
+// Array form: add days to date
+apply({ $addDays: ["2025-10-05T00:00:00.000Z", 7] }, null);
+// Returns: "2025-10-12T00:00:00.000Z"
+
+// Input data form: add days to input date
+apply({ $addDays: 7 }, "2025-10-05T00:00:00.000Z");
+// Returns: "2025-10-12T00:00:00.000Z"
+
+// Negative days subtract from date
+apply({ $addDays: ["2025-10-05T00:00:00.000Z", -3] }, null);
+// Returns: "2025-10-02T00:00:00.000Z"
+```
+
+## $addHours
+
+Adds a specified number of hours to a date.
+
+```javascript
+// Array form: add hours to date
+apply({ $addHours: ["2025-10-05T10:00:00.000Z", 5] }, null);
+// Returns: "2025-10-05T15:00:00.000Z"
+
+// Handles day boundaries
+apply({ $addHours: ["2025-10-05T22:00:00.000Z", 3] }, null);
+// Returns: "2025-10-06T01:00:00.000Z"
+```
+
+## $addMinutes
+
+Adds a specified number of minutes to a date.
+
+```javascript
+// Array form: add minutes to date
+apply({ $addMinutes: ["2025-10-05T10:30:00.000Z", 45] }, null);
+// Returns: "2025-10-05T11:15:00.000Z"
+
+// Handles hour boundaries
+apply({ $addMinutes: ["2025-10-05T10:50:00.000Z", 20] }, null);
+// Returns: "2025-10-05T11:10:00.000Z"
+```
+
+## $addMonths
+
+Adds a specified number of months to a date.
+
+```javascript
+// Array form: add months to date
+apply({ $addMonths: ["2025-10-05T00:00:00.000Z", 3] }, null);
+// Returns: "2026-01-05T00:00:00.000Z"
+
+// Input data form: add months to input date
+apply({ $addMonths: 3 }, "2025-10-05T00:00:00.000Z");
+// Returns: "2026-01-05T00:00:00.000Z"
+```
+
+## $addYears
+
+Adds a specified number of years to a date.
+
+```javascript
+// Array form: add years to date
+apply({ $addYears: ["2025-10-05T00:00:00.000Z", 5] }, null);
+// Returns: "2030-10-05T00:00:00.000Z"
+
+// Input data form: add years to input date
+apply({ $addYears: 5 }, "2025-10-05T00:00:00.000Z");
+// Returns: "2030-10-05T00:00:00.000Z"
 ```
 
 ## $all
@@ -169,6 +231,64 @@ apply(
 // Returns: "High energy games"
 ```
 
+## $ceil
+
+Returns the smallest integer greater than or equal to the input number (rounds up).
+
+```javascript
+apply({ $ceil: null }, 4.1);
+// Returns: 5
+
+apply({ $ceil: null }, -4.9);
+// Returns: -4
+```
+
+## $day
+
+Extracts the day of the month from a date (1-31).
+
+```javascript
+// Extract day from date
+apply({ $day: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 5
+
+// Works with input data form
+apply({ $day: null }, "2025-10-31T15:23:45.234Z");
+// Returns: 31
+```
+
+## $dayOfWeek
+
+Returns the day of the week as a number (0=Sunday, 6=Saturday).
+
+```javascript
+// Get day of week (Sunday = 0)
+apply({ $dayOfWeek: "2025-10-05T00:00:00.000Z" }, null);
+// Returns: 0 (Sunday)
+
+// Monday = 1
+apply({ $dayOfWeek: "2025-10-06T00:00:00.000Z" }, null);
+// Returns: 1
+
+// Saturday = 6
+apply({ $dayOfWeek: "2025-10-04T00:00:00.000Z" }, null);
+// Returns: 6
+```
+
+## $dayOfYear
+
+Returns the day of the year (1-365/366).
+
+```javascript
+// First day of year
+apply({ $dayOfYear: "2025-01-01T00:00:00.000Z" }, null);
+// Returns: 1
+
+// Calculate day number
+apply({ $dayOfYear: "2025-10-05T00:00:00.000Z" }, null);
+// Returns: 278
+```
+
 ## $coalesce
 
 Returns the first non-null value from an array.
@@ -235,6 +355,92 @@ apply(
   daycareData,
 );
 // Logs the children array and continues processing
+```
+
+## $diffDays
+
+Calculates the difference in days between two dates.
+
+```javascript
+// Array form: difference in days
+apply({ $diffDays: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] }, null);
+// Returns: 7
+
+// Input data form: difference from input date
+apply({ $diffDays: "2025-10-12T00:00:00.000Z" }, "2025-10-05T00:00:00.000Z");
+// Returns: 7
+
+// Negative for earlier second date
+apply({ $diffDays: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+// Returns: -7
+```
+
+## $diffHours
+
+Calculates the difference in hours between two dates.
+
+```javascript
+// Array form: difference in hours
+apply({ $diffHours: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] }, null);
+// Returns: 5
+
+// Handles day boundaries
+apply({ $diffHours: ["2025-10-05T22:00:00.000Z", "2025-10-06T01:00:00.000Z"] }, null);
+// Returns: 3
+```
+
+## $diffMilliseconds
+
+Calculates the difference in milliseconds between two dates.
+
+```javascript
+// Array form: difference in milliseconds
+apply({ $diffMilliseconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:00:01.000Z"] }, null);
+// Returns: 1000
+```
+
+## $diffMinutes
+
+Calculates the difference in minutes between two dates.
+
+```javascript
+// Array form: difference in minutes
+apply({ $diffMinutes: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:45:00.000Z"] }, null);
+// Returns: 45
+```
+
+## $diffMonths
+
+Calculates the difference in months between two dates.
+
+```javascript
+// Array form: difference in months
+apply({ $diffMonths: ["2025-10-05T00:00:00.000Z", "2026-01-05T00:00:00.000Z"] }, null);
+// Returns: 3
+
+// Handles year boundaries
+apply({ $diffMonths: ["2025-12-15T00:00:00.000Z", "2026-02-15T00:00:00.000Z"] }, null);
+// Returns: 2
+```
+
+## $diffSeconds
+
+Calculates the difference in seconds between two dates.
+
+```javascript
+// Array form: difference in seconds
+apply({ $diffSeconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:01:00.000Z"] }, null);
+// Returns: 60
+```
+
+## $diffYears
+
+Calculates the difference in years between two dates.
+
+```javascript
+// Array form: difference in years
+apply({ $diffYears: ["2025-10-05T00:00:00.000Z", "2030-10-05T00:00:00.000Z"] }, null);
+// Returns: 5
 ```
 
 ## $default
@@ -314,6 +520,44 @@ apply(
   { status: "active", expectedStatus: "active" },
 );
 // Returns: true ("active" === "active")
+```
+
+## $endOfDay
+
+Returns the end of day (23:59:59.999) for a given date.
+
+```javascript
+// Get end of day
+apply({ $endOfDay: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: "2025-10-05T23:59:59.999Z"
+```
+
+## $endOfMonth
+
+Returns the last moment of the month for a given date.
+
+```javascript
+// End of 31-day month
+apply({ $endOfMonth: "2025-10-15T15:23:45.234Z" }, null);
+// Returns: "2025-10-31T23:59:59.999Z"
+
+// End of 30-day month
+apply({ $endOfMonth: "2025-11-15T15:23:45.234Z" }, null);
+// Returns: "2025-11-30T23:59:59.999Z"
+
+// End of February (non-leap year)
+apply({ $endOfMonth: "2025-02-15T15:23:45.234Z" }, null);
+// Returns: "2025-02-28T23:59:59.999Z"
+```
+
+## $endOfYear
+
+Returns the last moment of the year for a given date.
+
+```javascript
+// Get end of year
+apply({ $endOfYear: "2025-10-15T15:23:45.234Z" }, null);
+// Returns: "2025-12-31T23:59:59.999Z"
 ```
 
 ## $exists
@@ -429,6 +673,28 @@ const childPairs = [
 ];
 apply({ $fromPairs: null }, childPairs);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
+```
+
+## $formatDate
+
+Formats a date using a format pattern string (follows date-fns format tokens).
+
+```javascript
+// Array form: format date with pattern
+apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "yyyy-MM-dd"] }, null);
+// Returns: "2025-10-05"
+
+// Input data form: format input date
+apply({ $formatDate: "yyyy-MM-dd" }, "2025-10-05T11:23:45.234Z");
+// Returns: "2025-10-05"
+
+// Custom pattern with month name
+apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "MMMM do, yyyy"] }, null);
+// Returns: "October 5th, 2025"
+
+// Format day of week
+apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "EEEE"] }, null);
+// Returns: "Sunday"
 ```
 
 ## $flatMap
@@ -561,6 +827,20 @@ apply({ $gte: [{ $get: "attendance" }, 90] }, { attendance: 95 });
 // Returns: true (95 >= 90)
 ```
 
+## $hour
+
+Extracts the hour from a date (0-23).
+
+```javascript
+// Extract hour from date
+apply({ $hour: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 15
+
+// Midnight returns 0
+apply({ $hour: "2025-10-05T00:23:45.234Z" }, null);
+// Returns: 0
+```
+
 ## $if
 
 Conditional expression that evaluates different branches based on a condition.
@@ -611,6 +891,60 @@ apply({ $in: availableOptions }, "vegetarian");
 // Returns: true
 ```
 
+## $isAfter
+
+Tests if the first date is after the second date.
+
+```javascript
+// Array form: compare two dates
+apply({ $isAfter: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+// Returns: true
+
+// Input data form
+apply({ $isAfter: "2025-10-05T00:00:00.000Z" }, "2025-10-12T00:00:00.000Z");
+// Returns: true
+
+// Returns false for equal dates
+apply({ $isAfter: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+// Returns: false
+```
+
+## $isBefore
+
+Tests if the first date is before the second date.
+
+```javascript
+// Array form: compare two dates
+apply({ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] }, null);
+// Returns: true
+
+// Returns false for equal dates
+apply({ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+// Returns: false
+```
+
+## $isDateValid
+
+Validates if a date string is valid, returning true or false instead of throwing.
+
+```javascript
+// Array form: validate with format
+apply({ $isDateValid: ["10/05/2025", "MM/dd/yyyy"] }, null);
+// Returns: true
+
+// Input data form
+apply({ $isDateValid: "MM/dd/yyyy" }, "10/05/2025");
+// Returns: true
+
+// Invalid date returns false
+apply({ $isDateValid: ["not-a-date", "MM/dd/yyyy"] }, null);
+// Returns: false
+
+// Validate ISO string
+apply({ $isDateValid: "2025-10-05T11:23:45.234Z" }, null);
+// Returns: true
+```
+
 ## $isEmpty
 
 Tests if a value is empty or absent (null or undefined). The semantic inverse of $isPresent.
@@ -648,6 +982,56 @@ apply({ $isPresent: null }, undefined);
 
 apply({ $isPresent: null }, 0);
 // Returns: true (zero is meaningful)
+```
+
+## $isSameDay
+
+Tests if two dates are on the same calendar day.
+
+```javascript
+// Array form: compare two dates
+apply({ $isSameDay: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] }, null);
+// Returns: true
+
+// Different days return false
+apply({ $isSameDay: ["2025-10-05T23:59:59.999Z", "2025-10-06T00:00:00.000Z"] }, null);
+// Returns: false
+```
+
+## $isWeekday
+
+Tests if a date falls on a weekday (Monday-Friday).
+
+```javascript
+// Monday is a weekday
+apply({ $isWeekday: "2025-10-06T00:00:00.000Z" }, null);
+// Returns: true
+
+// Friday is a weekday
+apply({ $isWeekday: "2025-10-10T00:00:00.000Z" }, null);
+// Returns: true
+
+// Saturday is not a weekday
+apply({ $isWeekday: "2025-10-04T00:00:00.000Z" }, null);
+// Returns: false
+```
+
+## $isWeekend
+
+Tests if a date falls on a weekend (Saturday or Sunday).
+
+```javascript
+// Saturday is a weekend
+apply({ $isWeekend: "2025-10-04T00:00:00.000Z" }, null);
+// Returns: true
+
+// Sunday is a weekend
+apply({ $isWeekend: "2025-10-05T00:00:00.000Z" }, null);
+// Returns: true
+
+// Monday is not a weekend
+apply({ $isWeekend: "2025-10-06T00:00:00.000Z" }, null);
+// Returns: false
 ```
 
 ## $join
@@ -942,6 +1326,34 @@ apply({ $min: { $get: "temperatures" } }, data);
 // Returns: 68
 ```
 
+## $minute
+
+Extracts the minute from a date (0-59).
+
+```javascript
+// Extract minute from date
+apply({ $minute: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 23
+```
+
+## $month
+
+Extracts the month from a date (1-12, 1-indexed).
+
+```javascript
+// Extract month from date
+apply({ $month: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 10
+
+// January returns 1
+apply({ $month: "2025-01-05T15:23:45.234Z" }, null);
+// Returns: 1
+
+// December returns 12
+apply({ $month: "2025-12-05T15:23:45.234Z" }, null);
+// Returns: 12
+```
+
 ## $modulo
 
 Performs modulo (remainder) operation.
@@ -1067,6 +1479,28 @@ Converts an object into an array of [key, value] pairs.
 const child = { name: "Zara", age: 4, group: "Butterflies" };
 apply({ $pairs: null }, child);
 // Returns: [["name", "Zara"], ["age", 4], ["group", "Butterflies"]]
+```
+
+## $parseDate
+
+Parses a date string using a format pattern and returns an ISO 8601 string.
+
+```javascript
+// Array form: parse with format
+apply({ $parseDate: ["10/05/2025", "MM/dd/yyyy"] }, null);
+// Returns: "2025-10-05T00:00:00.000Z" (or with local timezone offset)
+
+// Input data form
+apply({ $parseDate: "MM/dd/yyyy" }, "10/05/2025");
+// Returns: "2025-10-05T00:00:00.000Z" (or with local timezone offset)
+
+// Validate ISO string without format
+apply({ $parseDate: "2025-10-05T11:23:45.234Z" }, null);
+// Returns: "2025-10-05T11:23:45.234Z"
+
+// Parse date with time
+apply({ $parseDate: ["10/05/2025 14:30:00", "MM/dd/yyyy HH:mm:ss"] }, null);
+// Returns: ISO string with parsed time
 ```
 
 ## $pick
@@ -1218,6 +1652,16 @@ apply(
 
 **Note:** To select properties by name without transformation, use [`$pick`](#pick) instead.
 
+## $second
+
+Extracts the second from a date (0-59).
+
+```javascript
+// Extract second from date
+apply({ $second: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 45
+```
+
 ## $sort
 
 Sorts an array based on specified criteria.
@@ -1251,6 +1695,40 @@ Splits a string into an array using a separator.
 // Split child's full name
 apply({ $split: " " }, "Amara Devika Rodriguez");
 // Returns: ["Amara", "Devika", "Rodriguez"]
+```
+
+## $startOfDay
+
+Returns the start of day (00:00:00.000) for a given date.
+
+```javascript
+// Get start of day
+apply({ $startOfDay: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Works with input data form
+apply({ $startOfDay: null }, "2025-10-05T15:23:45.234Z");
+// Returns: "2025-10-05T00:00:00.000Z"
+```
+
+## $startOfMonth
+
+Returns the first moment of the month for a given date.
+
+```javascript
+// Get start of month
+apply({ $startOfMonth: "2025-10-15T15:23:45.234Z" }, null);
+// Returns: "2025-10-01T00:00:00.000Z"
+```
+
+## $startOfYear
+
+Returns the first moment of the year for a given date.
+
+```javascript
+// Get start of year
+apply({ $startOfYear: "2025-10-15T15:23:45.234Z" }, null);
+// Returns: "2025-01-01T00:00:00.000Z"
 ```
 
 ## $sqrt
@@ -1292,6 +1770,48 @@ apply(
 // Mixed form: expression - literal
 apply({ $subtract: [{ $get: "age" }, 2] }, { age: 6 });
 // Returns: 4 (6 - 2)
+```
+
+## $subDays
+
+Subtracts a specified number of days from a date.
+
+```javascript
+// Array form: subtract days from date
+apply({ $subDays: ["2025-10-12T00:00:00.000Z", 7] }, null);
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Input data form: subtract days from input date
+apply({ $subDays: 7 }, "2025-10-12T00:00:00.000Z");
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Handles month boundaries
+apply({ $subDays: ["2025-11-01T00:00:00.000Z", 1] }, null);
+// Returns: "2025-10-31T00:00:00.000Z"
+```
+
+## $subMonths
+
+Subtracts a specified number of months from a date.
+
+```javascript
+// Array form: subtract months from date
+apply({ $subMonths: ["2026-01-05T00:00:00.000Z", 3] }, null);
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Handles year boundaries
+apply({ $subMonths: ["2026-02-15T00:00:00.000Z", 2] }, null);
+// Returns: "2025-12-15T00:00:00.000Z"
+```
+
+## $subYears
+
+Subtracts a specified number of years from a date.
+
+```javascript
+// Array form: subtract years from date
+apply({ $subYears: ["2030-10-05T00:00:00.000Z", 5] }, null);
+// Returns: "2025-10-05T00:00:00.000Z"
 ```
 
 ## $sum
@@ -1371,4 +1891,18 @@ Returns an array of all property values from an object.
 const child = { name: "Amara", age: 4, group: "Butterflies", present: true };
 apply({ $values: null }, child);
 // Returns: ["Amara", 4, "Butterflies", true]
+```
+
+## $year
+
+Extracts the year from a date.
+
+```javascript
+// Extract year from date
+apply({ $year: "2025-10-05T15:23:45.234Z" }, null);
+// Returns: 2025
+
+// Works with input data form
+apply({ $year: null }, "2025-10-05T15:23:45.234Z");
+// Returns: 2025
 ```

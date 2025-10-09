@@ -205,16 +205,19 @@ const enriched = engine.apply({ $enrichChild: null }, child);
 When designing expressions that **extract or compute values from collections** (arrays, objects), prefer the operand-over-inputData pattern with fallback. This pattern makes expressions more composable and eliminates the need for verbose pipelines.
 
 **Pattern:**
+
 1. Try to resolve and use the operand (if it's an array/collection)
 2. Fall back to input data if operand is null or not a collection
 3. Use `isWrappedLiteral` to respect `$literal` wrapping
 
 **When to use:**
+
 - **Aggregations**: `$count`, `$sum`, `$min`, `$max`, `$mean`
 - **Accessors**: `$first`, `$last`
 - Any expression that answers "what value from this collection?"
 
 **When NOT to use:**
+
 - **Transformations**: `$reverse`, `$uppercase`, `$trim` (operate on "data you have")
 - Expressions that fundamentally operate on input data context
 
@@ -230,9 +233,7 @@ const createAggregativeExpression =
 
     // Require either operand or input data to be an array
     if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
-      throw new Error(
-        `${expressionName} requires array operand or input data`,
-      );
+      throw new Error(`${expressionName} requires array operand or input data`);
     }
 
     // Prefer operand, fall back to input data
@@ -276,6 +277,7 @@ engine.apply({ $median: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5, 6]);
 ```
 
 **Benefits:**
+
 - Natural composition without `$pipe`
 - Operands are no longer wasted parameters
 - Clear mental model: "operate on what I specify, or what I have"
@@ -283,6 +285,7 @@ engine.apply({ $median: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5, 6]);
 ## Best Practices
 
 ### 1. Delegation Anti-Pattern
+
 Do NOT delegate to other expressions within custom expressions. This creates unnecessary complexity and defeats the purpose of custom expressions. Expressions can be overwritten and keeping them self-contained help avoid subtle bugs.
 
 ```javascript

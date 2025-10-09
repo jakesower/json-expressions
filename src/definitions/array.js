@@ -7,6 +7,7 @@
  * - Slicing ($skip, $take)
  * - Projection ($pluck)
  * - Grouping ($groupBy)
+ * - Sorting ($sort)
  * - Accessors ($first, $last)
  * - Utilities ($coalesce)
  */
@@ -172,6 +173,44 @@ const $take = createArrayOperationExpression((count, array) =>
 
 const $unique = createArrayTransformExpression((array) => [...new Set(array)]);
 
+const $sort = (operand, inputData, { apply }) => {
+	if (!Array.isArray(inputData)) {
+		throw new Error("$sort can only be applied to arrays");
+	}
+
+	const by =
+		typeof operand === "string"
+			? [{ by: operand }]
+			: Array.isArray(operand)
+				? operand
+				: [operand];
+
+	return Array.from(inputData).sort((a, b) => {
+		for (const sortCriterion of by) {
+			if (typeof sortCriterion !== "object" || !("by" in sortCriterion)) {
+				throw new Error(
+					"$sort operand must be string, object with 'by' property, or array of sort criteria",
+				);
+			}
+
+			const { by, desc = false } = sortCriterion;
+
+			let aVal, bVal;
+			if (typeof by === "string") {
+				aVal = get(a, by);
+				bVal = get(b, by);
+			} else {
+				aVal = apply(by, a);
+				bVal = apply(by, b);
+			}
+
+			if (aVal < bVal) return desc ? 1 : -1;
+			if (aVal > bVal) return desc ? -1 : 1;
+		}
+		return 0;
+	});
+};
+
 /**
  * Creates an array accessor expression that operates on either operand or input data.
  * Similar to aggregative expressions - if operand resolves to an array, use it; otherwise use input data.
@@ -224,6 +263,7 @@ export {
 	$pluck,
 	$reverse,
 	$skip,
+	$sort,
 	$take,
 	$unique,
 };
