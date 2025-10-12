@@ -38,7 +38,7 @@ const uselessEngine = createExpressionEngine({ includeBase: false });
 
 // exclude specific expressions (useful for security or trimming)
 const restrictedEngine = createExpressionEngine({
-  exclude: ["$debug"], // remove potentially dangerous expressions
+  exclude: ["$debug"], // remove debug logging in production
 });
 
 // base pack minus array operations
@@ -93,7 +93,7 @@ engine.apply(
 
 ## Complex Conditions
 
-Use `$matches` to check multiple properties at once:
+Use `$matchesAll` to check multiple properties at once:
 
 ```javascript
 const children = [
@@ -104,7 +104,7 @@ const children = [
 
 // Check if a child meets enrollment requirements
 const isEligible = {
-  $matches: {
+  $matchesAll: {
     age: { $gte: 4 },
     vaccinated: true,
   },
@@ -137,7 +137,7 @@ const preschoolers = engine.apply(
       { $get: "children" },
       {
         $filter: {
-          $matches: { group: "preschool" }, // $filter/$matches pattern
+          $matchesAll: { group: "preschool" }, // $filter/$matchesAll pattern
         },
       },
     ],
@@ -151,7 +151,7 @@ const preschoolNames = engine.apply(
   {
     $pipe: [
       { $get: "children" },
-      { $filterBy: { group: "preschool" } }, // more compact $filterBy pattern (replaces $filter/$matches)
+      { $filterBy: { group: "preschool" } }, // more compact $filterBy pattern (replaces $filter/$matchesAll)
       { $map: { $get: "name" } },
     ],
   },
@@ -341,20 +341,20 @@ const needsAttention = engine.apply(
 
 ## Common Patterns Cheat Sheet
 
-| Goal                   | Expression Pattern                                        |
-| ---------------------- | --------------------------------------------------------- |
-| Get property           | `{ $get: "propertyName" }`                                |
-| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                          |
-| Multiple conditions    | `{ $and: [condition1, condition2] }`                      |
-| Object matching        | `{ $matches: { prop1: condition1, prop2: condition2 } }`  |
-| Filter array           | `{ $filter: condition }`                                  |
-| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }` |
-| Transform array        | `{ $map: transformation }`                                |
-| Count items            | `{ $count: null }`                                        |
-| Get first/last         | `{ $first: null }`, `{ $last: null }`                     |
-| Sort array             | `{ $sort: { by: "property" } }`                           |
-| Chain operations       | `{ $pipe: [step1, step2, step3] }`                        |
-| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`  |
+| Goal                   | Expression Pattern                                          |
+| ---------------------- | ----------------------------------------------------------- |
+| Get property           | `{ $get: "propertyName" }`                                  |
+| Test condition         | `{ $gt: 5 }`, `{ $eq: "value" }`                            |
+| Multiple conditions    | `{ $and: [condition1, condition2] }`                        |
+| Object matching        | `{ $matchesAll: { prop1: condition1, prop2: condition2 } }` |
+| Filter array           | `{ $filter: condition }`                                    |
+| Match and filter array | `{ $filterBy: { prop1: condition1, prop2: condition2 } }`   |
+| Transform array        | `{ $map: transformation }`                                  |
+| Count items            | `{ $count: null }`                                          |
+| Get first/last         | `{ $first: null }`, `{ $last: null }`                       |
+| Sort array             | `{ $sort: { by: "property" } }`                             |
+| Chain operations       | `{ $pipe: [step1, step2, step3] }`                          |
+| If/then/else           | `{ $if: { if: condition, then: value1, else: value2 } }`    |
 
 ## Next Steps
 

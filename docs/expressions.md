@@ -340,7 +340,9 @@ apply({ $count: { $get: "scores" } }, data);
 
 ## $debug
 
-Logs a value to console and returns it unchanged (useful for debugging pipelines). This is a good expression for custom implementations.
+**Pack:** `base`
+
+Logs the operand, input data, and result to console and returns the result unchanged. Useful for debugging expression pipelines.
 
 ```javascript
 // Debug intermediate value in pipeline
@@ -348,13 +350,19 @@ apply(
   {
     $pipe: [
       { $get: "children" },
-      { $debug: null },
-      { $filter: { $pipe: [{ $get: "age" }, { $gte: 4 }] } },
+      { $debug: { $filter: { $get: "enrolled" } } },
+      { $map: { $get: "name" } },
     ],
   },
   daycareData,
 );
-// Logs the children array and continues processing
+// Logs: Debug: { operand: { $filter: { $get: "enrolled" } }, inputData: [...], result: [...] }
+// Then continues processing
+
+// Debug with simple pass-through
+apply({ $debug: { $get: "name" } }, { name: "Amara" });
+// Logs: Debug: { operand: { $get: "name" }, inputData: { name: "Amara" }, result: "Amara" }
+// Returns: "Amara"
 ```
 
 ## $diffDays
@@ -363,7 +371,10 @@ Calculates the difference in days between two dates.
 
 ```javascript
 // Array form: difference in days
-apply({ $diffDays: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] }, null);
+apply(
+  { $diffDays: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] },
+  null,
+);
 // Returns: 7
 
 // Input data form: difference from input date
@@ -371,7 +382,10 @@ apply({ $diffDays: "2025-10-12T00:00:00.000Z" }, "2025-10-05T00:00:00.000Z");
 // Returns: 7
 
 // Negative for earlier second date
-apply({ $diffDays: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+apply(
+  { $diffDays: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: -7
 ```
 
@@ -381,11 +395,17 @@ Calculates the difference in hours between two dates.
 
 ```javascript
 // Array form: difference in hours
-apply({ $diffHours: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] }, null);
+apply(
+  { $diffHours: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] },
+  null,
+);
 // Returns: 5
 
 // Handles day boundaries
-apply({ $diffHours: ["2025-10-05T22:00:00.000Z", "2025-10-06T01:00:00.000Z"] }, null);
+apply(
+  { $diffHours: ["2025-10-05T22:00:00.000Z", "2025-10-06T01:00:00.000Z"] },
+  null,
+);
 // Returns: 3
 ```
 
@@ -395,7 +415,12 @@ Calculates the difference in milliseconds between two dates.
 
 ```javascript
 // Array form: difference in milliseconds
-apply({ $diffMilliseconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:00:01.000Z"] }, null);
+apply(
+  {
+    $diffMilliseconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:00:01.000Z"],
+  },
+  null,
+);
 // Returns: 1000
 ```
 
@@ -405,7 +430,10 @@ Calculates the difference in minutes between two dates.
 
 ```javascript
 // Array form: difference in minutes
-apply({ $diffMinutes: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:45:00.000Z"] }, null);
+apply(
+  { $diffMinutes: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:45:00.000Z"] },
+  null,
+);
 // Returns: 45
 ```
 
@@ -415,11 +443,17 @@ Calculates the difference in months between two dates.
 
 ```javascript
 // Array form: difference in months
-apply({ $diffMonths: ["2025-10-05T00:00:00.000Z", "2026-01-05T00:00:00.000Z"] }, null);
+apply(
+  { $diffMonths: ["2025-10-05T00:00:00.000Z", "2026-01-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: 3
 
 // Handles year boundaries
-apply({ $diffMonths: ["2025-12-15T00:00:00.000Z", "2026-02-15T00:00:00.000Z"] }, null);
+apply(
+  { $diffMonths: ["2025-12-15T00:00:00.000Z", "2026-02-15T00:00:00.000Z"] },
+  null,
+);
 // Returns: 2
 ```
 
@@ -429,7 +463,10 @@ Calculates the difference in seconds between two dates.
 
 ```javascript
 // Array form: difference in seconds
-apply({ $diffSeconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:01:00.000Z"] }, null);
+apply(
+  { $diffSeconds: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:01:00.000Z"] },
+  null,
+);
 // Returns: 60
 ```
 
@@ -439,7 +476,10 @@ Calculates the difference in years between two dates.
 
 ```javascript
 // Array form: difference in years
-apply({ $diffYears: ["2025-10-05T00:00:00.000Z", "2030-10-05T00:00:00.000Z"] }, null);
+apply(
+  { $diffYears: ["2025-10-05T00:00:00.000Z", "2030-10-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: 5
 ```
 
@@ -595,7 +635,7 @@ apply({ $filter: { $get: "needsHelp" } }, children);
 
 ## $filterBy
 
-Filters arrays by object property conditions (shorthand for $filter + $matches).
+Filters arrays by object property conditions (shorthand for $filter + $matchesAll).
 
 ```javascript
 // Find active children ready for kindergarten
@@ -897,7 +937,10 @@ Tests if the first date is after the second date.
 
 ```javascript
 // Array form: compare two dates
-apply({ $isAfter: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+apply(
+  { $isAfter: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: true
 
 // Input data form
@@ -905,7 +948,10 @@ apply({ $isAfter: "2025-10-05T00:00:00.000Z" }, "2025-10-12T00:00:00.000Z");
 // Returns: true
 
 // Returns false for equal dates
-apply({ $isAfter: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+apply(
+  { $isAfter: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: false
 ```
 
@@ -915,11 +961,17 @@ Tests if the first date is before the second date.
 
 ```javascript
 // Array form: compare two dates
-apply({ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] }, null);
+apply(
+  { $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] },
+  null,
+);
 // Returns: true
 
 // Returns false for equal dates
-apply({ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+apply(
+  { $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
+  null,
+);
 // Returns: false
 ```
 
@@ -990,11 +1042,17 @@ Tests if two dates are on the same calendar day.
 
 ```javascript
 // Array form: compare two dates
-apply({ $isSameDay: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] }, null);
+apply(
+  { $isSameDay: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"] },
+  null,
+);
 // Returns: true
 
 // Different days return false
-apply({ $isSameDay: ["2025-10-05T23:59:59.999Z", "2025-10-06T00:00:00.000Z"] }, null);
+apply(
+  { $isSameDay: ["2025-10-05T23:59:59.999Z", "2025-10-06T00:00:00.000Z"] },
+  null,
+);
 // Returns: false
 ```
 
@@ -1162,7 +1220,7 @@ apply({
 });
 ```
 
-## $matches
+## $matchesAll
 
 Tests if an object matches **all** specified property conditions (AND logic). Supports literal values, expressions, and $literal-wrapped values for flexible matching.
 
@@ -1176,7 +1234,7 @@ const child = {
 };
 apply(
   {
-    $matches: {
+    $matchesAll: {
       age: { $gte: 4 }, // match on an expression
       active: true, // match on a literal value
       activity: { $literal: { $get: "current" } }, // match the literal object (not as expression)

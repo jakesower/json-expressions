@@ -846,5 +846,4 @@ describe("flow expressions - edge cases", () => {
 			expect(() => apply({ $pipe: "string" }, {})).toThrow();
 		});
 	});
-
 });

@@ -29,7 +29,7 @@ engine.apply({ $gt: 18 }, user.age); // true (25 > 18)
 // Complex logic with input data
 engine.apply(
   {
-    $matches: {
+    $matchesAll: {
       age: { $gte: 18 },
       score: { $gt: 80 },
     },
@@ -240,7 +240,7 @@ Performance varies based on operation complexity:
 | Operation Type              | Performance          | Example                     |
 | --------------------------- | -------------------- | --------------------------- |
 | Simple operations           | **1-1.6M ops/sec**   | `$gt`, `$get`, `$add`       |
-| Complex operations          | **300-700K ops/sec** | `$matches`, `$filter`       |
+| Complex operations          | **300-700K ops/sec** | `$matchesAll`, `$filter`       |
 | Nested data access          | **2.4M ops/sec**     | `$get: "user.profile.name"` |
 | Data processing             | **70-300K ops/sec**  | Pipeline transformations    |
 | Large datasets (1000 items) | **1.6-3.9K ops/sec** | Filtering, grouping         |

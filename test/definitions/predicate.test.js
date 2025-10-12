@@ -760,29 +760,29 @@ describe("$matchesAny", () => {
 	});
 });
 
-describe("$matches", () => {
+describe("$matchesAll", () => {
 	describe("basic functionality", () => {
 		it("matches single property with literal value", () => {
 			expect(
-				apply({ $matches: { name: "Kenji" } }, { name: "Kenji", age: 4 }),
+				apply({ $matchesAll: { name: "Kenji" } }, { name: "Kenji", age: 4 }),
 			).toBe(true);
 
 			expect(
-				apply({ $matches: { name: "Kenji" } }, { name: "Amara", age: 4 }),
+				apply({ $matchesAll: { name: "Kenji" } }, { name: "Amara", age: 4 }),
 			).toBe(false);
 		});
 
 		it("matches multiple properties", () => {
 			expect(
 				apply(
-					{ $matches: { name: "Amara", age: 3 } },
+					{ $matchesAll: { name: "Amara", age: 3 } },
 					{ name: "Amara", age: 3, room: "rainbow" },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { name: "Amara", age: 4 } },
+					{ $matchesAll: { name: "Amara", age: 4 } },
 					{ name: "Amara", age: 3, room: "rainbow" },
 				),
 			).toBe(false);
@@ -792,7 +792,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"guardian.name": "Fatima",
 							"guardian.phone": "555-0123",
 						},
@@ -811,7 +811,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"guardian.name": "Fatima",
 							"guardian.phone": "555-9999",
 						},
@@ -827,14 +827,14 @@ describe("$matches", () => {
 		it("matches with expression conditions", () => {
 			expect(
 				apply(
-					{ $matches: { age: { $gt: 3 }, room: "sunshine" } },
+					{ $matchesAll: { age: { $gt: 3 }, room: "sunshine" } },
 					{ name: "Ravi", age: 4, room: "sunshine" },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { age: { $gt: 5 }, room: "sunshine" } },
+					{ $matchesAll: { age: { $gt: 5 }, room: "sunshine" } },
 					{ name: "Ravi", age: 4, room: "sunshine" },
 				),
 			).toBe(false);
@@ -843,14 +843,14 @@ describe("$matches", () => {
 		it("handles $literal wrapped conditions", () => {
 			expect(
 				apply(
-					{ $matches: { status: { $literal: { $active: true } } } },
+					{ $matchesAll: { status: { $literal: { $active: true } } } },
 					{ name: "Chen", status: { $active: true } },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { status: { $literal: { $active: true } } } },
+					{ $matchesAll: { status: { $literal: { $active: true } } } },
 					{ name: "Chen", status: { $active: false } },
 				),
 			).toBe(false);
@@ -869,7 +869,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"schedule.monday": ["art", "outdoor play"],
 							allergies: ["peanuts", "dairy"],
 						},
@@ -881,7 +881,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"schedule.monday": ["art", "outdoor play"],
 							allergies: ["peanuts"], // different array
 						},
@@ -894,27 +894,27 @@ describe("$matches", () => {
 		it("handles null and undefined values", () => {
 			expect(
 				apply(
-					{ $matches: { notes: null, emergencyContact: undefined } },
+					{ $matchesAll: { notes: null, emergencyContact: undefined } },
 					{ name: "Yuki", notes: null, emergencyContact: undefined },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { notes: null } },
+					{ $matchesAll: { notes: null } },
 					{ name: "Yuki", notes: "has allergy note" },
 				),
 			).toBe(false);
 		});
 
 		it("handles empty object conditions", () => {
-			expect(apply({ $matches: {} }, { name: "Ahmed", age: 5 })).toBe(true);
+			expect(apply({ $matchesAll: {} }, { name: "Ahmed", age: 5 })).toBe(true);
 		});
 
 		it("returns false when property doesn't exist", () => {
 			expect(
 				apply(
-					{ $matches: { nonExistent: "value" } },
+					{ $matchesAll: { nonExistent: "value" } },
 					{ name: "Sakura", age: 3 },
 				),
 			).toBe(false);
@@ -923,30 +923,30 @@ describe("$matches", () => {
 		it("handles array property paths", () => {
 			expect(
 				apply(
-					{ $matches: { "meals.0": "apple", "meals.1": "crackers" } },
+					{ $matchesAll: { "meals.0": "apple", "meals.1": "crackers" } },
 					{ name: "Diego", meals: ["apple", "crackers", "juice"] },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { "meals.0": "banana" } },
+					{ $matchesAll: { "meals.0": "banana" } },
 					{ name: "Diego", meals: ["apple", "crackers", "juice"] },
 				),
 			).toBe(false);
 		});
 
 		it("throws error with invalid operand types", () => {
-			expect(() => apply({ $matches: null }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: null }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
 
-			expect(() => apply({ $matches: "not object" }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: "not object" }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
 
-			expect(() => apply({ $matches: [] }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: [] }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
 		});
 
@@ -954,7 +954,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							age: { $and: [{ $gte: 3 }, { $lt: 6 }] },
 							"guardian.available": true,
 						},
@@ -970,7 +970,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							age: { $or: [{ $lt: 2 }, { $gt: 6 }] },
 							room: "tulip",
 						},
@@ -994,7 +994,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"profile.dietary.restrictions": ["vegetarian"],
 							"profile.dietary.preferences.breakfast": "oatmeal",
 						},
@@ -1006,7 +1006,7 @@ describe("$matches", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"profile.dietary.restrictions": ["vegan"], // different value
 						},
 					},
@@ -1018,13 +1018,13 @@ describe("$matches", () => {
 
 	describe("edge cases and error handling", () => {
 		it("handles empty conditions object", () => {
-			expect(apply({ $matches: {} }, { name: "Taj", age: 3 })).toBe(true);
+			expect(apply({ $matchesAll: {} }, { name: "Taj", age: 3 })).toBe(true);
 		});
 
 		it("handles non-existent nested paths", () => {
 			expect(
 				apply(
-					{ $matches: { "non.existent.path": "value" } },
+					{ $matchesAll: { "non.existent.path": "value" } },
 					{ name: "Robin", existing: "data" },
 				),
 			).toBe(false);
@@ -1034,27 +1034,27 @@ describe("$matches", () => {
 			const circularData = { name: "Javi" };
 			circularData.self = circularData;
 
-			expect(apply({ $matches: { name: "Javi" } }, circularData)).toBe(true);
+			expect(apply({ $matchesAll: { name: "Javi" } }, circularData)).toBe(true);
 		});
 
 		it("handles undefined vs null equality", () => {
 			expect(
 				apply(
-					{ $matches: { optionalField: undefined } },
+					{ $matchesAll: { optionalField: undefined } },
 					{ name: "Zoe" }, // optionalField is undefined (missing)
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { optionalField: null } },
+					{ $matchesAll: { optionalField: null } },
 					{ name: "Zoe", optionalField: null },
 				),
 			).toBe(true);
 
 			expect(
 				apply(
-					{ $matches: { optionalField: null } },
+					{ $matchesAll: { optionalField: null } },
 					{ name: "Zoe" }, // optionalField is undefined, not null
 				),
 			).toBe(true);
@@ -1063,14 +1063,14 @@ describe("$matches", () => {
 		it("handles type mismatches correctly", () => {
 			expect(
 				apply(
-					{ $matches: { age: "4" } }, // string
+					{ $matchesAll: { age: "4" } }, // string
 					{ name: "Maya", age: 4 }, // number
 				),
 			).toBe(false);
 
 			expect(
 				apply(
-					{ $matches: { available: 1 } }, // number
+					{ $matchesAll: { available: 1 } }, // number
 					{ name: "teacher", available: true }, // boolean
 				),
 			).toBe(false);
@@ -1079,17 +1079,17 @@ describe("$matches", () => {
 		it("preserves order independence", () => {
 			const childData = { name: "Alex", age: 5, room: "sunflower" };
 
-			expect(apply({ $matches: { age: 5, name: "Alex" } }, childData)).toBe(
+			expect(apply({ $matchesAll: { age: 5, name: "Alex" } }, childData)).toBe(
 				true,
 			);
 
-			expect(apply({ $matches: { name: "Alex", age: 5 } }, childData)).toBe(
+			expect(apply({ $matchesAll: { name: "Alex", age: 5 } }, childData)).toBe(
 				true,
 			);
 		});
 
 		it("handles empty object matching behavior", () => {
-			expect(apply({ $matches: {} }, { name: "Lily", age: 4 })).toBe(true);
+			expect(apply({ $matchesAll: {} }, { name: "Lily", age: 4 })).toBe(true);
 		});
 	});
 });
@@ -1398,35 +1398,37 @@ describe("predicate expressions - edge cases", () => {
 		});
 	});
 
-	describe("$matches edge cases", () => {
+	describe("$matchesAll edge cases", () => {
 		it("handles empty condition objects", () => {
-			expect(apply({ $matches: {} }, { name: "test", age: 25 })).toBe(true);
+			expect(apply({ $matchesAll: {} }, { name: "test", age: 25 })).toBe(true);
 		});
 
 		it("handles null and undefined value matches", () => {
 			expect(
 				apply(
-					{ $matches: { optional: null } },
+					{ $matchesAll: { optional: null } },
 					{ name: "test", optional: null },
 				),
 			).toBe(true);
-			expect(apply({ $matches: { optional: null } }, { name: "test" })).toBe(
+			expect(apply({ $matchesAll: { optional: null } }, { name: "test" })).toBe(
 				true,
 			);
 		});
 
 		it("handles nested property matching", () => {
 			const data = { user: { profile: { name: "Aria", age: 25 } } };
-			expect(apply({ $matches: { "user.profile.name": "Aria" } }, data)).toBe(
-				true,
+			expect(
+				apply({ $matchesAll: { "user.profile.name": "Aria" } }, data),
+			).toBe(true);
+			expect(apply({ $matchesAll: { "user.profile.age": 30 } }, data)).toBe(
+				false,
 			);
-			expect(apply({ $matches: { "user.profile.age": 30 } }, data)).toBe(false);
 		});
 
 		it("handles wrapped literal conditions", () => {
 			expect(
 				apply(
-					{ $matches: { test: { $literal: { complex: "object" } } } },
+					{ $matchesAll: { test: { $literal: { complex: "object" } } } },
 					{ test: { complex: "object" } },
 				),
 			).toBe(true);
@@ -1437,7 +1439,7 @@ describe("predicate expressions - edge cases", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							score: { $gte: 80 },
 						},
 					},
@@ -1454,7 +1456,7 @@ describe("predicate expressions - edge cases", () => {
 			expect(
 				apply(
 					{
-						$matches: {
+						$matchesAll: {
 							"user.name": "Chen",
 							"user.age": { $gte: 18 },
 							"user.active": true,
@@ -1466,14 +1468,14 @@ describe("predicate expressions - edge cases", () => {
 		});
 
 		it("throws error for invalid operand types", () => {
-			expect(() => apply({ $matches: "string" }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: "string" }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
-			expect(() => apply({ $matches: [] }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: [] }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
-			expect(() => apply({ $matches: null }, {})).toThrow(
-				"$matches operand must be an object with property conditions",
+			expect(() => apply({ $matchesAll: null }, {})).toThrow(
+				"$matchesAll operand must be an object with property conditions",
 			);
 		});
 	});

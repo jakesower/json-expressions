@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `$debug` is now included in the base pack for easier debugging during development
+
 ## [0.12.0] - 2025-10-08
 
 ### Added
@@ -184,7 +188,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - String: `$uppercase`, `$lowercase`, `$trim`, `$split`, `$join`, `$replace`, `$substring`
   - Conditional: `$if`, `$case`
   - Flow: `$pipe`, `$default`, `$debug`
-  - Predicate: `$matches`, `$filterBy`, `$exists`, `$isEmpty`, `$isPresent`, `$between`, `$matchesRegex`, `$coalesce`
+  - Predicate: `$matchesAll`, `$filterBy`, `$exists`, `$isEmpty`, `$isPresent`, `$between`, `$matchesRegex`, `$coalesce`
   - Aggregation: `$count`, `$sum`, `$min`, `$max`, `$mean`
 - MIT License
 - TypeScript definitions

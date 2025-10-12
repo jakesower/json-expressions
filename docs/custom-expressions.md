@@ -284,25 +284,33 @@ engine.apply({ $median: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5, 6]);
 
 ## Best Practices
 
-### 1. Delegation Anti-Pattern
+### 1. Don't Create Expressions Inside Expressions
 
-Do NOT delegate to other expressions within custom expressions. This creates unnecessary complexity and defeats the purpose of custom expressions. Expressions can be overwritten and keeping them self-contained help avoid subtle bugs.
+Custom expressions should use native JavaScript, not create new expression objects internally. When you need to use other expressions, let users compose them in the operand.
 
 ```javascript
-// Anti-Pattern: Delegates to other expressions
+// Anti-Pattern: Creating expressions inside the implementation
 const $badExample = (operand, inputData, { apply }) => {
-  const childAge = apply({ $get: "age" }, inputData); // WRONG: delegates to $get
-  const threshold = apply({ $add: 2 }, operand.baseAge); // WRONG: delegates to $add
-  return apply({ $gte: threshold }, childAge); // WRONG: delegates to $gte
+  const childAge = apply({ $get: "age" }, inputData); // WRONG: creating { $get: "age" }
+  const threshold = apply({ $add: 2 }, operand.baseAge); // WRONG: creating { $add: 2 }
+  return apply({ $gte: threshold }, childAge); // WRONG: creating { $gte: ... }
 };
 
-// Good: Complete implementation
-const $goodExample = (operand, inputData) => {
+// Good: Use native JavaScript
+const $goodExample = (operand, inputData, { apply }) => {
+  const threshold = apply(operand.threshold, inputData); // GOOD: resolve user's operand
   const childAge = inputData.age; // Direct property access
-  const threshold = operand.baseAge + 2; // Direct calculation
   return childAge >= threshold; // Direct comparison
 };
+
+// Usage - user composes expressions in their JSON:
+engine.apply(
+  { $goodExample: { threshold: { $add: [{ $get: "baseAge" }, 2] } } },
+  childData
+);
 ```
+
+**Why?** Creating expressions inside your implementation hides composition from users, prevents customization, and defeats serializability. The user's job is to compose expressions in JSON; your job is to implement atomic operations in JavaScript.
 
 ### 2. Maintain Determinism (When Possible)
 

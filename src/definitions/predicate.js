@@ -7,7 +7,7 @@
  * - Existence checks ($exists, $isEmpty, $isPresent)
  * - Range checks ($between)
  * - Logical operations ($and, $or, $not)
- * - Pattern matching ($matches, $matchesAny, $matchesRegex)
+ * - Pattern matching ($matchesAll, $matchesAny, $matchesRegex)
  */
 
 import { get, isEqual } from "../helpers.js";
@@ -112,20 +112,22 @@ const $in = createInclusionExpression("$in", (value, array) =>
 	array.includes(value),
 );
 
-const $isPresent = (operand, inputData) => {
-	if (typeof operand !== "boolean") {
+const $isPresent = (operand, inputData, { apply }) => {
+	const resolved = apply(operand, inputData);
+	if (typeof resolved !== "boolean") {
 		throw new Error("$isPresent requires boolean operand (true/false)");
 	}
 	const isPresent = inputData != null;
-	return operand ? isPresent : !isPresent;
+	return resolved ? isPresent : !isPresent;
 };
 
-const $isEmpty = (operand, inputData) => {
-	if (typeof operand !== "boolean") {
+const $isEmpty = (operand, inputData, { apply }) => {
+	const resolved = apply(operand, inputData);
+	if (typeof resolved !== "boolean") {
 		throw new Error("$isEmpty requires boolean operand (true/false)");
 	}
 	const isEmpty = inputData == null;
-	return operand ? isEmpty : !isEmpty;
+	return resolved ? isEmpty : !isEmpty;
 };
 
 const $exists = (operand, inputData, { apply }) => {
@@ -159,14 +161,14 @@ const $lt = createComparativeExpression((a, b) => a < b);
 
 const $lte = createComparativeExpression((a, b) => a <= b);
 
-const $matches = (
+const $matchesAll = (
 	operand,
 	inputData,
 	{ apply, isExpression, isWrappedLiteral },
 ) => {
 	if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
 		throw new Error(
-			"$matches operand must be an object with property conditions",
+			"$matchesAll operand must be an object with property conditions",
 		);
 	}
 	return Object.entries(operand).every(([path, condition]) => {
@@ -236,7 +238,7 @@ export {
 	$isPresent,
 	$lt,
 	$lte,
-	$matches,
+	$matchesAll,
 	$matchesAny,
 	$matchesRegex,
 	$ne,
