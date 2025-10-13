@@ -64,11 +64,12 @@ const engine = createExpressionEngine({ packs: [basePack] });
 - [`$exists`](expressions.md#exists) - Test if object property exists
 - [`$isEmpty`](expressions.md#isempty) - Test if value is empty
 - [`$isPresent`](expressions.md#ispresent) - Test if value is present (not null/undefined)
-- [`$matches`](expressions.md#matches) - Test if object matches all property criteria (AND logic)
+- [`$matchesAll`](expressions.md#matches) - Test if object matches all property criteria (AND logic)
 - [`$matchesAny`](expressions.md#matchesany) - Test if object matches any property criteria (OR logic)
 
 #### Flow Control
 
+- [`$debug`](expressions.md#debug) - Debug expression evaluation with logging
 - [`$default`](expressions.md#default) - Provide default value for null/undefined
 - [`$pipe`](expressions.md#pipe) - Chain expressions in sequence
 
@@ -297,7 +298,7 @@ const engine = createExpressionEngine({ packs: [filteringPack] });
 
 #### Object Filtering
 
-- [`$matches`](expressions.md#matches) - Test if object matches criteria
+- [`$matchesAll`](expressions.md#matches) - Test if object matches criteria
 
 #### Membership Tests
 
@@ -467,15 +468,6 @@ const engine = createExpressionEngine({ packs: [temporalPack] });
 - [`$second`](expressions.md#second) - Extract second from date
 - [`$dayOfWeek`](expressions.md#dayofweek) - Get day of week (0=Sunday, 6=Saturday)
 - [`$dayOfYear`](expressions.md#dayofyear) - Get day of year (1-365/366)
-
----
-
-## Other Expressions
-
-### Debug Expression
-
-- [`$debug`](expressions.md#debug) - Debug helper for development (available in all engines)
-
 
 ---
 

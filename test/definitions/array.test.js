@@ -16,8 +16,9 @@ const { apply } = testEngine;
 describe("$all", () => {
 	describe("basic functionality", () => {
 		it("returns true if all elements match", () => {
-			expect(apply({ $all: { $gt: 3 } }, [4, 5, 6])).toBe(true);
-			expect(apply({ $all: { $gt: 5 } }, [4, 5, 6])).toBe(false);
+			const ages = [4, 5, 6];
+			expect(apply({ $all: { $gt: 3 } }, ages)).toBe(true);
+			expect(apply({ $all: { $gt: 5 } }, ages)).toBe(false);
 		});
 	});
 });
@@ -25,8 +26,9 @@ describe("$all", () => {
 describe("$any", () => {
 	describe("basic functionality", () => {
 		it("returns true if any element matches", () => {
-			expect(apply({ $any: { $gt: 5 } }, [4, 5, 6])).toBe(true);
-			expect(apply({ $any: { $gt: 10 } }, [4, 5, 6])).toBe(false);
+			const ages = [4, 5, 6];
+			expect(apply({ $any: { $gt: 5 } }, ages)).toBe(true);
+			expect(apply({ $any: { $gt: 10 } }, ages)).toBe(false);
 		});
 	});
 });
@@ -70,25 +72,23 @@ describe("$coalesce", () => {
 describe("$concat", () => {
 	describe("basic functionality", () => {
 		it("concatenates arrays to input data", () => {
-			expect(
-				apply(
-					{
-						$concat: [
-							[4, 5],
-							[6, 7],
-						],
-					},
-					[1, 2, 3],
-				),
-			).toEqual([1, 2, 3, 4, 5, 6, 7]);
-			expect(apply({ $concat: [["Dao", "Elena"]] }, ["Amira", "Yuki"])).toEqual(
-				["Amira", "Yuki", "Dao", "Elena"],
-			);
+			const morningKids = ["Amira", "Yuki"];
+			const afternoonKids = ["Dao", "Elena"];
+			expect(apply({ $concat: [afternoonKids] }, morningKids)).toEqual([
+				"Amira",
+				"Yuki",
+				"Dao",
+				"Elena",
+			]);
 		});
 
 		it("handles empty arrays", () => {
-			expect(apply({ $concat: [[], []] }, [1, 2])).toEqual([1, 2]);
-			expect(apply({ $concat: [[3, 4]] }, [])).toEqual([3, 4]);
+			const kids = ["Amira", "Yuki"];
+			expect(apply({ $concat: [[], []] }, kids)).toEqual(kids);
+			expect(apply({ $concat: [["Dao", "Elena"]] }, [])).toEqual([
+				"Dao",
+				"Elena",
+			]);
 		});
 	});
 });
@@ -96,13 +96,14 @@ describe("$concat", () => {
 describe("$filter", () => {
 	describe("basic functionality", () => {
 		it("filters arrays", () => {
-			expect(apply({ $filter: { $eq: 2 } }, [1, 2, 3])).toEqual([2]);
+			const ages = [3, 4, 5];
+			expect(apply({ $filter: { $eq: 4 } }, ages)).toEqual([4]);
 		});
 	});
 });
 
 describe("$filterBy", () => {
-	const students = [
+	const children = [
 		{ name: "Aisha", age: 4, active: true, status: "enrolled" },
 		{ name: "Chen", age: 5, active: true, status: "enrolled" },
 		{ name: "Diego", age: 3, active: false, status: "waitlist" },
@@ -113,7 +114,7 @@ describe("$filterBy", () => {
 		it("filters arrays by object property conditions", () => {
 			const result = apply(
 				{ $filterBy: { age: { $gte: 5 }, active: { $eq: true } } },
-				students,
+				children,
 			);
 			expect(result).toEqual([
 				{ name: "Chen", age: 5, active: true, status: "enrolled" },
@@ -122,25 +123,25 @@ describe("$filterBy", () => {
 		});
 
 		it("filters by single condition", () => {
-			const result = apply({ $filterBy: { active: { $eq: false } } }, students);
+			const result = apply({ $filterBy: { active: { $eq: false } } }, children);
 			expect(result).toEqual([
 				{ name: "Diego", age: 3, active: false, status: "waitlist" },
 			]);
 		});
 
 		it("filters by nested property paths", () => {
-			const data = [
-				{ profile: { settings: { theme: "dark" } }, active: true },
-				{ profile: { settings: { theme: "light" } }, active: true },
-				{ profile: { settings: { theme: "dark" } }, active: false },
+			const childRecords = [
+				{ name: "Amara", profile: { settings: { napTime: "early" } } },
+				{ name: "Kenji", profile: { settings: { napTime: "late" } } },
+				{ name: "Yuki", profile: { settings: { napTime: "early" } } },
 			];
 			const result = apply(
-				{ $filterBy: { "profile.settings.theme": { $eq: "dark" } } },
-				data,
+				{ $filterBy: { "profile.settings.napTime": { $eq: "early" } } },
+				childRecords,
 			);
 			expect(result).toHaveLength(2);
-			expect(result[0].profile.settings.theme).toBe("dark");
-			expect(result[1].profile.settings.theme).toBe("dark");
+			expect(result[0].profile.settings.napTime).toBe("early");
+			expect(result[1].profile.settings.napTime).toBe("early");
 		});
 
 		it("filters with complex expressions", () => {
@@ -151,7 +152,7 @@ describe("$filterBy", () => {
 						status: { $eq: "enrolled" },
 					},
 				},
-				students,
+				children,
 			);
 			expect(result).toEqual([
 				{ name: "Aisha", age: 4, active: true, status: "enrolled" },
@@ -160,16 +161,16 @@ describe("$filterBy", () => {
 		});
 
 		it("returns empty array when no items match", () => {
-			const result = apply({ $filterBy: { age: { $gt: 10 } } }, students);
+			const result = apply({ $filterBy: { age: { $gt: 10 } } }, children);
 			expect(result).toEqual([]);
 		});
 
 		it("returns all items when all match", () => {
 			const result = apply(
 				{ $filterBy: { name: { $isPresent: true } } },
-				students,
+				children,
 			);
-			expect(result).toEqual(students);
+			expect(result).toEqual(children);
 		});
 
 		it("throws error when applied to non-array", () => {
@@ -179,10 +180,10 @@ describe("$filterBy", () => {
 		});
 
 		it("throws error with invalid operand", () => {
-			expect(() => apply({ $filterBy: "invalid" }, students)).toThrow(
+			expect(() => apply({ $filterBy: "invalid" }, children)).toThrow(
 				"$filterBy operand must be an object with property conditions",
 			);
-			expect(() => apply({ $filterBy: ["invalid"] }, students)).toThrow(
+			expect(() => apply({ $filterBy: ["invalid"] }, children)).toThrow(
 				"$filterBy operand must be an object with property conditions",
 			);
 		});
@@ -192,8 +193,9 @@ describe("$filterBy", () => {
 describe("$find", () => {
 	describe("basic functionality", () => {
 		it("finds matching element", () => {
-			expect(apply({ $find: { $eq: 5 } }, [4, 5, 6])).toBe(5);
-			expect(apply({ $find: { $gt: 10 } }, [4, 5, 6])).toBe(undefined);
+			const ages = [4, 5, 6];
+			expect(apply({ $find: { $eq: 5 } }, ages)).toBe(5);
+			expect(apply({ $find: { $gt: 10 } }, ages)).toBe(undefined);
 		});
 	});
 });
@@ -201,13 +203,6 @@ describe("$find", () => {
 describe("$flatten", () => {
 	describe("basic functionality", () => {
 		it("flattens nested arrays with default depth", () => {
-			expect(
-				apply({ $flatten: {} }, [
-					[1, 2],
-					[3, 4],
-					[5, 6],
-				]),
-			).toEqual([1, 2, 3, 4, 5, 6]);
 			expect(apply({ $flatten: {} }, [["Kenji", "Yuki"], ["Amara"]])).toEqual([
 				"Kenji",
 				"Yuki",
@@ -216,24 +211,29 @@ describe("$flatten", () => {
 		});
 
 		it("flattens with depth 1 by default", () => {
-			expect(apply({ $flatten: {} }, [[[1, 2]], [[3, 4]]])).toEqual([
-				[1, 2],
-				[3, 4],
-			]);
+			const nestedGroups = [[["Amara"]], [["Kenji"]]];
+			const result = apply({ $flatten: {} }, nestedGroups);
+			expect(result).toEqual([["Amara"], ["Kenji"]]);
 		});
 
 		it("flattens with custom depth", () => {
-			expect(apply({ $flatten: { depth: 2 } }, [[[1, 2]], [[3, 4]]])).toEqual([
-				1, 2, 3, 4,
+			const deeplyNested = [[["Amara", "Kenji"]], [["Yuki", "Dao"]]];
+			expect(apply({ $flatten: { depth: 2 } }, deeplyNested)).toEqual([
+				"Amara",
+				"Kenji",
+				"Yuki",
+				"Dao",
 			]);
-			expect(apply({ $flatten: { depth: 1 } }, [[[1, 2]], [[3, 4]]])).toEqual([
-				[1, 2],
-				[3, 4],
+			expect(apply({ $flatten: { depth: 1 } }, deeplyNested)).toEqual([
+				["Amara", "Kenji"],
+				["Yuki", "Dao"],
 			]);
 		});
 
 		it("handles deeply nested arrays", () => {
-			expect(apply({ $flatten: { depth: 3 } }, [[[[1]]]])).toEqual([1]);
+			expect(apply({ $flatten: { depth: 3 } }, [[[["Elena"]]]])).toEqual([
+				"Elena",
+			]);
 		});
 	});
 });
@@ -296,8 +296,9 @@ describe("$groupBy", () => {
 describe("$join", () => {
 	describe("basic functionality", () => {
 		it("joins array elements", () => {
-			expect(apply({ $join: ", " }, [1, 2, 3])).toBe("1, 2, 3");
-			expect(apply({ $join: "" }, ["a", "b", "c"])).toBe("abc");
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $join: ", " }, names)).toBe("Amara, Kenji, Yuki");
+			expect(apply({ $join: " & " }, names)).toBe("Amara & Kenji & Yuki");
 		});
 	});
 });
@@ -305,7 +306,8 @@ describe("$join", () => {
 describe("$map", () => {
 	describe("basic functionality", () => {
 		it("should perform without subexpressions", () => {
-			expect(apply({ $map: { $literal: 3 } }, [1])).toEqual([3]);
+			const singleKid = [{ name: "Amara" }];
+			expect(apply({ $map: { $literal: 3 } }, singleKid)).toEqual([3]);
 		});
 
 		it("should perform with a subexpression", () => {
@@ -421,7 +423,12 @@ describe("$pluck", () => {
 describe("$reverse", () => {
 	describe("basic functionality", () => {
 		it("reverses arrays", () => {
-			expect(apply({ $reverse: {} }, [1, 2, 3])).toEqual([3, 2, 1]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $reverse: {} }, names)).toEqual([
+				"Yuki",
+				"Kenji",
+				"Amara",
+			]);
 		});
 	});
 });
@@ -449,19 +456,19 @@ describe("$skip", () => {
 describe("$take", () => {
 	describe("basic functionality", () => {
 		it("takes elements from beginning", () => {
-			expect(apply({ $take: 3 }, [1, 2, 3, 4, 5])).toEqual([1, 2, 3]);
-			expect(apply({ $take: 2 }, ["Amara", "Kenji", "Yuki"])).toEqual([
-				"Amara",
-				"Kenji",
-			]);
+			const names = ["Amara", "Kenji", "Yuki", "Dao", "Elena"];
+			expect(apply({ $take: 3 }, names)).toEqual(["Amara", "Kenji", "Yuki"]);
+			expect(apply({ $take: 2 }, names)).toEqual(["Amara", "Kenji"]);
 		});
 
 		it("handles take count larger than array", () => {
-			expect(apply({ $take: 10 }, [1, 2, 3])).toEqual([1, 2, 3]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $take: 10 }, names)).toEqual(names);
 		});
 
 		it("handles zero take", () => {
-			expect(apply({ $take: 0 }, [1, 2, 3])).toEqual([]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $take: 0 }, names)).toEqual([]);
 		});
 	});
 });
@@ -469,14 +476,14 @@ describe("$take", () => {
 describe("$unique", () => {
 	describe("basic functionality", () => {
 		it("removes duplicates", () => {
-			expect(apply({ $unique: {} }, [1, 2, 2, 3, 1, 4])).toEqual([1, 2, 3, 4]);
 			expect(
-				apply({ $unique: {} }, ["Amara", "Kenji", "Amara", "Yuki"]),
+				apply({ $unique: {} }, ["Amara", "Kenji", "Amara", "Yuki", "Kenji"]),
 			).toEqual(["Amara", "Kenji", "Yuki"]);
 		});
 
 		it("handles arrays with no duplicates", () => {
-			expect(apply({ $unique: {} }, [1, 2, 3])).toEqual([1, 2, 3]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $unique: {} }, names)).toEqual(names);
 		});
 
 		it("handles empty arrays", () => {
@@ -493,21 +500,21 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex nested expressions", () => {
-			const data = [
-				{ user: { active: true, age: 25 } },
-				{ user: { active: true, age: 30 } },
+			const children = [
+				{ child: { enrolled: true, age: 4 } },
+				{ child: { enrolled: true, age: 5 } },
 			];
 			expect(
 				apply(
 					{
 						$all: {
 							$and: [
-								{ $get: "user.active" },
-								{ $gte: [{ $get: "user.age" }, 18] },
+								{ $get: "child.enrolled" },
+								{ $gte: [{ $get: "child.age" }, 3] },
 							],
 						},
 					},
-					data,
+					children,
 				),
 			).toBe(true);
 		});
@@ -520,21 +527,21 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex nested expressions", () => {
-			const data = [
-				{ status: "inactive", priority: 1 },
-				{ status: "active", priority: 5 },
+			const children = [
+				{ status: "waitlist", age: 3 },
+				{ status: "enrolled", age: 5 },
 			];
 			expect(
 				apply(
 					{
 						$any: {
 							$and: [
-								{ $eq: [{ $get: "status" }, "active"] },
-								{ $gte: [{ $get: "priority" }, 3] },
+								{ $eq: [{ $get: "status" }, "enrolled"] },
+								{ $gte: [{ $get: "age" }, 4] },
 							],
 						},
 					},
-					data,
+					children,
 				),
 			).toBe(true);
 		});
@@ -557,23 +564,25 @@ describe("array expressions - edge cases", () => {
 
 	describe("$concat edge cases", () => {
 		it("handles empty arrays to concatenate", () => {
-			expect(apply({ $concat: [] }, [1, 2])).toEqual([1, 2]);
-			expect(apply({ $concat: [[], []] }, [1, 2])).toEqual([1, 2]);
+			const names = ["Amara", "Kenji"];
+			expect(apply({ $concat: [] }, names)).toEqual(names);
+			expect(apply({ $concat: [[], []] }, names)).toEqual(names);
 		});
 
 		it("handles nested array structures", () => {
-			expect(apply({ $concat: [[[3]], [[4]]] }, [1, 2])).toEqual([
-				1,
-				2,
-				[3],
-				[4],
+			const morning = ["Amara", "Kenji"];
+			expect(apply({ $concat: [[["Yuki"]], [["Dao"]]] }, morning)).toEqual([
+				"Amara",
+				"Kenji",
+				["Yuki"],
+				["Dao"],
 			]);
 		});
 
 		it("preserves types and special values", () => {
 			expect(
-				apply({ $concat: [[null, undefined, false, 0]] }, ["test"]),
-			).toEqual(["test", null, undefined, false, 0]);
+				apply({ $concat: [[null, undefined, false, 0]] }, ["Amara"]),
+			).toEqual(["Amara", null, undefined, false, 0]);
 		});
 	});
 
@@ -584,35 +593,37 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex filtering conditions", () => {
-			const data = [
-				{ user: { name: "Aria", score: 85, active: true } },
-				{ user: { name: "Chen", score: 92, active: false } },
-				{ user: { name: "Zara", score: 78, active: true } },
+			const children = [
+				{ child: { name: "Amara", readingLevel: 85, enrolled: true } },
+				{ child: { name: "Chen", readingLevel: 92, enrolled: false } },
+				{ child: { name: "Zara", readingLevel: 78, enrolled: true } },
 			];
 			expect(
 				apply(
 					{
 						$filter: {
 							$and: [
-								{ $get: "user.active" },
-								{ $gte: [{ $get: "user.score" }, 80] },
+								{ $get: "child.enrolled" },
+								{ $gte: [{ $get: "child.readingLevel" }, 80] },
 							],
 						},
 					},
-					data,
+					children,
 				),
-			).toEqual([{ user: { name: "Aria", score: 85, active: true } }]);
+			).toEqual([
+				{ child: { name: "Amara", readingLevel: 85, enrolled: true } },
+			]);
 		});
 	});
 
 	describe("$filterBy edge cases", () => {
 		it("handles empty arrays", () => {
-			expect(apply({ $filterBy: { status: "active" } }, [])).toEqual([]);
+			expect(apply({ $filterBy: { status: "enrolled" } }, [])).toEqual([]);
 		});
 
 		it("throws error when applied to non-arrays", () => {
 			expect(() =>
-				apply({ $filterBy: { name: "test" } }, "not an array"),
+				apply({ $filterBy: { name: "Amara" } }, "not an array"),
 			).toThrow("$filterBy can only be applied to arrays");
 		});
 
@@ -626,22 +637,25 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex expression conditions", () => {
-			const data = [
-				{ name: "Kai", age: 25, department: "engineering" },
-				{ name: "Luna", age: 30, department: "design" },
-				{ name: "Ravi", age: 28, department: "engineering" },
+			const children = [
+				{ name: "Amara", age: 3, room: "toddlers" },
+				{ name: "Kenji", age: 4, room: "preschool" },
+				{ name: "Yuki", age: 5, room: "preschool" },
 			];
 			expect(
 				apply(
 					{
 						$filterBy: {
-							department: "engineering",
-							age: { $gte: 26 },
+							room: "preschool",
+							age: { $gte: 4 },
 						},
 					},
-					data,
+					children,
 				),
-			).toEqual([{ name: "Ravi", age: 28, department: "engineering" }]);
+			).toEqual([
+				{ name: "Kenji", age: 4, room: "preschool" },
+				{ name: "Yuki", age: 5, room: "preschool" },
+			]);
 		});
 	});
 
@@ -652,29 +666,29 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex search conditions", () => {
-			const data = [
-				{ product: { name: "laptop", price: 999, inStock: false } },
-				{ product: { name: "phone", price: 599, inStock: true } },
-				{ product: { name: "tablet", price: 399, inStock: true } },
+			const children = [
+				{ child: { name: "Amara", age: 3, pottyTrained: false } },
+				{ child: { name: "Kenji", age: 4, pottyTrained: true } },
+				{ child: { name: "Yuki", age: 5, pottyTrained: true } },
 			];
 			expect(
 				apply(
 					{
 						$find: {
 							$and: [
-								{ $get: "product.inStock" },
-								{ $lt: [{ $get: "product.price" }, 500] },
+								{ $get: "child.pottyTrained" },
+								{ $lt: [{ $get: "child.age" }, 5] },
 							],
 						},
 					},
-					data,
+					children,
 				),
-			).toEqual({ product: { name: "tablet", price: 399, inStock: true } });
+			).toEqual({ child: { name: "Kenji", age: 4, pottyTrained: true } });
 		});
 
 		it("returns undefined when no match found", () => {
 			expect(
-				apply({ $find: { $eq: "missing" } }, ["a", "b", "c"]),
+				apply({ $find: { $eq: "Noah" } }, ["Amara", "Kenji", "Yuki"]),
 			).toBeUndefined();
 		});
 	});
@@ -682,49 +696,57 @@ describe("array expressions - edge cases", () => {
 	describe("$flatMap edge cases", () => {
 		it("handles empty arrays", () => {
 			expect(apply({ $flatMap: [] }, [])).toEqual([]);
-			expect(apply({ $flatMap: [1, 2] }, [])).toEqual([]);
+			expect(apply({ $flatMap: ["Amara", "Kenji"] }, [])).toEqual([]);
 		});
 
 		it("handles complex transformation and flattening", () => {
-			const data = [
-				{ tags: ["javascript", "web"] },
-				{ tags: ["python", "data"] },
-				{ tags: ["go"] },
+			const children = [
+				{ allergies: ["peanuts", "dairy"] },
+				{ allergies: ["gluten", "eggs"] },
+				{ allergies: ["soy"] },
 			];
-			expect(apply({ $flatMap: { $get: "tags" } }, data)).toEqual([
-				"javascript",
-				"web",
-				"python",
-				"data",
-				"go",
+			expect(apply({ $flatMap: { $get: "allergies" } }, children)).toEqual([
+				"peanuts",
+				"dairy",
+				"gluten",
+				"eggs",
+				"soy",
 			]);
 		});
 
 		it("handles nested array results", () => {
+			const names = ["Amara", "Kenji"];
 			expect(
-				apply({ $flatMap: [{ $get: "." }, { $get: "." }] }, [1, 2]),
-			).toEqual([1, 1, 2, 2]);
+				apply({ $flatMap: [{ $get: "." }, { $get: "." }] }, names),
+			).toEqual(["Amara", "Amara", "Kenji", "Kenji"]);
 		});
 	});
 
 	describe("$flatten edge cases", () => {
 		it("handles already flat arrays", () => {
-			expect(apply({ $flatten: {} }, [1, 2, 3])).toEqual([1, 2, 3]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $flatten: {} }, names)).toEqual(names);
 		});
 
 		it("handles custom depth", () => {
-			expect(apply({ $flatten: { depth: 2 } }, [1, [2, [3, 4]]])).toEqual([
-				1, 2, 3, 4,
+			const nested = ["Amara", ["Kenji", ["Yuki", "Dao"]]];
+			expect(apply({ $flatten: { depth: 2 } }, nested)).toEqual([
+				"Amara",
+				"Kenji",
+				"Yuki",
+				"Dao",
 			]);
-			expect(apply({ $flatten: { depth: 0 } }, [1, [2, 3]])).toEqual([
-				1,
-				[2, 3],
-			]);
+			expect(apply({ $flatten: { depth: 0 } }, nested)).toEqual(nested);
 		});
 
 		it("handles deeply nested structures", () => {
-			expect(apply({ $flatten: { depth: 3 } }, [1, [2, [3, [4, 5]]]])).toEqual([
-				1, 2, 3, 4, 5,
+			const deepNest = ["Amara", ["Kenji", ["Yuki", ["Dao", "Elena"]]]];
+			expect(apply({ $flatten: { depth: 3 } }, deepNest)).toEqual([
+				"Amara",
+				"Kenji",
+				"Yuki",
+				"Dao",
+				"Elena",
 			]);
 		});
 	});
@@ -732,48 +754,48 @@ describe("array expressions - edge cases", () => {
 	describe("$groupBy edge cases", () => {
 		it("handles empty arrays", () => {
 			expect(apply({ $groupBy: "status" }, [])).toEqual({});
-			expect(apply({ $groupBy: { $get: "category" } }, [])).toEqual({});
+			expect(apply({ $groupBy: { $get: "room" } }, [])).toEqual({});
 		});
 
 		it("throws error when applied to non-arrays", () => {
-			expect(() => apply({ $groupBy: "field" }, "not an array")).toThrow(
+			expect(() => apply({ $groupBy: "room" }, "not an array")).toThrow(
 				"$groupBy can only be applied to arrays",
 			);
 		});
 
 		it("throws error when grouping key is missing (string operand)", () => {
-			expect(() => apply({ $groupBy: "missing" }, [{ name: "test" }])).toThrow(
-				'{"name":"test"} could not be grouped by missing',
+			expect(() => apply({ $groupBy: "missing" }, [{ name: "Amara" }])).toThrow(
+				'{"name":"Amara"} could not be grouped by missing',
 			);
 		});
 
 		it("throws error when grouping key is missing (expression operand)", () => {
 			expect(() =>
-				apply({ $groupBy: { $get: "missing" } }, [{ name: "test" }]),
-			).toThrow('{"name":"test"} could not be grouped by [object Object]');
+				apply({ $groupBy: { $get: "missing" } }, [{ name: "Amara" }]),
+			).toThrow('{"name":"Amara"} could not be grouped by [object Object]');
 		});
 
 		it("handles complex grouping expressions", () => {
-			const data = [
-				{ user: { department: "eng", level: "senior" } },
-				{ user: { department: "eng", level: "junior" } },
-				{ user: { department: "design", level: "senior" } },
+			const children = [
+				{ child: { room: "toddlers", readingLevel: "beginner" } },
+				{ child: { room: "toddlers", readingLevel: "intermediate" } },
+				{ child: { room: "preschool", readingLevel: "beginner" } },
 			];
 			expect(
 				apply(
 					{
 						$groupBy: {
-							$get: "user.department",
+							$get: "child.room",
 						},
 					},
-					data,
+					children,
 				),
 			).toEqual({
-				eng: [
-					{ user: { department: "eng", level: "senior" } },
-					{ user: { department: "eng", level: "junior" } },
+				toddlers: [
+					{ child: { room: "toddlers", readingLevel: "beginner" } },
+					{ child: { room: "toddlers", readingLevel: "intermediate" } },
 				],
-				design: [{ user: { department: "design", level: "senior" } }],
+				preschool: [{ child: { room: "preschool", readingLevel: "beginner" } }],
 			});
 		});
 	});
@@ -784,12 +806,15 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles arrays with null and undefined", () => {
-			expect(apply({ $join: "," }, [1, null, undefined, 2])).toBe("1,,,2");
+			expect(apply({ $join: "," }, ["Amara", null, undefined, "Kenji"])).toBe(
+				"Amara,,,Kenji",
+			);
 		});
 
 		it("handles complex separators", () => {
-			expect(apply({ $join: " -> " }, ["a", "b", "c"])).toBe("a -> b -> c");
-			expect(apply({ $join: "" }, ["a", "b", "c"])).toBe("abc");
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $join: " -> " }, names)).toBe("Amara -> Kenji -> Yuki");
+			expect(apply({ $join: "" }, names)).toBe("AmaraKenjiYuki");
 		});
 	});
 
@@ -799,30 +824,31 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles complex transformation expressions", () => {
-			const data = [
-				{ user: { first: "Aria", last: "Chen", age: 25 } },
-				{ user: { first: "Zara", last: "Kim", age: 30 } },
+			const children = [
+				{ child: { name: "Amara", age: 4 } },
+				{ child: { name: "Kenji", age: 5 } },
 			];
 			expect(
 				apply(
 					{
 						$map: {
 							$select: {
-								fullName: { $get: "user.first" },
-								isAdult: { $gte: [{ $get: "user.age" }, 18] },
+								name: { $get: "child.name" },
+								isPreschoolAge: { $gte: [{ $get: "child.age" }, 3] },
 							},
 						},
 					},
-					data,
+					children,
 				),
 			).toEqual([
-				{ fullName: "Aria", isAdult: true },
-				{ fullName: "Zara", isAdult: true },
+				{ name: "Amara", isPreschoolAge: true },
+				{ name: "Kenji", isPreschoolAge: true },
 			]);
 		});
 
 		it("preserves array length even with null results", () => {
-			expect(apply({ $map: { $get: "missing" } }, [1, 2, 3])).toEqual([
+			const children = [{ name: "Amara" }, { name: "Kenji" }, { name: "Yuki" }];
+			expect(apply({ $map: { $get: "missing" } }, children)).toEqual([
 				null,
 				null,
 				null,
@@ -833,45 +859,48 @@ describe("array expressions - edge cases", () => {
 	describe("$pluck edge cases", () => {
 		it("handles empty arrays", () => {
 			expect(apply({ $pluck: "name" }, [])).toEqual([]);
-			expect(apply({ $pluck: { $get: "field" } }, [])).toEqual([]);
+			expect(apply({ $pluck: { $get: "age" } }, [])).toEqual([]);
 		});
 
 		it("throws error when applied to non-arrays", () => {
-			expect(() => apply({ $pluck: "field" }, "not an array")).toThrow(
+			expect(() => apply({ $pluck: "name" }, "not an array")).toThrow(
 				"$pluck can only be applied to arrays",
 			);
 		});
 
 		it("handles missing properties", () => {
-			expect(apply({ $pluck: "missing" }, [{ name: "test" }])).toEqual([null]);
+			expect(apply({ $pluck: "missing" }, [{ name: "Amara" }])).toEqual([null]);
 		});
 
 		it("handles nested property paths", () => {
-			const data = [
-				{ user: { profile: { email: "aria@example.com" } } },
-				{ user: { profile: { email: "chen@example.com" } } },
+			const children = [
+				{ child: { contact: { email: "amara@parents.com" } } },
+				{ child: { contact: { email: "kenji@parents.com" } } },
 			];
-			expect(apply({ $pluck: "user.profile.email" }, data)).toEqual([
-				"aria@example.com",
-				"chen@example.com",
+			expect(apply({ $pluck: "child.contact.email" }, children)).toEqual([
+				"amara@parents.com",
+				"kenji@parents.com",
 			]);
 		});
 
 		it("handles complex expression operands", () => {
-			const data = [
-				{ metrics: { views: 100, clicks: 5 } },
-				{ metrics: { views: 200, clicks: 15 } },
+			const children = [
+				{ attendance: { present: 18, total: 20 } },
+				{ attendance: { present: 15, total: 20 } },
 			];
 			expect(
 				apply(
 					{
 						$pluck: {
-							$divide: [{ $get: "metrics.clicks" }, { $get: "metrics.views" }],
+							$divide: [
+								{ $get: "attendance.present" },
+								{ $get: "attendance.total" },
+							],
 						},
 					},
-					data,
+					children,
 				),
-			).toEqual([0.05, 0.075]);
+			).toEqual([0.9, 0.75]);
 		});
 	});
 
@@ -881,37 +910,40 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles single element arrays", () => {
-			expect(apply({ $reverse: {} }, ["only"])).toEqual(["only"]);
+			expect(apply({ $reverse: {} }, ["Amara"])).toEqual(["Amara"]);
 		});
 
 		it("maintains immutability", () => {
-			const original = [1, 2, 3];
+			const original = ["Amara", "Kenji", "Yuki"];
 			const result = apply({ $reverse: {} }, original);
-			expect(result).toEqual([3, 2, 1]);
-			expect(original).toEqual([1, 2, 3]); // Original unchanged
+			expect(result).toEqual(["Yuki", "Kenji", "Amara"]);
+			expect(original).toEqual(["Amara", "Kenji", "Yuki"]); // Original unchanged
 		});
 
 		it("handles arrays with mixed types", () => {
-			expect(apply({ $reverse: {} }, [1, "two", null, true])).toEqual([
+			expect(apply({ $reverse: {} }, [3, "Amara", null, true])).toEqual([
 				true,
 				null,
-				"two",
-				1,
+				"Amara",
+				3,
 			]);
 		});
 	});
 
 	describe("$skip edge cases", () => {
 		it("handles skip count larger than array length", () => {
-			expect(apply({ $skip: 10 }, [1, 2, 3])).toEqual([]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $skip: 10 }, names)).toEqual([]);
 		});
 
 		it("handles zero skip", () => {
-			expect(apply({ $skip: 0 }, [1, 2, 3])).toEqual([1, 2, 3]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $skip: 0 }, names)).toEqual(names);
 		});
 
 		it("handles negative skip count", () => {
-			expect(apply({ $skip: -1 }, [1, 2, 3])).toEqual([3]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $skip: -1 }, names)).toEqual(["Yuki"]);
 		});
 
 		it("handles empty arrays", () => {
@@ -921,11 +953,13 @@ describe("array expressions - edge cases", () => {
 
 	describe("$take edge cases", () => {
 		it("handles negative take count", () => {
-			expect(apply({ $take: -1 }, [1, 2, 3])).toEqual([1, 2]);
+			const names = ["Amara", "Kenji", "Yuki"];
+			expect(apply({ $take: -1 }, names)).toEqual(["Amara", "Kenji"]);
 		});
 
 		it("handles non-integer count", () => {
-			expect(apply({ $take: 2.7 }, [1, 2, 3, 4])).toEqual([1, 2]);
+			const names = ["Amara", "Kenji", "Yuki", "Dao"];
+			expect(apply({ $take: 2.7 }, names)).toEqual(["Amara", "Kenji"]);
 		});
 
 		it("handles empty arrays", () => {
@@ -935,13 +969,13 @@ describe("array expressions - edge cases", () => {
 
 	describe("$unique edge cases", () => {
 		it("handles arrays with objects (reference equality)", () => {
-			const obj1 = { id: 1 };
-			const obj2 = { id: 2 };
-			const obj3 = { id: 1 }; // Different reference but same content
-			expect(apply({ $unique: {} }, [obj1, obj2, obj1, obj3])).toEqual([
-				obj1,
-				obj2,
-				obj3,
+			const child1 = { name: "Amara", age: 3 };
+			const child2 = { name: "Kenji", age: 4 };
+			const child3 = { name: "Amara", age: 3 }; // Different reference but same content
+			expect(apply({ $unique: {} }, [child1, child2, child1, child3])).toEqual([
+				child1,
+				child2,
+				child3,
 			]);
 		});
 
@@ -952,7 +986,7 @@ describe("array expressions - edge cases", () => {
 		});
 
 		it("handles arrays with NaN", () => {
-			expect(apply({ $unique: {} }, [NaN, 1, NaN, 2])).toEqual([NaN, 1, 2]);
+			expect(apply({ $unique: {} }, [NaN, 3, NaN, 4])).toEqual([NaN, 3, 4]);
 		});
 	});
 
@@ -965,11 +999,15 @@ describe("array expressions - edge cases", () => {
 
 	describe("integration and compatibility", () => {
 		it("works well with other expressions in complex scenarios", () => {
-			const data = {
-				users: [
-					{ name: "Aria", scores: [85, 90, 88], active: true },
-					{ name: "Chen", scores: [92, 89, 94], active: false },
-					{ name: "Zara", scores: [78, 85, 82], active: true },
+			const daycare = {
+				children: [
+					{
+						name: "Amara",
+						assessmentScores: [85, 90, 88],
+						enrolled: true,
+					},
+					{ name: "Chen", assessmentScores: [92, 89, 94], enrolled: false },
+					{ name: "Zara", assessmentScores: [78, 85, 82], enrolled: true },
 				],
 			};
 
@@ -977,23 +1015,23 @@ describe("array expressions - edge cases", () => {
 				apply(
 					{
 						$filter: {
-							$get: "active",
+							$get: "enrolled",
 						},
 					},
-					data.users,
+					daycare.children,
 				),
 			).toEqual([
-				{ name: "Aria", scores: [85, 90, 88], active: true },
-				{ name: "Zara", scores: [78, 85, 82], active: true },
+				{ name: "Amara", assessmentScores: [85, 90, 88], enrolled: true },
+				{ name: "Zara", assessmentScores: [78, 85, 82], enrolled: true },
 			]);
 		});
 
 		it("maintains consistent behavior for array filtering", () => {
-			const testData = [1, 2, 3, 4, 5];
+			const ages = [3, 4, 5, 6, 7];
 
-			const applyResult = apply({ $filter: { $gt: 3 } }, testData);
+			const applyResult = apply({ $filter: { $gt: 4 } }, ages);
 
-			expect(applyResult).toEqual([4, 5]);
+			expect(applyResult).toEqual([5, 6, 7]);
 		});
 	});
 });
@@ -1082,6 +1120,260 @@ describe("$last", () => {
 			expect(() => apply({ $last: null }, "not array")).toThrowError(
 				"Array accessor expressions require array operand or input data",
 			);
+		});
+	});
+});
+
+describe("$sort", () => {
+	const children = [
+		{ name: "Diego", age: 4, status: "active", score: 88 },
+		{ name: "Chen", age: 5, status: "active", score: 92 },
+		{ name: "Amira", age: 3, status: "inactive", score: 78 },
+	];
+
+	describe("basic functionality", () => {
+		it("sorts by simple field name", () => {
+			const result = apply({ $sort: "age" }, children);
+			expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
+		});
+
+		it("sorts by field in descending order", () => {
+			const result = apply(
+				{
+					$sort: { by: "age", desc: true },
+				},
+				children,
+			);
+			expect(result.map((c) => c.name)).toEqual(["Chen", "Diego", "Amira"]);
+		});
+
+		it("sorts by expression", () => {
+			const result = apply(
+				{
+					$sort: { by: { $get: "score" } },
+				},
+				children,
+			);
+			expect(result.map((c) => c.name)).toEqual(["Amira", "Diego", "Chen"]);
+		});
+
+		it("sorts by multiple criteria", () => {
+			const data = [
+				{ name: "Ana", group: "A", score: 85 },
+				{ name: "Ben", group: "B", score: 90 },
+				{ name: "Carl", group: "A", score: 85 },
+				{ name: "Diana", group: "B", score: 88 },
+			];
+
+			const result = apply(
+				{
+					$sort: [{ by: "group" }, { by: "score", desc: true }, { by: "name" }],
+				},
+				data,
+			);
+
+			expect(result.map((c) => c.name)).toEqual([
+				"Ana",
+				"Carl",
+				"Ben",
+				"Diana",
+			]);
+		});
+
+		it("maintains original array immutability", () => {
+			const original = [...children];
+			apply({ $sort: "age" }, children);
+			expect(children).toEqual(original);
+		});
+
+		it("throws error when applied to non-array", () => {
+			expect(() => apply({ $sort: "age" }, { name: "not array" })).toThrow(
+				"$sort can only be applied to arrays",
+			);
+		});
+
+		it("throws error for object form without 'by' property", () => {
+			expect(() => apply({ $sort: { desc: true } }, children)).toThrow(
+				"$sort operand must be string, object with 'by' property, or array of sort criteria",
+			);
+		});
+
+		it("throws error for invalid operand type", () => {
+			expect(() => apply({ $sort: 123 }, children)).toThrow(
+				"$sort operand must be string, object with 'by' property, or array of sort criteria",
+			);
+		});
+	});
+
+	describe("edge cases", () => {
+		it("handles empty array input", () => {
+			expect(apply({ $sort: "name" }, [])).toEqual([]);
+		});
+
+		it("handles single item array", () => {
+			const singleItem = [{ name: "Alone", age: 3 }];
+			expect(apply({ $sort: "age" }, singleItem)).toEqual(singleItem);
+		});
+
+		it("handles equal values (line 112 coverage)", () => {
+			const equalAges = [
+				{ name: "Amara", age: 4 },
+				{ name: "Kenji", age: 4 },
+				{ name: "Yuki", age: 4 },
+			];
+
+			const result = apply({ $sort: "age" }, equalAges);
+			expect(result.map((item) => item.age)).toEqual([4, 4, 4]);
+			// Original order should be preserved for equal values
+			expect(result.map((item) => item.name)).toEqual([
+				"Amara",
+				"Kenji",
+				"Yuki",
+			]);
+		});
+
+		it("handles mixed data types in sort field", () => {
+			const mixedData = [
+				{ name: "Yuki", favoriteColor: "blue" },
+				{ name: "Amara", favoriteColor: 42 },
+				{ name: "Kenji", favoriteColor: null },
+			];
+
+			const result = apply({ $sort: "favoriteColor" }, mixedData);
+			// JavaScript comparison behavior with mixed types
+			expect(result.map((item) => item.name)).toEqual([
+				"Yuki",
+				"Kenji",
+				"Amara",
+			]);
+		});
+
+		it("handles missing values in sort field (now null)", () => {
+			const withMissing = [
+				{ name: "Amara", readingLevel: 90 },
+				{ name: "Kenji" }, // missing readingLevel (now returns null instead of undefined)
+				{ name: "Yuki", readingLevel: 85 },
+			];
+
+			const result = apply({ $sort: "readingLevel" }, withMissing);
+			// JavaScript comparison behavior: null < numbers, so Kenji comes first
+			expect(result.map((item) => item.name)).toEqual([
+				"Kenji",
+				"Yuki",
+				"Amara",
+			]);
+		});
+
+		it("handles complex expression-based sorting", () => {
+			const children = [
+				{ name: "Amara", assessment: { math: { score: 78 } } },
+				{ name: "Kenji", assessment: { math: { score: 92 } } },
+				{ name: "Yuki", assessment: { math: { score: 85 } } },
+			];
+
+			const result = apply(
+				{ $sort: { by: { $get: "assessment.math.score" } } },
+				children,
+			);
+
+			expect(result.map((item) => item.name)).toEqual([
+				"Amara",
+				"Yuki",
+				"Kenji",
+			]);
+		});
+
+		it("handles multiple sort criteria with equal primary values", () => {
+			const children = [
+				{ room: "toddlers", name: "Yuki", age: 3 },
+				{ room: "toddlers", name: "Amara", age: 3 },
+				{ room: "toddlers", name: "Kenji", age: 3 },
+			];
+
+			const result = apply(
+				{
+					$sort: [{ by: "room" }, { by: "age", desc: true }, { by: "name" }],
+				},
+				children,
+			);
+
+			expect(result.map((item) => item.name)).toEqual([
+				"Amara",
+				"Kenji",
+				"Yuki",
+			]);
+		});
+
+		it("handles nested array sorting", () => {
+			const children = [
+				{ name: "Amara", weeklyScores: [85, 90, 88] },
+				{ name: "Kenji", weeklyScores: [92, 87, 89] },
+				{ name: "Yuki", weeklyScores: [78, 85, 82] },
+			];
+
+			const result = apply(
+				{ $sort: { by: { $get: "weeklyScores.0" } } },
+				children,
+			);
+
+			expect(result.map((item) => item.name)).toEqual([
+				"Yuki",
+				"Amara",
+				"Kenji",
+			]);
+		});
+
+		it("maintains immutability with nested objects", () => {
+			const original = [
+				{ name: "Amara", info: { age: 4 } },
+				{ name: "Kenji", info: { age: 5 } },
+			];
+			const originalCopy = JSON.parse(JSON.stringify(original));
+
+			apply({ $sort: "info.age" }, original);
+
+			expect(original).toEqual(originalCopy);
+		});
+
+		it("throws for invalid sort criteria in array", () => {
+			const children = [{ name: "Amara" }, { name: "Kenji" }];
+
+			expect(() =>
+				apply({ $sort: [{ invalidKey: "value" }] }, children),
+			).toThrow(
+				"$sort operand must be string, object with 'by' property, or array of sort criteria",
+			);
+
+			expect(() => apply({ $sort: ["string-in-array"] }, children)).toThrow(
+				"$sort operand must be string, object with 'by' property, or array of sort criteria",
+			);
+		});
+
+		it("handles boolean desc flag variations", () => {
+			const children = [
+				{ name: "Amara", age: 4 },
+				{ name: "Kenji", age: 5 },
+				{ name: "Yuki", age: 3 },
+			];
+
+			// desc: false (explicit)
+			expect(
+				apply({ $sort: { by: "age", desc: false } }, children).map(
+					(i) => i.name,
+				),
+			).toEqual(["Yuki", "Amara", "Kenji"]);
+
+			// desc: true
+			expect(
+				apply({ $sort: { by: "age", desc: true } }, children).map(
+					(i) => i.name,
+				),
+			).toEqual(["Kenji", "Amara", "Yuki"]);
+
+			// no desc property (defaults to false)
+			expect(
+				apply({ $sort: { by: "age" } }, children).map((i) => i.name),
+			).toEqual(["Yuki", "Amara", "Kenji"]);
 		});
 	});
 });

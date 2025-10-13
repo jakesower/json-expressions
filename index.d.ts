@@ -70,7 +70,7 @@ export interface PipeExpression {
 }
 
 export interface MatchesExpression {
-  $matches: { [path: string]: Expression | unknown };
+  $matchesAll: { [path: string]: Expression | unknown };
 }
 
 export interface MatchesAnyExpression {
@@ -687,7 +687,7 @@ export const $isEmpty: ExpressionDefinition;
 export const $isPresent: ExpressionDefinition;
 export const $lt: ExpressionDefinition;
 export const $lte: ExpressionDefinition;
-export const $matches: ExpressionDefinition;
+export const $matchesAll: ExpressionDefinition;
 export const $matchesAny: ExpressionDefinition;
 export const $matchesRegex: ExpressionDefinition;
 export const $ne: ExpressionDefinition;
