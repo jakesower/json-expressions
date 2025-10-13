@@ -129,6 +129,15 @@ export function createExpressionEngine(config = {}) {
 					throw err;
 				}
 
+				// Preserve custom error types (like ExpressionNotSupportedError)
+				// by adding path info but keeping the original error instance
+				if (err.constructor !== Error) {
+					const pathStr = buildPathStr([...path, expressionName]);
+					err.message = `[${pathStr}] ${err.message}`;
+					err[CAUGHT_IN_ENGINE] = true;
+					throw err;
+				}
+
 				const outErr = Error(
 					`[${buildPathStr([...path, expressionName])}] ${err.message}`,
 				);

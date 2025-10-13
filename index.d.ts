@@ -369,6 +369,83 @@ export interface BetweenExpression {
   $between: { min: number | Expression; max: number | Expression };
 }
 
+// === TEMPORAL EXPRESSIONS ===
+
+export type TimeUnit =
+  | "milliseconds"
+  | "seconds"
+  | "minutes"
+  | "hours"
+  | "days"
+  | "weeks"
+  | "months"
+  | "years";
+
+export type BoundaryUnit = "day" | "week" | "month" | "year";
+
+export type TimeComponent =
+  | "year"
+  | "month"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "dayOfWeek"
+  | "dayOfYear";
+
+export interface AddTimeExpression {
+  $addTime:
+    | Record<TimeUnit, number>
+    | [string, Record<TimeUnit, number>]
+    | Expression;
+}
+
+export interface DiffTimeExpression {
+  $diffTime:
+    | { date: string | Expression; unit: TimeUnit }
+    | [string | Expression, string | Expression, TimeUnit];
+}
+
+export interface StartOfExpression {
+  $startOf: BoundaryUnit | Expression;
+}
+
+export interface EndOfExpression {
+  $endOf: BoundaryUnit | Expression;
+}
+
+export interface GetTimeExpression {
+  $getTime: TimeComponent | Expression;
+}
+
+export interface IsAfterExpression {
+  $isAfter: string | Expression | [string | Expression, string | Expression];
+}
+
+export interface IsBeforeExpression {
+  $isBefore: string | Expression | [string | Expression, string | Expression];
+}
+
+export interface FormatDateExpression {
+  $formatDate: string | Expression | [string | Expression, string | Expression];
+}
+
+export interface ParseDateExpression {
+  $parseDate:
+    | null
+    | string
+    | Expression
+    | [string | Expression, string | Expression];
+}
+
+export interface IsDateValidExpression {
+  $isDateValid:
+    | null
+    | string
+    | Expression
+    | [string | Expression, string | Expression];
+}
+
 // === UNION TYPE FOR ALL EXPRESSIONS ===
 
 export type AnyExpression =
@@ -458,7 +535,18 @@ export type AnyExpression =
   | TakeExpression
   | CoalesceExpression
   // Predicate (Additional)
-  | BetweenExpression;
+  | BetweenExpression
+  // Temporal
+  | AddTimeExpression
+  | DiffTimeExpression
+  | StartOfExpression
+  | EndOfExpression
+  | GetTimeExpression
+  | IsAfterExpression
+  | IsBeforeExpression
+  | FormatDateExpression
+  | ParseDateExpression
+  | IsDateValidExpression;
 
 /**
  * A JSON expression - either built-in or custom
@@ -623,40 +711,13 @@ export const $min: ExpressionDefinition;
 export const $sum: ExpressionDefinition;
 
 // Temporal expressions
-export const $addDays: ExpressionDefinition;
-export const $addHours: ExpressionDefinition;
-export const $addMinutes: ExpressionDefinition;
-export const $addMonths: ExpressionDefinition;
-export const $addYears: ExpressionDefinition;
-export const $day: ExpressionDefinition;
-export const $dayOfWeek: ExpressionDefinition;
-export const $dayOfYear: ExpressionDefinition;
-export const $diffDays: ExpressionDefinition;
-export const $diffHours: ExpressionDefinition;
-export const $diffMilliseconds: ExpressionDefinition;
-export const $diffMinutes: ExpressionDefinition;
-export const $diffMonths: ExpressionDefinition;
-export const $diffSeconds: ExpressionDefinition;
-export const $diffYears: ExpressionDefinition;
-export const $endOfDay: ExpressionDefinition;
-export const $endOfMonth: ExpressionDefinition;
-export const $endOfYear: ExpressionDefinition;
+export const $addTime: ExpressionDefinition;
+export const $diffTime: ExpressionDefinition;
+export const $endOf: ExpressionDefinition;
 export const $formatDate: ExpressionDefinition;
-export const $hour: ExpressionDefinition;
+export const $getTime: ExpressionDefinition;
 export const $isAfter: ExpressionDefinition;
 export const $isBefore: ExpressionDefinition;
 export const $isDateValid: ExpressionDefinition;
-export const $isSameDay: ExpressionDefinition;
-export const $isWeekday: ExpressionDefinition;
-export const $isWeekend: ExpressionDefinition;
-export const $minute: ExpressionDefinition;
-export const $month: ExpressionDefinition;
 export const $parseDate: ExpressionDefinition;
-export const $second: ExpressionDefinition;
-export const $startOfDay: ExpressionDefinition;
-export const $startOfMonth: ExpressionDefinition;
-export const $startOfYear: ExpressionDefinition;
-export const $subDays: ExpressionDefinition;
-export const $subMonths: ExpressionDefinition;
-export const $subYears: ExpressionDefinition;
-export const $year: ExpressionDefinition;
+export const $startOf: ExpressionDefinition;

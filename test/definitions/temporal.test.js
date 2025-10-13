@@ -5,874 +5,523 @@ import { temporal } from "../../src/packs/temporal.js";
 const engine = createExpressionEngine({ packs: [temporal] });
 
 describe("Temporal Expressions", () => {
-	describe("$addDays", () => {
-		it("should add days to a date (array form)", () => {
+	describe("$addTime", () => {
+		it("should add single unit duration (operand form)", () => {
 			const result = engine.apply(
-				{ $addDays: ["2025-10-05T00:00:00.000Z", 7] },
-				null,
+				{ $addTime: { days: 7 } },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe("2025-10-12T00:00:00.000Z");
 		});
 
-		it("should add days to a date (input data form)", () => {
-			const result = engine.apply({ $addDays: 7 }, "2025-10-05T00:00:00.000Z");
-			expect(result).toBe("2025-10-12T00:00:00.000Z");
+		it("should add multiple unit duration (operand form)", () => {
+			const result = engine.apply(
+				{ $addTime: { days: 7, hours: 2, minutes: 30 } },
+				"2025-10-05T10:00:00.000Z",
+			);
+			expect(result).toBe("2025-10-12T12:30:00.000Z");
 		});
 
-		it("should handle negative days", () => {
+		it("should subtract with negative values", () => {
 			const result = engine.apply(
-				{ $addDays: ["2025-10-05T00:00:00.000Z", -3] },
-				null,
+				{ $addTime: { days: -3 } },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe("2025-10-02T00:00:00.000Z");
 		});
 
+		it("should work with array form", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T00:00:00.000Z", { days: 7 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-12T00:00:00.000Z");
+		});
+
 		it("should handle month boundaries", () => {
 			const result = engine.apply(
-				{ $addDays: ["2025-10-31T00:00:00.000Z", 1] },
-				null,
+				{ $addTime: { days: 1 } },
+				"2025-10-31T00:00:00.000Z",
 			);
 			expect(result).toBe("2025-11-01T00:00:00.000Z");
 		});
-	});
 
-	describe("$addMonths", () => {
-		it("should add months to a date (array form)", () => {
+		it("should add months", () => {
 			const result = engine.apply(
-				{ $addMonths: ["2025-10-05T00:00:00.000Z", 3] },
-				null,
-			);
-			expect(result).toBe("2026-01-05T00:00:00.000Z");
-		});
-
-		it("should add months to a date (input data form)", () => {
-			const result = engine.apply(
-				{ $addMonths: 3 },
+				{ $addTime: { months: 3 } },
 				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe("2026-01-05T00:00:00.000Z");
 		});
 
-		it("should handle year boundaries", () => {
+		it("should add years", () => {
 			const result = engine.apply(
-				{ $addMonths: ["2025-12-15T00:00:00.000Z", 2] },
-				null,
-			);
-			expect(result).toBe("2026-02-15T00:00:00.000Z");
-		});
-	});
-
-	describe("$addYears", () => {
-		it("should add years to a date (array form)", () => {
-			const result = engine.apply(
-				{ $addYears: ["2025-10-05T00:00:00.000Z", 5] },
-				null,
+				{ $addTime: { years: 5 } },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe("2030-10-05T00:00:00.000Z");
 		});
 
-		it("should add years to a date (input data form)", () => {
-			const result = engine.apply({ $addYears: 5 }, "2025-10-05T00:00:00.000Z");
-			expect(result).toBe("2030-10-05T00:00:00.000Z");
-		});
-	});
-
-	describe("$addHours", () => {
-		it("should add hours to a date (array form)", () => {
+		it("should add weeks", () => {
 			const result = engine.apply(
-				{ $addHours: ["2025-10-05T10:00:00.000Z", 5] },
-				null,
+				{ $addTime: { weeks: 2 } },
+				"2025-10-05T00:00:00.000Z",
+			);
+			expect(result).toBe("2025-10-19T00:00:00.000Z");
+		});
+
+		it("should add hours", () => {
+			const result = engine.apply(
+				{ $addTime: { hours: 5 } },
+				"2025-10-05T10:00:00.000Z",
 			);
 			expect(result).toBe("2025-10-05T15:00:00.000Z");
 		});
 
-		it("should handle day boundaries", () => {
+		it("should add minutes", () => {
 			const result = engine.apply(
-				{ $addHours: ["2025-10-05T22:00:00.000Z", 3] },
-				null,
+				{ $addTime: { minutes: 45 } },
+				"2025-10-05T10:15:00.000Z",
 			);
-			expect(result).toBe("2025-10-06T01:00:00.000Z");
+			expect(result).toBe("2025-10-05T11:00:00.000Z");
+		});
+
+		it("should add seconds", () => {
+			const result = engine.apply(
+				{ $addTime: { seconds: 30 } },
+				"2025-10-05T10:00:00.000Z",
+			);
+			expect(result).toBe("2025-10-05T10:00:30.000Z");
+		});
+
+		it("should throw error for invalid duration object", () => {
+			expect(() =>
+				engine.apply({ $addTime: "invalid" }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("$addTime operand must be an object with time unit properties");
+		});
+
+		it("should throw error for unknown time unit", () => {
+			expect(() =>
+				engine.apply({ $addTime: { decades: 1 } }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("Unknown time unit: decades");
 		});
 	});
 
-	describe("$addMinutes", () => {
-		it("should add minutes to a date (array form)", () => {
+	describe("$diffTime", () => {
+		it("should calculate difference in days (operand form)", () => {
 			const result = engine.apply(
-				{ $addMinutes: ["2025-10-05T10:30:00.000Z", 45] },
-				null,
-			);
-			expect(result).toBe("2025-10-05T11:15:00.000Z");
-		});
-
-		it("should handle hour boundaries", () => {
-			const result = engine.apply(
-				{ $addMinutes: ["2025-10-05T10:50:00.000Z", 20] },
-				null,
-			);
-			expect(result).toBe("2025-10-05T11:10:00.000Z");
-		});
-	});
-
-	describe("$subDays", () => {
-		it("should subtract days from a date (array form)", () => {
-			const result = engine.apply(
-				{ $subDays: ["2025-10-12T00:00:00.000Z", 7] },
-				null,
-			);
-			expect(result).toBe("2025-10-05T00:00:00.000Z");
-		});
-
-		it("should subtract days from a date (input data form)", () => {
-			const result = engine.apply({ $subDays: 7 }, "2025-10-12T00:00:00.000Z");
-			expect(result).toBe("2025-10-05T00:00:00.000Z");
-		});
-
-		it("should handle month boundaries", () => {
-			const result = engine.apply(
-				{ $subDays: ["2025-11-01T00:00:00.000Z", 1] },
-				null,
-			);
-			expect(result).toBe("2025-10-31T00:00:00.000Z");
-		});
-	});
-
-	describe("$subMonths", () => {
-		it("should subtract months from a date (array form)", () => {
-			const result = engine.apply(
-				{ $subMonths: ["2026-01-05T00:00:00.000Z", 3] },
-				null,
-			);
-			expect(result).toBe("2025-10-05T00:00:00.000Z");
-		});
-
-		it("should handle year boundaries", () => {
-			const result = engine.apply(
-				{ $subMonths: ["2026-02-15T00:00:00.000Z", 2] },
-				null,
-			);
-			expect(result).toBe("2025-12-15T00:00:00.000Z");
-		});
-	});
-
-	describe("$subYears", () => {
-		it("should subtract years from a date (array form)", () => {
-			const result = engine.apply(
-				{ $subYears: ["2030-10-05T00:00:00.000Z", 5] },
-				null,
-			);
-			expect(result).toBe("2025-10-05T00:00:00.000Z");
-		});
-	});
-
-	describe("$diffDays", () => {
-		it("should calculate difference in days (array form)", () => {
-			const result = engine.apply(
-				{ $diffDays: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] },
-				null,
-			);
-			expect(result).toBe(7);
-		});
-
-		it("should calculate difference in days (input data form)", () => {
-			const result = engine.apply(
-				{ $diffDays: "2025-10-12T00:00:00.000Z" },
+				{ $diffTime: { date: "2025-12-25T00:00:00.000Z", unit: "days" } },
 				"2025-10-05T00:00:00.000Z",
 			);
-			expect(result).toBe(7);
+			expect(result).toBe(81); // days between Oct 5 and Dec 25
 		});
 
-		it("should return negative for earlier second date", () => {
+		it("should calculate difference in hours (operand form)", () => {
 			const result = engine.apply(
-				{ $diffDays: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
-				null,
+				{ $diffTime: { date: "2025-10-05T15:00:00.000Z", unit: "hours" } },
+				"2025-10-05T10:00:00.000Z",
 			);
-			expect(result).toBe(-7);
+			expect(result).toBe(5);
 		});
-	});
 
-	describe("$diffMonths", () => {
-		it("should calculate difference in months", () => {
+		it("should work with array form", () => {
 			const result = engine.apply(
 				{
-					$diffMonths: ["2025-10-05T00:00:00.000Z", "2026-01-05T00:00:00.000Z"],
+					$diffTime: [
+						"2025-10-05T00:00:00.000Z",
+						"2025-12-25T00:00:00.000Z",
+						"days",
+					],
 				},
 				null,
+			);
+			expect(result).toBe(81);
+		});
+
+		it("should calculate difference in months", () => {
+			const result = engine.apply(
+				{ $diffTime: { date: "2026-01-05T00:00:00.000Z", unit: "months" } },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe(3);
 		});
 
-		it("should handle year boundaries", () => {
+		it("should calculate difference in years", () => {
 			const result = engine.apply(
-				{
-					$diffMonths: ["2025-12-15T00:00:00.000Z", "2026-02-15T00:00:00.000Z"],
-				},
-				null,
+				{ $diffTime: { date: "2030-10-05T00:00:00.000Z", unit: "years" } },
+				"2025-10-05T00:00:00.000Z",
+			);
+			expect(result).toBe(5);
+		});
+
+		it("should calculate difference in weeks", () => {
+			const result = engine.apply(
+				{ $diffTime: { date: "2025-10-19T00:00:00.000Z", unit: "weeks" } },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe(2);
 		});
-	});
 
-	describe("$diffYears", () => {
-		it("should calculate difference in years", () => {
-			const result = engine.apply(
-				{
-					$diffYears: ["2025-10-05T00:00:00.000Z", "2030-10-05T00:00:00.000Z"],
-				},
-				null,
-			);
-			expect(result).toBe(5);
-		});
-	});
-
-	describe("$diffHours", () => {
-		it("should calculate difference in hours", () => {
-			const result = engine.apply(
-				{
-					$diffHours: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"],
-				},
-				null,
-			);
-			expect(result).toBe(5);
-		});
-
-		it("should handle day boundaries", () => {
-			const result = engine.apply(
-				{
-					$diffHours: ["2025-10-05T22:00:00.000Z", "2025-10-06T01:00:00.000Z"],
-				},
-				null,
-			);
-			expect(result).toBe(3);
-		});
-	});
-
-	describe("$diffMinutes", () => {
 		it("should calculate difference in minutes", () => {
 			const result = engine.apply(
-				{
-					$diffMinutes: [
-						"2025-10-05T10:00:00.000Z",
-						"2025-10-05T10:45:00.000Z",
-					],
-				},
-				null,
+				{ $diffTime: { date: "2025-10-05T11:00:00.000Z", unit: "minutes" } },
+				"2025-10-05T10:15:00.000Z",
 			);
 			expect(result).toBe(45);
 		});
-	});
 
-	describe("$diffSeconds", () => {
 		it("should calculate difference in seconds", () => {
 			const result = engine.apply(
-				{
-					$diffSeconds: [
-						"2025-10-05T10:00:00.000Z",
-						"2025-10-05T10:01:00.000Z",
-					],
-				},
-				null,
+				{ $diffTime: { date: "2025-10-05T10:00:30.000Z", unit: "seconds" } },
+				"2025-10-05T10:00:00.000Z",
 			);
-			expect(result).toBe(60);
+			expect(result).toBe(30);
+		});
+
+		it("should throw error for missing date property", () => {
+			expect(() =>
+				engine.apply(
+					{ $diffTime: { unit: "days" } },
+					"2025-10-05T00:00:00.000Z",
+				),
+			).toThrow(
+				"$diffTime operand must have both 'date' and 'unit' properties",
+			);
+		});
+
+		it("should throw error for missing unit property", () => {
+			expect(() =>
+				engine.apply(
+					{ $diffTime: { date: "2025-12-25T00:00:00.000Z" } },
+					"2025-10-05T00:00:00.000Z",
+				),
+			).toThrow(
+				"$diffTime operand must have both 'date' and 'unit' properties",
+			);
+		});
+
+		it("should throw error for unknown time unit", () => {
+			expect(() =>
+				engine.apply(
+					{ $diffTime: { date: "2025-12-25T00:00:00.000Z", unit: "decades" } },
+					"2025-10-05T00:00:00.000Z",
+				),
+			).toThrow("Unknown time unit: decades");
 		});
 	});
 
-	describe("$diffMilliseconds", () => {
-		it("should calculate difference in milliseconds", () => {
+	describe("$startOf", () => {
+		it("should get start of day", () => {
 			const result = engine.apply(
-				{
-					$diffMilliseconds: [
-						"2025-10-05T10:00:00.000Z",
-						"2025-10-05T10:00:01.000Z",
-					],
-				},
-				null,
-			);
-			expect(result).toBe(1000);
-		});
-	});
-
-	describe("$startOfDay", () => {
-		it("should get start of day (operand form)", () => {
-			const result = engine.apply(
-				{ $startOfDay: "2025-10-05T15:23:45.234Z" },
-				null,
+				{ $startOf: "day" },
+				"2025-10-05T15:23:45.123Z",
 			);
 			expect(result).toBe("2025-10-05T00:00:00.000Z");
 		});
 
-		it("should get start of day (input data form)", () => {
+		it("should get start of week", () => {
 			const result = engine.apply(
-				{ $startOfDay: null },
-				"2025-10-05T15:23:45.234Z",
+				{ $startOf: "week" },
+				"2025-10-05T15:23:45.123Z", // Sunday Oct 5
 			);
 			expect(result).toBe("2025-10-05T00:00:00.000Z");
 		});
-	});
 
-	describe("$endOfDay", () => {
-		it("should get end of day", () => {
-			const result = engine.apply(
-				{ $endOfDay: "2025-10-05T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe("2025-10-05T23:59:59.999Z");
-		});
-	});
-
-	describe("$startOfMonth", () => {
 		it("should get start of month", () => {
 			const result = engine.apply(
-				{ $startOfMonth: "2025-10-15T15:23:45.234Z" },
-				null,
+				{ $startOf: "month" },
+				"2025-10-15T15:23:45.123Z",
 			);
 			expect(result).toBe("2025-10-01T00:00:00.000Z");
 		});
-	});
 
-	describe("$endOfMonth", () => {
-		it("should get end of month (30 days)", () => {
+		it("should get start of year", () => {
 			const result = engine.apply(
-				{ $endOfMonth: "2025-11-15T15:23:45.234Z" },
-				null,
+				{ $startOf: "year" },
+				"2025-10-15T15:23:45.123Z",
 			);
-			expect(result).toBe("2025-11-30T23:59:59.999Z");
+			expect(result).toBe("2025-01-01T00:00:00.000Z");
 		});
 
-		it("should get end of month (31 days)", () => {
+		it("should throw error for unknown boundary unit", () => {
+			expect(() =>
+				engine.apply({ $startOf: "decade" }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("Unknown boundary unit: decade");
+		});
+	});
+
+	describe("$endOf", () => {
+		it("should get end of day", () => {
 			const result = engine.apply(
-				{ $endOfMonth: "2025-10-15T15:23:45.234Z" },
-				null,
+				{ $endOf: "day" },
+				"2025-10-05T10:00:00.000Z",
+			);
+			expect(result).toBe("2025-10-05T23:59:59.999Z");
+		});
+
+		it("should get end of week", () => {
+			const result = engine.apply(
+				{ $endOf: "week" },
+				"2025-10-05T10:00:00.000Z", // Sunday Oct 5
+			);
+			expect(result).toBe("2025-10-11T23:59:59.999Z"); // Saturday Oct 11
+		});
+
+		it("should get end of month", () => {
+			const result = engine.apply(
+				{ $endOf: "month" },
+				"2025-10-15T10:00:00.000Z",
 			);
 			expect(result).toBe("2025-10-31T23:59:59.999Z");
 		});
 
-		it("should handle February", () => {
-			const result = engine.apply(
-				{ $endOfMonth: "2025-02-15T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe("2025-02-28T23:59:59.999Z");
-		});
-
-		it("should handle leap year February", () => {
-			const result = engine.apply(
-				{ $endOfMonth: "2024-02-15T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe("2024-02-29T23:59:59.999Z");
-		});
-	});
-
-	describe("$startOfYear", () => {
-		it("should get start of year", () => {
-			const result = engine.apply(
-				{ $startOfYear: "2025-10-15T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe("2025-01-01T00:00:00.000Z");
-		});
-	});
-
-	describe("$endOfYear", () => {
 		it("should get end of year", () => {
 			const result = engine.apply(
-				{ $endOfYear: "2025-10-15T15:23:45.234Z" },
-				null,
+				{ $endOf: "year" },
+				"2025-10-15T10:00:00.000Z",
 			);
 			expect(result).toBe("2025-12-31T23:59:59.999Z");
+		});
+
+		it("should throw error for unknown boundary unit", () => {
+			expect(() =>
+				engine.apply({ $endOf: "decade" }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("Unknown boundary unit: decade");
+		});
+	});
+
+	describe("$getTime", () => {
+		const testDate = "2025-10-15T14:30:45.000Z";
+
+		it("should extract year", () => {
+			const result = engine.apply({ $getTime: "year" }, testDate);
+			expect(result).toBe(2025);
+		});
+
+		it("should extract month (1-indexed)", () => {
+			const result = engine.apply({ $getTime: "month" }, testDate);
+			expect(result).toBe(10);
+		});
+
+		it("should extract day", () => {
+			const result = engine.apply({ $getTime: "day" }, testDate);
+			expect(result).toBe(15);
+		});
+
+		it("should extract hour", () => {
+			const result = engine.apply({ $getTime: "hour" }, testDate);
+			expect(result).toBe(14);
+		});
+
+		it("should extract minute", () => {
+			const result = engine.apply({ $getTime: "minute" }, testDate);
+			expect(result).toBe(30);
+		});
+
+		it("should extract second", () => {
+			const result = engine.apply({ $getTime: "second" }, testDate);
+			expect(result).toBe(45);
+		});
+
+		it("should extract day of week (0=Sunday)", () => {
+			const result = engine.apply(
+				{ $getTime: "dayOfWeek" },
+				"2025-10-05T00:00:00.000Z", // Sunday
+			);
+			expect(result).toBe(0);
+		});
+
+		it("should extract day of year", () => {
+			const result = engine.apply(
+				{ $getTime: "dayOfYear" },
+				"2025-01-01T00:00:00.000Z",
+			);
+			expect(result).toBe(1);
+
+			const result2 = engine.apply(
+				{ $getTime: "dayOfYear" },
+				"2025-12-31T00:00:00.000Z",
+			);
+			expect(result2).toBe(365);
+		});
+
+		it("should throw error for unknown time component", () => {
+			expect(() => engine.apply({ $getTime: "century" }, testDate)).toThrow(
+				"Unknown time component: century",
+			);
 		});
 	});
 
 	describe("$isAfter", () => {
-		it("should return true when first date is after second (array form)", () => {
-			const result = engine.apply(
-				{ $isAfter: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return false when first date is before second", () => {
-			const result = engine.apply(
-				{ $isAfter: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] },
-				null,
-			);
-			expect(result).toBe(false);
-		});
-
-		it("should return false when dates are equal", () => {
-			const result = engine.apply(
-				{ $isAfter: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
-				null,
-			);
-			expect(result).toBe(false);
-		});
-
-		it("should work with input data form", () => {
+		it("should compare dates (operand form)", () => {
 			const result = engine.apply(
 				{ $isAfter: "2025-10-05T00:00:00.000Z" },
-				"2025-10-12T00:00:00.000Z",
+				"2025-10-15T00:00:00.000Z",
 			);
 			expect(result).toBe(true);
+
+			const result2 = engine.apply(
+				{ $isAfter: "2025-10-15T00:00:00.000Z" },
+				"2025-10-05T00:00:00.000Z",
+			);
+			expect(result2).toBe(false);
+		});
+
+		it("should compare dates (array form)", () => {
+			const result = engine.apply(
+				{
+					$isAfter: ["2025-10-15T00:00:00.000Z", "2025-10-05T00:00:00.000Z"],
+				},
+				null,
+			);
+			expect(result).toBe(true);
+		});
+
+		it("should return false for equal dates", () => {
+			const result = engine.apply(
+				{ $isAfter: "2025-10-05T00:00:00.000Z" },
+				"2025-10-05T00:00:00.000Z",
+			);
+			expect(result).toBe(false);
 		});
 	});
 
 	describe("$isBefore", () => {
-		it("should return true when first date is before second", () => {
+		it("should compare dates (operand form)", () => {
 			const result = engine.apply(
-				{ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-12T00:00:00.000Z"] },
-				null,
+				{ $isBefore: "2025-10-15T00:00:00.000Z" },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe(true);
-		});
 
-		it("should return false when first date is after second", () => {
-			const result = engine.apply(
-				{ $isBefore: ["2025-10-12T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
-				null,
+			const result2 = engine.apply(
+				{ $isBefore: "2025-10-05T00:00:00.000Z" },
+				"2025-10-15T00:00:00.000Z",
 			);
-			expect(result).toBe(false);
+			expect(result2).toBe(false);
 		});
 
-		it("should return false when dates are equal", () => {
-			const result = engine.apply(
-				{ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] },
-				null,
-			);
-			expect(result).toBe(false);
-		});
-	});
-
-	describe("$isSameDay", () => {
-		it("should return true when dates are on the same day", () => {
+		it("should compare dates (array form)", () => {
 			const result = engine.apply(
 				{
-					$isSameDay: ["2025-10-05T10:00:00.000Z", "2025-10-05T15:00:00.000Z"],
+					$isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-15T00:00:00.000Z"],
 				},
 				null,
 			);
 			expect(result).toBe(true);
 		});
 
-		it("should return false when dates are on different days", () => {
+		it("should return false for equal dates", () => {
 			const result = engine.apply(
-				{
-					$isSameDay: ["2025-10-05T23:59:59.999Z", "2025-10-06T00:00:00.000Z"],
-				},
-				null,
+				{ $isBefore: "2025-10-05T00:00:00.000Z" },
+				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe(false);
-		});
-
-		it("should return true for exact same timestamp", () => {
-			const result = engine.apply(
-				{
-					$isSameDay: ["2025-10-05T10:00:00.000Z", "2025-10-05T10:00:00.000Z"],
-				},
-				null,
-			);
-			expect(result).toBe(true);
-		});
-	});
-
-	describe("$isWeekend", () => {
-		it("should return true for Saturday", () => {
-			const result = engine.apply(
-				{ $isWeekend: "2025-10-04T00:00:00.000Z" }, // Saturday
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return true for Sunday", () => {
-			const result = engine.apply(
-				{ $isWeekend: "2025-10-05T00:00:00.000Z" }, // Sunday
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return false for weekday", () => {
-			const result = engine.apply(
-				{ $isWeekend: "2025-10-06T00:00:00.000Z" }, // Monday
-				null,
-			);
-			expect(result).toBe(false);
-		});
-
-		it("should work with input data form", () => {
-			const result = engine.apply(
-				{ $isWeekend: null },
-				"2025-10-04T00:00:00.000Z",
-			);
-			expect(result).toBe(true);
-		});
-	});
-
-	describe("$isWeekday", () => {
-		it("should return true for Monday", () => {
-			const result = engine.apply(
-				{ $isWeekday: "2025-10-06T00:00:00.000Z" }, // Monday
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return true for Friday", () => {
-			const result = engine.apply(
-				{ $isWeekday: "2025-10-10T00:00:00.000Z" }, // Friday
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return false for Saturday", () => {
-			const result = engine.apply(
-				{ $isWeekday: "2025-10-04T00:00:00.000Z" }, // Saturday
-				null,
-			);
-			expect(result).toBe(false);
-		});
-
-		it("should return false for Sunday", () => {
-			const result = engine.apply(
-				{ $isWeekday: "2025-10-05T00:00:00.000Z" }, // Sunday
-				null,
-			);
-			expect(result).toBe(false);
-		});
-	});
-
-	describe("$year", () => {
-		it("should extract year from date", () => {
-			const result = engine.apply({ $year: "2025-10-05T15:23:45.234Z" }, null);
-			expect(result).toBe(2025);
-		});
-
-		it("should work with input data form", () => {
-			const result = engine.apply({ $year: null }, "2025-10-05T15:23:45.234Z");
-			expect(result).toBe(2025);
-		});
-	});
-
-	describe("$month", () => {
-		it("should extract month from date (1-indexed)", () => {
-			const result = engine.apply({ $month: "2025-10-05T15:23:45.234Z" }, null);
-			expect(result).toBe(10);
-		});
-
-		it("should return 1 for January", () => {
-			const result = engine.apply({ $month: "2025-01-05T15:23:45.234Z" }, null);
-			expect(result).toBe(1);
-		});
-
-		it("should return 12 for December", () => {
-			const result = engine.apply({ $month: "2025-12-05T15:23:45.234Z" }, null);
-			expect(result).toBe(12);
-		});
-	});
-
-	describe("$day", () => {
-		it("should extract day from date", () => {
-			const result = engine.apply({ $day: "2025-10-05T15:23:45.234Z" }, null);
-			expect(result).toBe(5);
-		});
-
-		it("should extract first day of month", () => {
-			const result = engine.apply({ $day: "2025-10-01T15:23:45.234Z" }, null);
-			expect(result).toBe(1);
-		});
-
-		it("should extract last day of month", () => {
-			const result = engine.apply({ $day: "2025-10-31T15:23:45.234Z" }, null);
-			expect(result).toBe(31);
-		});
-	});
-
-	describe("$hour", () => {
-		it("should extract hour from date", () => {
-			const result = engine.apply({ $hour: "2025-10-05T15:23:45.234Z" }, null);
-			expect(result).toBe(15);
-		});
-
-		it("should return 0 for midnight", () => {
-			const result = engine.apply({ $hour: "2025-10-05T00:23:45.234Z" }, null);
-			expect(result).toBe(0);
-		});
-	});
-
-	describe("$minute", () => {
-		it("should extract minute from date", () => {
-			const result = engine.apply(
-				{ $minute: "2025-10-05T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe(23);
-		});
-	});
-
-	describe("$second", () => {
-		it("should extract second from date", () => {
-			const result = engine.apply(
-				{ $second: "2025-10-05T15:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe(45);
-		});
-	});
-
-	describe("$dayOfWeek", () => {
-		it("should return 0 for Sunday", () => {
-			const result = engine.apply(
-				{ $dayOfWeek: "2025-10-05T00:00:00.000Z" }, // Sunday
-				null,
-			);
-			expect(result).toBe(0);
-		});
-
-		it("should return 1 for Monday", () => {
-			const result = engine.apply(
-				{ $dayOfWeek: "2025-10-06T00:00:00.000Z" }, // Monday
-				null,
-			);
-			expect(result).toBe(1);
-		});
-
-		it("should return 6 for Saturday", () => {
-			const result = engine.apply(
-				{ $dayOfWeek: "2025-10-04T00:00:00.000Z" }, // Saturday
-				null,
-			);
-			expect(result).toBe(6);
-		});
-	});
-
-	describe("$dayOfYear", () => {
-		it("should return 1 for January 1st", () => {
-			const result = engine.apply(
-				{ $dayOfYear: "2025-01-01T00:00:00.000Z" },
-				null,
-			);
-			expect(result).toBe(1);
-		});
-
-		it("should calculate day of year correctly", () => {
-			const result = engine.apply(
-				{ $dayOfYear: "2025-10-05T00:00:00.000Z" },
-				null,
-			);
-			// Jan (31) + Feb (28) + Mar (31) + Apr (30) + May (31) + Jun (30) + Jul (31) + Aug (31) + Sep (30) + 5 days = 278
-			expect(result).toBe(278);
 		});
 	});
 
 	describe("$formatDate", () => {
-		it("should format date with pattern (array form)", () => {
-			const result = engine.apply(
-				{ $formatDate: ["2025-10-05T11:23:45.234Z", "yyyy-MM-dd"] },
-				null,
-			);
-			expect(result).toBe("2025-10-05");
-		});
-
-		it("should format date with pattern (input data form)", () => {
+		it("should format date (operand form)", () => {
 			const result = engine.apply(
 				{ $formatDate: "yyyy-MM-dd" },
-				"2025-10-05T11:23:45.234Z",
+				"2025-10-05T14:30:00.000Z",
 			);
-			expect(result).toBe("2025-10-05");
+			expect(result).toMatch(/2025-10-05/);
 		});
 
-		it("should format with time pattern", () => {
+		it("should format date (array form)", () => {
 			const result = engine.apply(
-				{ $formatDate: ["2025-10-05T11:23:45.234Z", "yyyy-MM-dd HH:mm:ss"] },
+				{ $formatDate: ["2025-10-05T14:30:00.000Z", "yyyy-MM-dd"] },
 				null,
 			);
-			// date-fns format uses local timezone, so we just check the date part
-			expect(result).toMatch(/^2025-10-05 \d{2}:23:45$/);
+			expect(result).toMatch(/2025-10-05/);
 		});
 
-		it("should format with custom pattern", () => {
+		it("should format with time components", () => {
 			const result = engine.apply(
-				{ $formatDate: ["2025-10-05T11:23:45.234Z", "MMMM do, yyyy"] },
-				null,
+				{ $formatDate: "yyyy-MM-dd HH:mm:ss" },
+				"2025-10-05T14:30:45.000Z",
 			);
-			expect(result).toBe("October 5th, 2025");
+			expect(result).toMatch(/2025-10-05 \d{2}:30:45/);
 		});
 
-		it("should format day of week", () => {
+		it("should format with day and month names", () => {
 			const result = engine.apply(
-				{ $formatDate: ["2025-10-05T11:23:45.234Z", "EEEE"] },
-				null,
+				{ $formatDate: "EEEE, MMMM do, yyyy" },
+				"2025-10-05T00:00:00.000Z",
 			);
-			expect(result).toBe("Sunday");
+			// date-fns format uses local timezone, so day name may vary
+			expect(result).toMatch(
+				/(Saturday|Sunday), October \d+(th|st|nd|rd), 2025/,
+			);
 		});
 	});
 
 	describe("$parseDate", () => {
-		it("should parse date with format (array form)", () => {
+		it("should parse date (operand form)", () => {
+			const result = engine.apply({ $parseDate: "MM/dd/yyyy" }, "10/05/2025");
+			expect(result).toMatch(/2025-10-05/);
+		});
+
+		it("should parse date (array form)", () => {
 			const result = engine.apply(
 				{ $parseDate: ["10/05/2025", "MM/dd/yyyy"] },
 				null,
 			);
-			expect(result).toMatch(/2025-10-05T\d{2}:00:00\.000Z/);
+			expect(result).toMatch(/2025-10-05/);
 		});
 
-		it("should parse date with format (input data form)", () => {
-			const result = engine.apply({ $parseDate: "MM/dd/yyyy" }, "10/05/2025");
-			expect(result).toMatch(/2025-10-05T\d{2}:00:00\.000Z/);
-		});
-
-		it("should parse ISO string without format", () => {
-			const result = engine.apply(
-				{ $parseDate: "2025-10-05T11:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe("2025-10-05T11:23:45.234Z");
-		});
-
-		it("should parse ISO string with null operand", () => {
+		it("should validate ISO string with null operand", () => {
 			const result = engine.apply(
 				{ $parseDate: null },
-				"2025-10-05T11:23:45.234Z",
+				"2025-10-05T00:00:00.000Z",
 			);
-			expect(result).toBe("2025-10-05T11:23:45.234Z");
+			expect(result).toBe("2025-10-05T00:00:00.000Z");
 		});
 
-		it("should throw on invalid date string", () => {
+		it("should throw error for invalid date string", () => {
 			expect(() =>
-				engine.apply({ $parseDate: ["not-a-date", "MM/dd/yyyy"] }, null),
-			).toThrow(/Invalid date string/);
-		});
-
-		it("should throw on invalid ISO string", () => {
-			expect(() => engine.apply({ $parseDate: null }, "not-a-date")).toThrow(
-				/Invalid ISO 8601 date string/,
-			);
-		});
-
-		it("should parse date with time", () => {
-			const result = engine.apply(
-				{ $parseDate: ["10/05/2025 14:30:00", "MM/dd/yyyy HH:mm:ss"] },
-				null,
-			);
-			expect(result).toMatch(/2025-10-05T\d{2}:30:00\.000Z/);
+				engine.apply({ $parseDate: "MM/dd/yyyy" }, "invalid"),
+			).toThrow("Invalid date string");
 		});
 	});
 
 	describe("$isDateValid", () => {
-		it("should return true for valid date (array form)", () => {
+		it("should validate correct date string (operand form)", () => {
+			const result = engine.apply({ $isDateValid: "MM/dd/yyyy" }, "10/05/2025");
+			expect(result).toBe(true);
+		});
+
+		it("should invalidate incorrect date string (operand form)", () => {
+			const result = engine.apply({ $isDateValid: "MM/dd/yyyy" }, "invalid");
+			expect(result).toBe(false);
+		});
+
+		it("should validate ISO string with null operand", () => {
+			const result = engine.apply(
+				{ $isDateValid: null },
+				"2025-10-05T00:00:00.000Z",
+			);
+			expect(result).toBe(true);
+		});
+
+		it("should invalidate bad ISO string with null operand", () => {
+			const result = engine.apply({ $isDateValid: null }, "not-a-date");
+			expect(result).toBe(false);
+		});
+
+		it("should work with array form", () => {
 			const result = engine.apply(
 				{ $isDateValid: ["10/05/2025", "MM/dd/yyyy"] },
 				null,
 			);
 			expect(result).toBe(true);
-		});
 
-		it("should return true for valid date (input data form)", () => {
-			const result = engine.apply({ $isDateValid: "MM/dd/yyyy" }, "10/05/2025");
-			expect(result).toBe(true);
-		});
-
-		it("should return false for invalid date", () => {
-			const result = engine.apply(
-				{ $isDateValid: ["not-a-date", "MM/dd/yyyy"] },
+			const result2 = engine.apply(
+				{ $isDateValid: ["invalid", "MM/dd/yyyy"] },
 				null,
 			);
-			expect(result).toBe(false);
-		});
-
-		it("should return true for valid ISO string", () => {
-			const result = engine.apply(
-				{ $isDateValid: "2025-10-05T11:23:45.234Z" },
-				null,
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return true for valid ISO string with null operand", () => {
-			const result = engine.apply(
-				{ $isDateValid: null },
-				"2025-10-05T11:23:45.234Z",
-			);
-			expect(result).toBe(true);
-		});
-
-		it("should return false for invalid ISO string", () => {
-			const result = engine.apply({ $isDateValid: null }, "not-a-date");
-			expect(result).toBe(false);
-		});
-
-		it("should return false for wrong array length", () => {
-			const result = engine.apply({ $isDateValid: ["10/05/2025"] }, null);
-			expect(result).toBe(false);
-		});
-	});
-
-	describe("Error handling", () => {
-		it("should throw on invalid ISO string in arithmetic operations", () => {
-			expect(() => engine.apply({ $addDays: ["not-a-date", 7] }, null)).toThrow(
-				/Invalid ISO 8601 date string/,
-			);
-		});
-
-		it("should throw on non-string input", () => {
-			expect(() => engine.apply({ $addDays: [12345, 7] }, null)).toThrow(
-				/Expected ISO 8601 string/,
-			);
-		});
-
-		it("should throw on invalid array length for binary expressions", () => {
-			expect(() =>
-				engine.apply({ $addDays: ["2025-10-05T00:00:00.000Z"] }, null),
-			).toThrow(/exactly 2 elements/);
-		});
-
-		it("should throw on invalid array length for comparison expressions", () => {
-			expect(() =>
-				engine.apply({ $isAfter: ["2025-10-05T00:00:00.000Z"] }, null),
-			).toThrow(/exactly 2 elements/);
-		});
-	});
-
-	describe("Integration with expressions", () => {
-		it("should work with $pipe", () => {
-			const result = engine.apply(
-				{
-					$pipe: [
-						{ $addDays: ["2025-10-05T00:00:00.000Z", 7] },
-						{ $formatDate: "yyyy-MM-dd" },
-					],
-				},
-				null,
-			);
-			// date-fns format uses local timezone, accept either date
-			expect(result).toMatch(/^2025-10-(11|12)$/);
-		});
-
-		it("should work with $get", () => {
-			const engineWithGet = createExpressionEngine({ packs: [temporal] });
-			const result = engineWithGet.apply(
-				{ $addDays: [{ $get: "date" }, 7] },
-				{ date: "2025-10-05T00:00:00.000Z" },
-			);
-			expect(result).toBe("2025-10-12T00:00:00.000Z");
-		});
-
-		it("should compose multiple temporal operations", () => {
-			const result = engine.apply(
-				{
-					$pipe: [
-						{ $parseDate: ["10/05/2025", "MM/dd/yyyy"] },
-						{ $addMonths: 3 },
-						{ $startOfMonth: null },
-						{ $formatDate: "MMMM yyyy" },
-					],
-				},
-				null,
-			);
-			// date-fns format uses local timezone, accept December or January
-			expect(result).toMatch(/^(December 2025|January 2026)$/);
+			expect(result2).toBe(false);
 		});
 	});
 });

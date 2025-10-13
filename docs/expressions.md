@@ -26,18 +26,6 @@ apply({ $abs: null }, -2.5);
 // Returns: 2.5
 ```
 
-## $ceil
-
-Returns the smallest integer greater than or equal to the input number (rounds up).
-
-```javascript
-apply({ $ceil: null }, 4.1);
-// Returns: 5
-
-apply({ $ceil: null }, -4.9);
-// Returns: -4
-```
-
 ## $add
 
 Performs addition of two numbers.
@@ -57,6 +45,33 @@ apply(
 // Mixed form: expression + literal (expression + expression is OK too)
 apply({ $add: [{ $get: "age" }, 12] }, { age: 4 });
 // Returns: 16 (4 + 12)
+```
+
+## $addTime
+
+Adds a duration to a date. Use negative values to subtract.
+
+Supported units: `years`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds`, `milliseconds`
+
+```javascript
+// Add single unit duration
+apply({ $addTime: { days: 7 } }, "2025-10-05T00:00:00.000Z");
+// Returns: "2025-10-12T00:00:00.000Z"
+
+// Add multiple units
+apply(
+  { $addTime: { days: 7, hours: 2, minutes: 30 } },
+  "2025-10-05T10:00:00.000Z"
+);
+// Returns: "2025-10-12T12:30:00.000Z"
+
+// Subtract with negative values
+apply({ $addTime: { days: -3 } }, "2025-10-05T00:00:00.000Z");
+// Returns: "2025-10-02T00:00:00.000Z"
+
+// Array form: explicit date
+apply({ $addTime: ["2025-10-05T00:00:00.000Z", { days: 7 }] }, null);
+// Returns: "2025-10-12T00:00:00.000Z"
 ```
 
 ## $all
@@ -169,6 +184,18 @@ apply(
 // Returns: "High energy games"
 ```
 
+## $ceil
+
+Returns the smallest integer greater than or equal to the input number (rounds up).
+
+```javascript
+apply({ $ceil: null }, 4.1);
+// Returns: 5
+
+apply({ $ceil: null }, -4.9);
+// Returns: -4
+```
+
 ## $coalesce
 
 Returns the first non-null value from an array.
@@ -278,6 +305,35 @@ apply({ $default: [{ $get: "count" }, 10] }, { count: 0 });
 // Returns: 0 (not 10, because 0 is not null/undefined)
 ```
 
+## $diffTime
+
+Calculates the difference between two dates in a specific unit.
+
+Supported units: `years`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds`, `milliseconds`
+
+```javascript
+// Calculate difference in days
+apply(
+  { $diffTime: { date: "2025-12-25T00:00:00.000Z", unit: "days" } },
+  "2025-10-05T00:00:00.000Z"
+);
+// Returns: 81 (days between Oct 5 and Dec 25)
+
+// Calculate difference in hours
+apply(
+  { $diffTime: { date: "2025-10-05T15:00:00.000Z", unit: "hours" } },
+  "2025-10-05T10:00:00.000Z"
+);
+// Returns: 5
+
+// Array form: explicit dates
+apply(
+  { $diffTime: ["2025-10-05T00:00:00.000Z", "2025-12-25T00:00:00.000Z", "days"] },
+  null
+);
+// Returns: 81
+```
+
 ## $divide
 
 Performs division operation.
@@ -297,6 +353,26 @@ apply(
 // Mixed form: expression / literal
 apply({ $divide: [{ $get: "minutes" }, 60] }, { minutes: 150 });
 // Returns: 2.5 (150 / 60)
+```
+
+## $endOf
+
+Gets the end of a time period (day, week, month, year).
+
+Supported units: `day`, `week`, `month`, `year`
+
+```javascript
+// Get end of day
+apply({ $endOf: "day" }, "2025-10-05T10:00:00.000Z");
+// Returns: "2025-10-05T23:59:59.999Z"
+
+// Get end of month
+apply({ $endOf: "month" }, "2025-10-15T10:00:00.000Z");
+// Returns: "2025-10-31T23:59:59.999Z"
+
+// Get end of year
+apply({ $endOf: "year" }, "2025-10-15T10:00:00.000Z");
+// Returns: "2025-12-31T23:59:59.999Z"
 ```
 
 ## $eq
@@ -416,6 +492,26 @@ apply({ $floor: null }, -4.1);
 // Returns: -5
 ```
 
+## $formatDate
+
+Formats a date using date-fns format function. Format strings follow Unicode Technical Standard #35.
+
+Common format tokens: `yyyy` (4-digit year), `MM` (2-digit month), `dd` (2-digit day), `HH` (2-digit hour), `mm` (minute), `ss` (second), `EEEE` (day of week), `MMMM` (month name)
+
+```javascript
+// Format with pattern
+apply({ $formatDate: "yyyy-MM-dd" }, "2025-10-05T14:30:00.000Z");
+// Returns: "2025-10-05"
+
+// Format with time
+apply({ $formatDate: "yyyy-MM-dd HH:mm:ss" }, "2025-10-05T14:30:45.000Z");
+// Returns: "2025-10-05 14:30:45" (time in local timezone)
+
+// Array form: explicit date and format
+apply({ $formatDate: ["2025-10-05T14:30:00.000Z", "yyyy-MM-dd"] }, null);
+// Returns: "2025-10-05"
+```
+
 ## $fromPairs
 
 Converts an array of [key, value] pairs into an object.
@@ -501,6 +597,26 @@ const classrooms = {
 };
 apply({ $get: "rooms.$.children.$.name" }, classrooms);
 // Returns: ["Sofia", "Miguel", "Zara", "Omar"] (flattened)
+```
+
+## $getTime
+
+Extracts a component from a date.
+
+Supported components: `year`, `month` (1-indexed), `day`, `hour`, `minute`, `second`, `dayOfWeek` (0=Sunday), `dayOfYear`
+
+```javascript
+// Extract year
+apply({ $getTime: "year" }, "2025-10-15T14:30:45.000Z");
+// Returns: 2025
+
+// Extract month (1-indexed)
+apply({ $getTime: "month" }, "2025-10-15T14:30:45.000Z");
+// Returns: 10
+
+// Extract day of week (0=Sunday)
+apply({ $getTime: "dayOfWeek" }, "2025-10-05T00:00:00.000Z");
+// Returns: 0 (Sunday)
 ```
 
 ## $groupBy
@@ -608,6 +724,51 @@ Tests if value exists in an array.
 // Check if child's dietary need is in available options
 const availableOptions = ["vegetarian", "gluten-free", "dairy-free"];
 apply({ $in: availableOptions }, "vegetarian");
+// Returns: true
+```
+
+## $isAfter
+
+Tests if first date is after second date.
+
+```javascript
+// Compare input to threshold
+apply({ $isAfter: "2025-10-05T00:00:00.000Z" }, "2025-10-15T00:00:00.000Z");
+// Returns: true
+
+// Array form: explicit dates
+apply({ $isAfter: ["2025-10-15T00:00:00.000Z", "2025-10-05T00:00:00.000Z"] }, null);
+// Returns: true
+```
+
+## $isBefore
+
+Tests if first date is before second date.
+
+```javascript
+// Compare input to threshold
+apply({ $isBefore: "2025-10-15T00:00:00.000Z" }, "2025-10-05T00:00:00.000Z");
+// Returns: true
+
+// Array form: explicit dates
+apply({ $isBefore: ["2025-10-05T00:00:00.000Z", "2025-10-15T00:00:00.000Z"] }, null);
+// Returns: true
+```
+
+## $isDateValid
+
+Checks if a date string is valid. Returns true if the date can be parsed, false otherwise.
+
+```javascript
+// Validate with format pattern
+apply({ $isDateValid: "MM/dd/yyyy" }, "10/05/2025");
+// Returns: true
+
+apply({ $isDateValid: "MM/dd/yyyy" }, "invalid");
+// Returns: false
+
+// Validate ISO string
+apply({ $isDateValid: null }, "2025-10-05T00:00:00.000Z");
 // Returns: true
 ```
 
@@ -1069,6 +1230,26 @@ apply({ $pairs: null }, child);
 // Returns: [["name", "Zara"], ["age", 4], ["group", "Butterflies"]]
 ```
 
+## $parseDate
+
+Parses a date string using a format pattern and returns ISO 8601 string.
+
+Common format tokens: `yyyy` (4-digit year), `MM` (2-digit month), `dd` (2-digit day), `HH` (2-digit hour), `mm` (minute), `ss` (second)
+
+```javascript
+// Parse with format pattern
+apply({ $parseDate: "MM/dd/yyyy" }, "10/05/2025");
+// Returns: "2025-10-05T..." (ISO string)
+
+// Validate ISO string
+apply({ $parseDate: null }, "2025-10-05T00:00:00.000Z");
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Array form: explicit date and format
+apply({ $parseDate: ["10/05/2025", "MM/dd/yyyy"] }, null);
+// Returns: "2025-10-05T..." (ISO string)
+```
+
 ## $pick
 
 Returns a new object containing only the specified properties by name.
@@ -1261,6 +1442,26 @@ Calculates the square root of a number.
 // Calculate side length of square play area
 apply({ $sqrt: null }, 64);
 // Returns: 8
+```
+
+## $startOf
+
+Gets the start of a time period (day, week, month, year).
+
+Supported units: `day`, `week`, `month`, `year`
+
+```javascript
+// Get start of day
+apply({ $startOf: "day" }, "2025-10-05T15:23:45.123Z");
+// Returns: "2025-10-05T00:00:00.000Z"
+
+// Get start of month
+apply({ $startOf: "month" }, "2025-10-15T15:23:45.123Z");
+// Returns: "2025-10-01T00:00:00.000Z"
+
+// Get start of year
+apply({ $startOf: "year" }, "2025-10-15T15:23:45.123Z");
+// Returns: "2025-01-01T00:00:00.000Z"
 ```
 
 ## $substring
