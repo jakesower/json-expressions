@@ -35,7 +35,7 @@
   "dependencies": {
     "date-fns": "^4.1.0",
     "didyoumean": "^1.2.2",
-    "es-toolkit": "^1.39.10"
+    "es-toolkit": "^1.40.0"
   },
   "scripts": {
     "build": "npm run clean && rollup -c && cp index.d.ts dist/",
@@ -60,13 +60,13 @@
     "node": ">=16.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@eslint/js": "^9.37.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^9.35.0",
+    "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
-    "rollup": "^4.50.0",
+    "rollup": "^4.52.4",
     "vitest": "^3.2.4"
   }
 }

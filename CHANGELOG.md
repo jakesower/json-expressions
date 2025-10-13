@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed language around tree shaking
 - `$debug` is now included in the base pack for easier debugging during development
+- Rethink and consolodate temporal pack to more focused expressions
 
 ## [0.12.0] - 2025-10-08
 
