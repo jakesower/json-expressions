@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.12.1]
+## [Unreleased]
+
+### Added
+
+- **Middleware support** - Add middleware functions to wrap expression evaluation for logging, telemetry, error handling, and more
+  - Middleware can observe expression evaluation (operand, inputData, expressionName, path)
+  - Middleware can transform operand and inputData before evaluation
+  - Middleware can transform results, catch errors, or short-circuit evaluation
+  - Multiple middleware compose in order with proper before/after wrapping
+
+## [0.12.1] - 2025-10-13
 
 ### Changed
 

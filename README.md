@@ -223,6 +223,7 @@ const engine = createExpressionEngine({
 - **[Pack Reference](docs/packs.md)** - Complete guide to all expression packs
 - **[Expression Reference](docs/expressions.md)** - Complete list of available expressions
 - **[Custom Expressions](docs/custom-expressions.md)** - Creating your own expressions
+- **[Middleware](docs/middleware.md)** - Add logging, performance monitoring, and observability
 
 ## Performance
 

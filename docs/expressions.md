@@ -249,7 +249,9 @@ apply({ $count: { $get: "scores" } }, data);
 
 **Pack:** `base`
 
-Logs the operand, input data, and result to console and returns the result unchanged. Useful for debugging expression pipelines.
+Logs the operand, input data, and result to console and returns the result unchanged. Useful for debugging expression pipelines during development.
+
+**⚠️ Development only:** This expression should only be used during development, not in production. For production logging, telemetry, or observability, create a custom `$log` expression or similar instead.
 
 ```javascript
 // Debug intermediate value in pipeline
@@ -271,6 +273,33 @@ apply({ $debug: { $get: "name" } }, { name: "Amara" });
 // Logs: Debug: { operand: { $get: "name" }, inputData: { name: "Amara" }, result: "Amara" }
 // Returns: "Amara"
 ```
+
+### Custom debug implementations
+
+You can override `$debug` with your own implementation to integrate with debuggers, logging frameworks, or custom tooling:
+
+```javascript
+import { createEngine, packs } from "json-expressions";
+
+const engine = createEngine({
+  packs: [packs.base, packs.logic],
+  custom: {
+    // Override $debug with custom implementation
+    $debug: (operand, inputData, { apply }) => {
+      const result = apply(operand, inputData);
+
+      // Integrate with your debugging tools
+      debugger; // Trigger Node debugger
+      // or: myLogger.debug({ operand, inputData, result });
+      // or: writeToDebugFile({ operand, inputData, result });
+
+      return result;
+    },
+  },
+});
+```
+
+Note that you don't need to exclude the base pack's `$debug`—custom expressions automatically override pack expressions with the same name.
 
 ## $diffDays
 

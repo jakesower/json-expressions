@@ -51,11 +51,16 @@ function buildPathStr(path) {
 }
 
 /**
+ * @typedef {function(any, any, function(any, any): any, {expressionName: string, path: Array<string|number>}): any} Middleware
+ */
+
+/**
  * @typedef {object} ExpressionEngineConfig
  * @property {object[]} [packs] - Array of expression pack objects to include
  * @property {object} [custom] - Custom expression definitions
  * @property {boolean} [includeBase=true] - Whether to include base expressions
  * @property {string[]} [exclude] - Expression names to exclude (applied after all packs and custom are merged, but before $literal)
+ * @property {Middleware[]} [middleware] - Array of middleware functions to wrap expression evaluation
  */
 
 /**
@@ -63,7 +68,13 @@ function buildPathStr(path) {
  * @returns {ExpressionEngine}
  */
 export function createExpressionEngine(config = {}) {
-	const { packs = [], custom = {}, includeBase = true, exclude = [] } = config;
+	const {
+		packs = [],
+		custom = {},
+		includeBase = true,
+		exclude = [],
+		middleware = [],
+	} = config;
 
 	const mergedExpressions = [
 		...(includeBase ? [base] : []),
@@ -119,11 +130,16 @@ export function createExpressionEngine(config = {}) {
 			const expressionDef = expressionMap.get(expressionName);
 
 			try {
-				return expressionDef(operand, inputData, {
-					apply: applyWithPath(expressionName),
-					isExpression,
-					isWrappedLiteral,
-				});
+				return middleware.reduceRight(
+					(next, mw) => (nextOperand, nextInputData) =>
+						mw(nextOperand, nextInputData, next, { expressionName, path }),
+					(finalOperand, finalInputData) =>
+						expressionDef(finalOperand, finalInputData, {
+							apply: applyWithPath(expressionName),
+							isExpression,
+							isWrappedLiteral,
+						}),
+				)(operand, inputData);
 			} catch (err) {
 				if (err[CAUGHT_IN_ENGINE]) {
 					throw err;

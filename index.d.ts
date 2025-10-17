@@ -577,6 +577,16 @@ export type ExpressionDefinition = (
 ) => unknown;
 
 /**
+ * Middleware function that wraps expression evaluation
+ */
+export type Middleware = (
+  operand: unknown,
+  inputData: unknown,
+  next: (operand: unknown, inputData: unknown) => unknown,
+  context: { expressionName: string; path: (string | number)[] },
+) => unknown;
+
+/**
  * Configuration object for creating an expression engine
  */
 export interface ExpressionEngineConfig {
@@ -590,6 +600,8 @@ export interface ExpressionEngineConfig {
   includeBase?: boolean;
   /** Expression names to exclude (applied after all packs and custom are merged, but $literal cannot be excluded) */
   exclude?: string[];
+  /** Middleware functions to wrap expression evaluation */
+  middleware?: Middleware[];
 }
 
 /**

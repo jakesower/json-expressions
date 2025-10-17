@@ -360,5 +360,6 @@ const needsAttention = engine.apply(
 
 - **[Expression Reference](expressions.md)** - Complete list of available expressions
 - **[Custom Expressions](custom-expressions.md)** - Creating your own expressions
+- **[Middleware](middleware.md)** - Add logging, performance monitoring, and observability
 
 Ready to start building? Import the packs you need and start applying expressions to your data!
