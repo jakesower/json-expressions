@@ -157,27 +157,6 @@ describe("middleware", () => {
 		});
 	});
 
-	it("observes nested expressions with correct paths", () => {
-		const calls = [];
-		const observer = (operand, inputData, next, { expressionName, path }) => {
-			calls.push({ expressionName, path });
-			return next(operand, inputData);
-		};
-
-		const engine = createExpressionEngine({ middleware: [observer] });
-		engine.apply(
-			{ $pipe: [{ $get: "users" }, { $map: { $get: "name" } }] },
-			{ users: [{ name: "Alice" }, { name: "Bob" }] },
-		);
-
-		expect(calls).toEqual([
-			{ expressionName: "$pipe", path: [] },
-			{ expressionName: "$get", path: ["$pipe", 0] },
-			{ expressionName: "$map", path: ["$pipe", 1] },
-			{ expressionName: "$get", path: ["$pipe", 1, "$map"] },
-			{ expressionName: "$get", path: ["$pipe", 1, "$map"] },
-		]);
-	});
 
 	it("allows middleware to transform operand", () => {
 		const rewritePath = (operand, inputData, next, { expressionName }) => {

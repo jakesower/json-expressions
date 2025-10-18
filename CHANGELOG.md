@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+## [0.13.0] - 2025-10-18
 
 ### Added
 
@@ -32,7 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed language around tree shaking
 - `$debug` is now included in the base pack for easier debugging during development
-- Rethink and consolodate temporal pack to more focused expressions
+- **Temporal pack redesigned** with more flexible, composable expressions
+  - Replaced individual arithmetic operations with unified `$addTime` (supports years, months, weeks, days, hours, minutes, seconds, milliseconds)
+  - Negative values in `$addTime` enable subtraction (e.g., `{ days: -3 }`)
+  - Replaced individual difference operations with unified `$diffTime` (supports all time units)
+  - Replaced individual boundary operations with `$startOf` and `$endOf` (supports day, week, month, year)
+  - Replaced individual component extractors with unified `$getTime` (supports year, month, day, hour, minute, second, dayOfWeek, dayOfYear)
+  - Simplified comparison operations to `$isAfter` and `$isBefore`
+  - Removed predicates like `$isWeekend`, `$isWeekday`, `$isSameDay` (can be achieved with `$getTime` and comparisons)
+  - All temporal expressions preserve error types when throwing errors
 
 ## [0.12.0] - 2025-10-08
 
@@ -219,7 +228,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build tooling (Rollup for ESM/CJS)
 - ESLint and Prettier configuration
 
-[Unreleased]: https://github.com/toddwiin/json-expressions/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/toddwiin/json-expressions/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/toddwiin/json-expressions/compare/v0.12.1...v0.13.0
+[0.12.1]: https://github.com/toddwiin/json-expressions/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/toddwiin/json-expressions/compare/v0.10.3...v0.12.0
 [0.10.3]: https://github.com/toddwiin/json-expressions/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/toddwiin/json-expressions/compare/v0.10.1...v0.10.2
