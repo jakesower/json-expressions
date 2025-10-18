@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No dot notation, wildcards, or array paths - just direct property lookup
   - Included in base pack for opt-in performance optimization
 
+### Performance
+
+- **~26x performance improvement** for expression evaluation through optimistic error handling
+  - Fast path avoids closure creation overhead for path tracking
+  - Error path rebuilds with full path information on demand
+  - Simple operations now achieve 1.2-2.1M ops/sec (previously ~450K ops/sec)
+
 ## [0.12.1] - 2025-10-13
 
 ### Changed

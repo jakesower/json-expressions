@@ -37,6 +37,12 @@ console.log(`$get:    ${getBench.opsPerSec.toLocaleString()} ops/sec`);
 console.log(`$prop:   ${propBench.opsPerSec.toLocaleString()} ops/sec\n`);
 
 console.log("Performance ratios:");
-console.log(`$prop vs native: ${(nativeBench.opsPerSec / propBench.opsPerSec).toFixed(1)}x slower`);
-console.log(`$get vs native:  ${(nativeBench.opsPerSec / getBench.opsPerSec).toFixed(1)}x slower`);
-console.log(`$prop vs $get:   ${(propBench.opsPerSec / getBench.opsPerSec).toFixed(1)}x faster`);
+console.log(
+	`$prop vs native: ${(nativeBench.opsPerSec / propBench.opsPerSec).toFixed(1)}x slower`,
+);
+console.log(
+	`$get vs native:  ${(nativeBench.opsPerSec / getBench.opsPerSec).toFixed(1)}x slower`,
+);
+console.log(
+	`$prop vs $get:   ${(propBench.opsPerSec / getBench.opsPerSec).toFixed(1)}x faster`,
+);

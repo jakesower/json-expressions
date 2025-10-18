@@ -93,16 +93,13 @@ export function createExpressionEngine(config = {}) {
 		$literal,
 	};
 
-	// Convert to Map for faster lookup
-	const expressionMap = new Map(Object.entries(expressions));
-
 	const isExpression = (val) =>
-		looksLikeExpression(val) && expressionMap.has(Object.keys(val)[0]);
+		looksLikeExpression(val) && Object.keys(val)[0] in expressions;
 
 	const checkLooksLikeExpression = (val) => {
 		if (looksLikeExpression(val)) {
-			const [invalidOp] = Object.keys(val);
-			const availableOps = Array.from(expressionMap.keys());
+			const invalidOp = Object.keys(val)[0];
+			const availableOps = Object.keys(expressions);
 
 			const suggestion = didYouMean(invalidOp, availableOps);
 			const helpText = suggestion
@@ -117,63 +114,97 @@ export function createExpressionEngine(config = {}) {
 		}
 	};
 
-	const apply = (val, inputData, path) => {
-		const applyWithPath = (crumb) => (val, inputData, step) =>
-			step === undefined
-				? apply(val, inputData, [...path, crumb])
-				: Array.isArray(step)
-					? apply(val, inputData, [...path, crumb, ...step])
-					: apply(val, inputData, [...path, crumb, step]);
+	const applyWithErrorMode = (errorMode) => {
+		const apply = (val, inputData, path) => {
+			const applyWithPath = errorMode
+				? (crumb) => (val, inputData, step) =>
+						step === undefined
+							? apply(val, inputData, [...path, crumb])
+							: Array.isArray(step)
+								? apply(val, inputData, [...path, crumb, ...step])
+								: apply(val, inputData, [...path, crumb, step])
+				: apply; // True fast path - no closure at all
 
-		if (isExpression(val)) {
-			const [expressionName, operand] = Object.entries(val)[0];
-			const expressionDef = expressionMap.get(expressionName);
+			if (isExpression(val)) {
+				const expressionName = Object.keys(val)[0];
+				const operand = val[expressionName];
+				const expressionDef = expressions[expressionName];
 
-			try {
-				return middleware.reduceRight(
-					(next, mw) => (nextOperand, nextInputData) =>
-						mw(nextOperand, nextInputData, next, { expressionName, path }),
-					(finalOperand, finalInputData) =>
-						expressionDef(finalOperand, finalInputData, {
-							apply: applyWithPath(expressionName),
+				try {
+					// Skip middleware overhead when no middleware configured
+					if (middleware.length === 0) {
+						return expressionDef(operand, inputData, {
+							apply: errorMode ? applyWithPath(expressionName) : apply,
 							isExpression,
 							isWrappedLiteral,
-						}),
-				)(operand, inputData);
-			} catch (err) {
-				if (err[CAUGHT_IN_ENGINE]) {
-					throw err;
-				}
+						});
+					}
 
-				// Preserve custom error types (like ExpressionNotSupportedError)
-				// by adding path info but keeping the original error instance
-				if (err.constructor !== Error) {
-					const pathStr = buildPathStr([...path, expressionName]);
-					err.message = `[${pathStr}] ${err.message}`;
-					err[CAUGHT_IN_ENGINE] = true;
-					throw err;
-				}
+					return middleware.reduceRight(
+						(next, mw) => (nextOperand, nextInputData) =>
+							mw(nextOperand, nextInputData, next, { expressionName, path }),
+						(finalOperand, finalInputData) =>
+							expressionDef(finalOperand, finalInputData, {
+								apply: errorMode ? applyWithPath(expressionName) : apply,
+								isExpression,
+								isWrappedLiteral,
+							}),
+					)(operand, inputData);
+				} catch (err) {
+					if (err[CAUGHT_IN_ENGINE] || !errorMode) {
+						throw err;
+					}
 
-				const outErr = Error(
-					`[${buildPathStr([...path, expressionName])}] ${err.message}`,
-				);
-				outErr[CAUGHT_IN_ENGINE] = true;
-				throw outErr;
+					// Preserve custom error types (like ExpressionNotSupportedError)
+					// by adding path info but keeping the original error instance
+					if (err.constructor !== Error) {
+						const pathStr = buildPathStr([...path, expressionName]);
+						err.message = `[${pathStr}] ${err.message}`;
+						err[CAUGHT_IN_ENGINE] = true;
+						throw err;
+					}
+
+					const outErr = Error(
+						`[${buildPathStr([...path, expressionName])}] ${err.message}`,
+					);
+					outErr[CAUGHT_IN_ENGINE] = true;
+					throw outErr;
+				}
 			}
-		}
 
-		checkLooksLikeExpression(val);
+			checkLooksLikeExpression(val);
 
-		return Array.isArray(val)
-			? val.map((v, idx) => apply(v, inputData, [...path, idx]))
-			: val !== null && typeof val === "object"
-				? mapValues(val, (v, key) => apply(v, inputData, [...path, key]))
-				: val;
+			return Array.isArray(val)
+				? errorMode
+					? val.map((v, idx) => apply(v, inputData, [...path, idx]))
+					: val.map((v) => apply(v, inputData, path))
+				: val !== null && typeof val === "object"
+					? errorMode
+						? mapValues(val, (v, key) => apply(v, inputData, [...path, key]))
+						: mapValues(val, (v) => apply(v, inputData, path))
+					: val;
+		};
+
+		return apply;
 	};
 
+	const fastApply = applyWithErrorMode(false);
+	const slowApply = applyWithErrorMode(true);
+
 	return {
-		apply: (val, inputData) => apply(val, inputData, []),
-		expressionNames: Array.from(expressionMap.keys()),
+		apply: (val, inputData) => {
+			try {
+				return fastApply(val, inputData, []);
+			} catch {
+				// If fastApply threw, slowApply MUST also throw (with path info).
+				// If slowApply returns instead of throwing, the expression is non-deterministic.
+				slowApply(val, inputData, []);
+				throw new Error(
+					"Error mode failed to throw. Is your expression deterministic?",
+				);
+			}
+		},
+		expressionNames: Object.keys(expressions),
 		isExpression,
 	};
 }
