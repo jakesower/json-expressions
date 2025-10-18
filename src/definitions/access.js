@@ -19,6 +19,10 @@ const $get = (operand, inputData, { apply }) => {
 		: get(inputData, resolvedOperand);
 };
 
+const $prop = (operand, inputData) => {
+	return inputData?.[operand] ?? null;
+};
+
 const $identity = (_, inputData) => inputData;
 
 const $select = (operand, inputData, { apply }) => {
@@ -30,4 +34,4 @@ const $select = (operand, inputData, { apply }) => {
 };
 
 // Individual exports (alphabetized)
-export { $get, $identity, $select };
+export { $get, $identity, $prop, $select };

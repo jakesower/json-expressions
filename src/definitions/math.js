@@ -32,7 +32,7 @@ const createMathExpression =
 
 /**
  * Creates an aggregative expression that applies a calculation function to either the operand or input data.
- * Follows the SpectraGraph pattern:
+ * Follows the pattern:
  * - If operand resolves to an array, aggregate the operand
  * - Otherwise, aggregate the input data (which must be an array)
  * - Respects $literal wrapping to prevent unwanted resolution

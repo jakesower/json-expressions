@@ -30,7 +30,8 @@ const engine = createExpressionEngine({ packs: [basePack] });
 
 #### Data Access
 
-- [`$get`](expressions.md#get) - Access object properties by path
+- [`$get`](expressions.md#get) - Access object properties by path (supports dot notation, wildcards, array paths)
+- [`$prop`](expressions.md#prop) - Fast simple property access (2.5x faster than `$get`, no path features)
 - [`$identity`](expressions.md#identity) - Return input unchanged (identity function)
 
 #### Conditionals

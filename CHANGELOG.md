@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Middleware can transform operand and inputData before evaluation
   - Middleware can transform results, catch errors, or short-circuit evaluation
   - Multiple middleware compose in order with proper before/after wrapping
+- **`$prop` expression** - Fast simple property access without path traversal features
+  - 2.5x faster than `$get` for simple property access (obj[key] only)
+  - No dot notation, wildcards, or array paths - just direct property lookup
+  - Included in base pack for opt-in performance optimization
 
 ## [0.12.1] - 2025-10-13
 
@@ -150,12 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `includeBase`: Option to exclude base expressions
 
 ### Changed
-<<<<<<< HEAD
-- Moved to packs-based architecture for better modularity and organization
-=======
 
 - Moved to packs-based architecture for better tree-shaking and modularity
->>>>>>> 8f80f3c790260762e45fbe80418d7d5ffa291c31
 - Updated package structure to support selective imports
 
 ### Breaking Changes
@@ -212,17 +212,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build tooling (Rollup for ESM/CJS)
 - ESLint and Prettier configuration
 
-[Unreleased]: https://github.com/jakesower/json-expressions/compare/v0.12.0...HEAD
-[0.12.0]: https://github.com/jakesower/json-expressions/compare/v0.10.3...v0.12.0
-[0.10.3]: https://github.com/jakesower/json-expressions/compare/v0.10.2...v0.10.3
-[0.10.2]: https://github.com/jakesower/json-expressions/compare/v0.10.1...v0.10.2
-[0.10.1]: https://github.com/jakesower/json-expressions/compare/v0.9.0...v0.10.1
-[0.9.0]: https://github.com/jakesower/json-expressions/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/jakesower/json-expressions/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/jakesower/json-expressions/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/jakesower/json-expressions/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/jakesower/json-expressions/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/jakesower/json-expressions/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/jakesower/json-expressions/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/jakesower/json-expressions/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/jakesower/json-expressions/releases/tag/v0.1.0
+[Unreleased]: https://github.com/toddwiin/json-expressions/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/toddwiin/json-expressions/compare/v0.10.3...v0.12.0
+[0.10.3]: https://github.com/toddwiin/json-expressions/compare/v0.10.2...v0.10.3
+[0.10.2]: https://github.com/toddwiin/json-expressions/compare/v0.10.1...v0.10.2
+[0.10.1]: https://github.com/toddwiin/json-expressions/compare/v0.9.0...v0.10.1
+[0.9.0]: https://github.com/toddwiin/json-expressions/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/toddwiin/json-expressions/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/toddwiin/json-expressions/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/toddwiin/json-expressions/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/toddwiin/json-expressions/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/toddwiin/json-expressions/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/toddwiin/json-expressions/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/toddwiin/json-expressions/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/toddwiin/json-expressions/releases/tag/v0.1.0

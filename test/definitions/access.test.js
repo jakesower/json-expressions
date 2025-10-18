@@ -7,6 +7,135 @@ const testEngine = createExpressionEngine({
 });
 const { apply } = testEngine;
 
+describe("$prop", () => {
+	describe("basic functionality", () => {
+		it("gets simple property from object", () => {
+			expect(apply({ $prop: "name" }, { name: "Fatima", age: 25 })).toBe(
+				"Fatima",
+			);
+		});
+
+		it("gets numeric property", () => {
+			expect(apply({ $prop: "age" }, { name: "Chen", age: 5 })).toBe(5);
+		});
+
+		it("gets array property", () => {
+			expect(
+				apply({ $prop: "toys" }, { name: "Luna", toys: ["blocks", "dolls"] }),
+			).toEqual(["blocks", "dolls"]);
+		});
+
+		it("gets object property", () => {
+			expect(
+				apply({ $prop: "address" }, { name: "Omar", address: { city: "NYC" } }),
+			).toEqual({ city: "NYC" });
+		});
+
+		it("returns null for non-existent property", () => {
+			expect(apply({ $prop: "missing" }, { name: "Zara" })).toBe(null);
+		});
+
+		it("returns null for null input", () => {
+			expect(apply({ $prop: "name" }, null)).toBe(null);
+		});
+
+		it("returns null for undefined input", () => {
+			expect(apply({ $prop: "name" }, undefined)).toBe(null);
+		});
+
+		it("handles properties with special characters", () => {
+			const data = {
+				"child-name": "Sofia",
+				special_key: "value",
+				"prop[0]": "test",
+			};
+			expect(apply({ $prop: "child-name" }, data)).toBe("Sofia");
+			expect(apply({ $prop: "special_key" }, data)).toBe("value");
+			expect(apply({ $prop: "prop[0]" }, data)).toBe("test");
+		});
+
+		it("gets array element by index", () => {
+			const data = ["apple", "banana", "cherry"];
+			expect(apply({ $prop: "0" }, data)).toBe("apple");
+			expect(apply({ $prop: "2" }, data)).toBe("cherry");
+		});
+
+		it("handles boolean properties", () => {
+			expect(apply({ $prop: "active" }, { name: "Kai", active: true })).toBe(
+				true,
+			);
+			expect(apply({ $prop: "active" }, { name: "Iris", active: false })).toBe(
+				false,
+			);
+		});
+
+		it("handles null property values", () => {
+			expect(
+				apply({ $prop: "optional" }, { name: "Wei", optional: null }),
+			).toBe(null);
+		});
+
+		it("handles undefined property values", () => {
+			expect(
+				apply({ $prop: "missing" }, { name: "Diego", missing: undefined }),
+			).toBe(null);
+		});
+	});
+
+	describe("limitations (by design)", () => {
+		it("does not support dot notation paths", () => {
+			const data = { user: { name: "Chen" } };
+			// $prop treats "user.name" as a literal key, not a path
+			expect(apply({ $prop: "user.name" }, data)).toBe(null);
+		});
+
+		it("does not support wildcard access", () => {
+			const data = [
+				{ name: "Luna", age: 3 },
+				{ name: "Kai", age: 4 },
+			];
+			// $prop treats "$" as a literal key, not a wildcard
+			expect(apply({ $prop: "$" }, data)).toBe(null);
+		});
+
+		it("does not support array path notation", () => {
+			const data = { user: { name: "Amira" } };
+			// $prop only accepts string operands, not arrays
+			expect(apply({ $prop: ["user", "name"] }, data)).toBe(null);
+		});
+	});
+
+	describe("edge cases", () => {
+		it("handles empty string property", () => {
+			const data = { "": "empty key", name: "Ravi" };
+			expect(apply({ $prop: "" }, data)).toBe("empty key");
+		});
+
+		it("handles numeric string keys", () => {
+			const data = { "123": "numeric key", name: "Sofia" };
+			expect(apply({ $prop: "123" }, data)).toBe("numeric key");
+		});
+
+		it("handles properties that shadow Object.prototype", () => {
+			const data = {
+				toString: "custom",
+				hasOwnProperty: "overridden",
+				constructor: "shadowed",
+			};
+			expect(apply({ $prop: "toString" }, data)).toBe("custom");
+			expect(apply({ $prop: "hasOwnProperty" }, data)).toBe("overridden");
+			expect(apply({ $prop: "constructor" }, data)).toBe("shadowed");
+		});
+
+		it("preserves object references", () => {
+			const nestedObj = { city: "Boston" };
+			const data = { address: nestedObj };
+			const result = apply({ $prop: "address" }, data);
+			expect(result).toBe(nestedObj);
+		});
+	});
+});
+
 describe("$get", () => {
 	describe("basic functionality", () => {
 		it("gets value using string path", () => {
