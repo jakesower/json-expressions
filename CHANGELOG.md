@@ -4,7 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [0.13.1] - 2025-10-24
+
+### Changed
+
+- **Extended operand-over-inputData pattern** to more expression types
+  - Array transformation expressions (`$reverse`, `$sort`, `$unique`, etc.) now support operand form
+  - Math transformation expressions (`$abs`, `$ceil`, `$floor`, `$sqrt`) now support operand form
+  - String transformation expressions (`$uppercase`, `$lowercase`, `$trim`, etc.) now support operand form
+  - These expressions now operate on either the resolved operand (if it matches the expected type) or input data
+  - Enables more composable patterns like `{ $abs: { $get: "value" } }` without requiring `$pipe`
 
 ## [0.13.0] - 2025-10-18
 
