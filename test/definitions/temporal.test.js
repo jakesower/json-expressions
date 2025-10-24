@@ -350,6 +350,12 @@ describe("Temporal Expressions", () => {
 				"Unknown time component: century",
 			);
 		});
+
+		it("should throw error for non-string operand", () => {
+			expect(() => engine.apply({ $getTime: 123 }, testDate)).toThrow(
+				"$getTime operand must be a string component name",
+			);
+		});
 	});
 
 	describe("$isAfter", () => {
@@ -384,6 +390,12 @@ describe("Temporal Expressions", () => {
 			);
 			expect(result).toBe(false);
 		});
+
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply({ $isAfter: ["2025-10-05T00:00:00.000Z"] }, null),
+			).toThrow("$isAfter array form requires exactly 2 elements");
+		});
 	});
 
 	describe("$isBefore", () => {
@@ -411,6 +423,12 @@ describe("Temporal Expressions", () => {
 			expect(result).toBe(true);
 		});
 
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply({ $isBefore: ["2025-10-05T00:00:00.000Z"] }, null),
+			).toThrow("$isBefore array form requires exactly 2 elements");
+		});
+
 		it("should return false for equal dates", () => {
 			const result = engine.apply(
 				{ $isBefore: "2025-10-05T00:00:00.000Z" },
@@ -435,6 +453,12 @@ describe("Temporal Expressions", () => {
 				null,
 			);
 			expect(result).toMatch(/2025-10-05/);
+		});
+
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply({ $formatDate: ["2025-10-05T14:30:00.000Z"] }, null),
+			).toThrow("$formatDate in array form requires exactly 2 elements");
 		});
 
 		it("should format with time components", () => {
@@ -471,12 +495,44 @@ describe("Temporal Expressions", () => {
 			expect(result).toMatch(/2025-10-05/);
 		});
 
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply({ $parseDate: ["10/05/2025"] }, null),
+			).toThrow("$parseDate in array form requires exactly 2 elements");
+		});
+
+		it("should throw error for invalid date in array form", () => {
+			expect(() =>
+				engine.apply({ $parseDate: ["invalid-date", "MM/dd/yyyy"] }, null),
+			).toThrow("Invalid date string");
+		});
+
 		it("should validate ISO string with null operand", () => {
 			const result = engine.apply(
 				{ $parseDate: null },
 				"2025-10-05T00:00:00.000Z",
 			);
 			expect(result).toBe("2025-10-05T00:00:00.000Z");
+		});
+
+		it("should throw error for invalid ISO string with null operand", () => {
+			expect(() =>
+				engine.apply({ $parseDate: null }, "not-a-date"),
+			).toThrow("Invalid ISO 8601 date string");
+		});
+
+		it("should parse ISO string when inputData is null (operand-only form)", () => {
+			const result = engine.apply(
+				{ $parseDate: "2025-10-05T00:00:00.000Z" },
+				null,
+			);
+			expect(result).toBe("2025-10-05T00:00:00.000Z");
+		});
+
+		it("should throw error for invalid ISO string when inputData is null", () => {
+			expect(() =>
+				engine.apply({ $parseDate: "not-a-date" }, null),
+			).toThrow("Invalid ISO 8601 date string");
 		});
 
 		it("should throw error for invalid date string", () => {
@@ -510,6 +566,19 @@ describe("Temporal Expressions", () => {
 			expect(result).toBe(false);
 		});
 
+		it("should validate ISO string when inputData is null (operand as ISO string)", () => {
+			const result = engine.apply(
+				{ $isDateValid: "2025-10-05T00:00:00.000Z" },
+				null,
+			);
+			expect(result).toBe(true);
+		});
+
+		it("should invalidate bad ISO string when inputData is null", () => {
+			const result = engine.apply({ $isDateValid: "not-a-date" }, null);
+			expect(result).toBe(false);
+		});
+
 		it("should work with array form", () => {
 			const result = engine.apply(
 				{ $isDateValid: ["10/05/2025", "MM/dd/yyyy"] },
@@ -522,6 +591,41 @@ describe("Temporal Expressions", () => {
 				null,
 			);
 			expect(result2).toBe(false);
+		});
+
+		it("should handle invalid array form gracefully", () => {
+			const result = engine.apply({ $isDateValid: ["single-element"] }, null);
+			expect(result).toBe(false);
+		});
+
+		it("should return false when parse throws exception", () => {
+			// This covers the catch block (lines 657-659)
+			const result = engine.apply({ $isDateValid: "MM/dd/yyyy" }, "13/99/2025");
+			expect(result).toBe(false);
+		});
+
+		it("should return false when format string is invalid (triggers catch)", () => {
+			// Invalid format string can cause parse() to throw
+			const result = engine.apply({ $isDateValid: "INVALID_FORMAT" }, "some-date");
+			expect(result).toBe(false);
+		});
+
+		it("should return false for malformed inputs that trigger exceptions", () => {
+			// Edge cases that might throw
+			const result = engine.apply({ $isDateValid: null }, undefined);
+			expect(result).toBe(false);
+		});
+
+		it("should handle edge case where parse throws with malformed format", () => {
+			// Some format strings can cause parse to throw
+			const result = engine.apply({ $isDateValid: ["test", ""] }, null);
+			expect(result).toBe(false);
+		});
+
+		it("should handle objects that cause exceptions in date parsing", () => {
+			// Passing objects can cause unexpected behavior
+			const result = engine.apply({ $isDateValid: "yyyy-MM-dd" }, {});
+			expect(result).toBe(false);
 		});
 	});
 });
