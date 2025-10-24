@@ -65,7 +65,7 @@ const engine = createExpressionEngine({ packs: [basePack] });
 - [`$exists`](expressions.md#exists) - Test if object property exists
 - [`$isEmpty`](expressions.md#isempty) - Test if value is empty
 - [`$isPresent`](expressions.md#ispresent) - Test if value is present (not null/undefined)
-- [`$matchesAll`](expressions.md#matches) - Test if object matches all property criteria (AND logic)
+- [`$matchesAll`](expressions.md#matchesall) - Test if object matches all property criteria (AND logic)
 - [`$matchesAny`](expressions.md#matchesany) - Test if object matches any property criteria (OR logic)
 
 #### Flow Control
@@ -299,7 +299,7 @@ const engine = createExpressionEngine({ packs: [filteringPack] });
 
 #### Object Filtering
 
-- [`$matchesAll`](expressions.md#matches) - Test if object matches criteria
+- [`$matchesAll`](expressions.md#matchesall) - Test if object matches criteria
 
 #### Membership Tests
 

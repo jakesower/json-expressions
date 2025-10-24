@@ -173,6 +173,32 @@ describe("$abs", () => {
 			expect(apply({ $abs: null }, 2.71)).toBe(2.71);
 		});
 	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $abs: null }, -5)).toBe(5);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $abs: -5 }, null)).toBe(5);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(apply({ $abs: { $get: "value" } }, { value: -10 })).toBe(10);
+		});
+
+		it("prefers operand over input data when both are numbers", () => {
+			expect(apply({ $abs: -3 }, -5)).toBe(3);
+		});
+
+		it("operates on input data when operand is non-numeric", () => {
+			expect(apply({ $abs: "not a number" }, -5)).toBe(5);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(apply({ $abs: { $literal: -8 } }, -5)).toBe(8);
+		});
+	});
 });
 
 describe("$sqrt", () => {
@@ -200,6 +226,28 @@ describe("$sqrt", () => {
 				"Complex numbers are not supported (square root of negative number)",
 			);
 			expect(apply({ $sqrt: null }, Infinity)).toBe(Infinity);
+		});
+	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $sqrt: null }, 16)).toBe(4);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $sqrt: 25 }, null)).toBe(5);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(apply({ $sqrt: { $get: "area" } }, { area: 36 })).toBe(6);
+		});
+
+		it("prefers operand over input data when both are numbers", () => {
+			expect(apply({ $sqrt: 9 }, 16)).toBe(3);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(apply({ $sqrt: { $literal: 49 } }, 16)).toBe(7);
 		});
 	});
 });
@@ -356,6 +404,84 @@ describe("$sum", () => {
 			expect(() => apply({ $sum: null }, "not array")).toThrowError(
 				"$sum requires array operand or input data",
 			);
+		});
+	});
+});
+
+describe("$ceil", () => {
+	describe("basic functionality", () => {
+		it("rounds up to smallest integer", () => {
+			expect(apply({ $ceil: null }, 4.1)).toBe(5);
+			expect(apply({ $ceil: null }, 4.9)).toBe(5);
+			expect(apply({ $ceil: null }, -4.1)).toBe(-4);
+			expect(apply({ $ceil: null }, -4.9)).toBe(-4);
+		});
+
+		it("handles integers", () => {
+			expect(apply({ $ceil: null }, 5)).toBe(5);
+			expect(apply({ $ceil: null }, -5)).toBe(-5);
+		});
+	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $ceil: null }, 4.3)).toBe(5);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $ceil: 4.7 }, null)).toBe(5);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(apply({ $ceil: { $get: "score" } }, { score: 92.3 })).toBe(93);
+		});
+
+		it("prefers operand over input data when both are numbers", () => {
+			expect(apply({ $ceil: 2.1 }, 3.9)).toBe(3);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(apply({ $ceil: { $literal: 7.2 } }, 3.9)).toBe(8);
+		});
+	});
+});
+
+describe("$floor", () => {
+	describe("basic functionality", () => {
+		it("rounds down to largest integer", () => {
+			expect(apply({ $floor: null }, 4.1)).toBe(4);
+			expect(apply({ $floor: null }, 4.9)).toBe(4);
+			expect(apply({ $floor: null }, -4.1)).toBe(-5);
+			expect(apply({ $floor: null }, -4.9)).toBe(-5);
+		});
+
+		it("handles integers", () => {
+			expect(apply({ $floor: null }, 5)).toBe(5);
+			expect(apply({ $floor: null }, -5)).toBe(-5);
+		});
+	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $floor: null }, 4.8)).toBe(4);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $floor: 4.3 }, null)).toBe(4);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(apply({ $floor: { $get: "average" } }, { average: 87.6 })).toBe(
+				87,
+			);
+		});
+
+		it("prefers operand over input data when both are numbers", () => {
+			expect(apply({ $floor: 6.9 }, 3.1)).toBe(6);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(apply({ $floor: { $literal: 9.8 } }, 3.1)).toBe(9);
 		});
 	});
 });

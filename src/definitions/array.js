@@ -33,12 +33,26 @@ const createArrayOperationExpression = (operationFn) => (operand, inputData) =>
 	operationFn(operand, inputData);
 
 /**
- * Creates a simple array transformation expression (no operand needed).
+ * Creates an array transformation expression that operates on either operand or input data.
+ * Follows the pattern:
+ * - If operand resolves to an array, transform the operand
+ * - Otherwise, transform the input data
+ * - Respects $literal wrapping to prevent unwanted resolution
+ *
  * @param {function(Array): any} transformFn - Function that transforms an array
  * @returns {object} Expression object with apply method
  */
-const createArrayTransformExpression = (transformFn) => (_, inputData) =>
-	transformFn(inputData);
+const createArrayTransformExpression =
+	(transformFn) =>
+	(operand, inputData, { apply, isWrappedLiteral }) => {
+		const resolved = isWrappedLiteral(operand)
+			? operand.$literal
+			: apply(operand, inputData);
+
+		return Array.isArray(resolved)
+			? transformFn(resolved)
+			: transformFn(inputData);
+	};
 
 const $all = createArrayIterationExpression((array, itemFn) =>
 	array.every(itemFn),

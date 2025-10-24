@@ -7,13 +7,26 @@
  */
 
 /**
- * Creates a string transformation expression.
+ * Creates a string transformation expression that operates on either operand or input data.
+ * Follows the pattern:
+ * - If operand resolves to a string, transform the operand
+ * - Otherwise, transform the input data
+ * - Respects $literal wrapping to prevent unwanted resolution
  *
  * @param {function(string): any} transformFn - Function that transforms the string
  * @returns {object} Expression object with apply method
  */
-const createStringTransformExpression = (transformFn) => (operand, inputData) =>
-	transformFn(inputData);
+const createStringTransformExpression =
+	(transformFn) =>
+	(operand, inputData, { apply, isWrappedLiteral }) => {
+		const resolved = isWrappedLiteral(operand)
+			? operand.$literal
+			: apply(operand, inputData);
+
+		return typeof resolved === "string"
+			? transformFn(resolved)
+			: transformFn(inputData);
+	};
 
 /**
  * Creates a string operation expression with parameters.

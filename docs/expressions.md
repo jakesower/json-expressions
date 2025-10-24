@@ -4,6 +4,34 @@ This document provides comprehensive documentation for all expressions available
 
 > **Looking for pack information?** See the **[Pack Reference](packs.md)** to understand which expressions are available in each pack.
 
+## Operand-Over-InputData Pattern
+
+Many expressions in JSON Expressions follow the **operand-over-inputData pattern**, which allows them to operate on either:
+1. The **operand** (if provided and resolves to the correct type)
+2. The **input data** (if operand is null or wrong type)
+
+This pattern makes expressions more composable and eliminates verbose `$pipe` chains.
+
+**Expressions using this pattern:**
+- **Transformations**: `$abs`, `$ceil`, `$floor`, `$sqrt`, `$lowercase`, `$uppercase`, `$trim`, `$reverse`, `$unique`
+- **Aggregations**: `$count`, `$sum`, `$min`, `$max`, `$mean`
+- **Accessors**: `$first`, `$last`
+
+```javascript
+// Traditional: operate on input data
+apply({ $abs: null }, -5);  // Returns: 5
+
+// Operand: operate on literal or expression result
+apply({ $abs: -5 }, null);  // Returns: 5
+apply({ $abs: { $get: "value" } }, { value: -10 });  // Returns: 10
+
+// Composability: eliminates need for $pipe
+// Before: apply({ $pipe: [{ $get: "temp" }, { $abs: null }] }, data)
+// After:  apply({ $abs: { $get: "temp" } }, data)
+```
+
+## Important Notes
+
 **Important note on equality:** JavaScript has the notion of `undefined` being distinct from `null`. JSON Expressions is designed to be useful regardless of the implementing language, and most languages do not distinguish between the two. Therefore, `undefined` and `null` are considered to be **equal** throughout the library. Use `$exists` if you wish to determine if a key in an object is undefined.
 
 ```javascript
@@ -19,11 +47,20 @@ engine.apply({ $exists: "petName" }, child); // returns false
 
 ## $abs
 
-Returns the absolute value of a number.
+Returns the absolute value of a number. Can operate on either the operand (if provided and resolves to a number) or the input data.
 
 ```javascript
+// Operate on input data
 apply({ $abs: null }, -2.5);
 // Returns: 2.5
+
+// Operate on operand
+apply({ $abs: -2.5 }, null);
+// Returns: 2.5
+
+// Operate on expression result
+apply({ $abs: { $get: "temperature" } }, { temperature: -15 });
+// Returns: 15
 ```
 
 ## $add
@@ -186,14 +223,20 @@ apply(
 
 ## $ceil
 
-Returns the smallest integer greater than or equal to the input number (rounds up).
+Returns the smallest integer greater than or equal to the input number (rounds up). Can operate on either the operand (if provided and resolves to a number) or the input data.
 
 ```javascript
+// Operate on input data
 apply({ $ceil: null }, 4.1);
 // Returns: 5
 
-apply({ $ceil: null }, -4.9);
-// Returns: -4
+// Operate on operand
+apply({ $ceil: 4.1 }, null);
+// Returns: 5
+
+// Operate on expression result
+apply({ $ceil: { $get: "score" } }, { score: 92.3 });
+// Returns: 93
 ```
 
 ## $coalesce
@@ -645,7 +688,7 @@ const children = [
   { name: "Kai", age: 5 },
   { name: "Zara", age: 6 },
 ];
-apply({ $find: { $match: { age: { $gte: 5 } } } }, children);
+apply({ $find: { $matchesAll: { age: { $gte: 5 } } } }, children);
 // Returns: { name: "Kai", age: 5 }
 ```
 
@@ -675,14 +718,20 @@ apply({ $first: { $filter: { $gt: 3 } } }, [1, 2, 3, 4, 5]);
 
 ## $floor
 
-Returns the largest integer less than or equal to the input number (rounds down).
+Returns the largest integer less than or equal to the input number (rounds down). Can operate on either the operand (if provided and resolves to a number) or the input data.
 
 ```javascript
+// Operate on input data
 apply({ $floor: null }, 4.9);
 // Returns: 4
 
-apply({ $floor: null }, -4.1);
-// Returns: -5
+// Operate on operand
+apply({ $floor: 4.9 }, null);
+// Returns: 4
+
+// Operate on expression result
+apply({ $floor: { $get: "average" } }, { average: 87.6 });
+// Returns: 87
 ```
 
 ## $formatDate
@@ -718,28 +767,6 @@ const childPairs = [
 ];
 apply({ $fromPairs: null }, childPairs);
 // Returns: { name: "Zara", age: 4, group: "Butterflies" }
-```
-
-## $formatDate
-
-Formats a date using a format pattern string (follows date-fns format tokens).
-
-```javascript
-// Array form: format date with pattern
-apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "yyyy-MM-dd"] }, null);
-// Returns: "2025-10-05"
-
-// Input data form: format input date
-apply({ $formatDate: "yyyy-MM-dd" }, "2025-10-05T11:23:45.234Z");
-// Returns: "2025-10-05"
-
-// Custom pattern with month name
-apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "MMMM do, yyyy"] }, null);
-// Returns: "October 5th, 2025"
-
-// Format day of week
-apply({ $formatDate: ["2025-10-05T11:23:45.234Z", "EEEE"] }, null);
-// Returns: "Sunday"
 ```
 
 ## $flatMap
@@ -1156,12 +1183,20 @@ apply({ $literal: { $special: "not an expression" } }, anyInput);
 
 ## $lowercase
 
-Converts string to lowercase.
+Converts string to lowercase. Can operate on either the operand (if provided and resolves to a string) or the input data.
 
 ```javascript
-// Normalize child's name input
+// Operate on input data
 apply({ $lowercase: null }, "Amara Rodriguez");
-// Returns: "amara holt"
+// Returns: "amara rodriguez"
+
+// Operate on operand
+apply({ $lowercase: "Amara Rodriguez" }, null);
+// Returns: "amara rodriguez"
+
+// Operate on expression result
+apply({ $lowercase: { $get: "name" } }, { name: "Amara Rodriguez" });
+// Returns: "amara rodriguez"
 ```
 
 ## $lt
@@ -1710,13 +1745,21 @@ apply({ $replace: ["\\s+", " "] }, "Amara   Rodriguez");
 
 ## $reverse
 
-Returns array with elements in reverse order.
+Returns array with elements in reverse order. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Reverse pickup order for dismissal
+// Operate on input data
 const pickupOrder = ["Aria", "Chen", "Diego", "Luna"];
 apply({ $reverse: null }, pickupOrder);
 // Returns: ["Luna", "Diego", "Chen", "Aria"]
+
+// Operate on operand
+apply({ $reverse: ["Aria", "Chen", "Diego", "Luna"] }, null);
+// Returns: ["Luna", "Diego", "Chen", "Aria"]
+
+// Operate on expression result
+apply({ $reverse: { $get: "lineup" } }, { lineup: ["Aria", "Chen", "Diego"] });
+// Returns: ["Diego", "Chen", "Aria"]
 ```
 
 ## $skip
@@ -1838,11 +1881,19 @@ apply({ $startOfYear: "2025-10-15T15:23:45.234Z" }, null);
 
 ## $sqrt
 
-Calculates the square root of a number.
+Calculates the square root of a number. Can operate on either the operand (if provided and resolves to a number) or the input data.
 
 ```javascript
-// Calculate side length of square play area
+// Operate on input data
 apply({ $sqrt: null }, 64);
+// Returns: 8
+
+// Operate on operand
+apply({ $sqrt: 64 }, null);
+// Returns: 8
+
+// Operate on expression result
+apply({ $sqrt: { $get: "area" } }, { area: 64 });
 // Returns: 8
 ```
 
@@ -1972,30 +2023,46 @@ apply({ $take: 3 }, allChildren);
 
 ## $trim
 
-Removes whitespace from beginning and end of string.
+Removes whitespace from beginning and end of string. Can operate on either the operand (if provided and resolves to a string) or the input data.
 
 ```javascript
-// Clean up child name input
+// Operate on input data
 apply({ $trim: null }, "  Amara Rodriguez  ");
+// Returns: "Amara Rodriguez"
+
+// Operate on operand
+apply({ $trim: "  Amara Rodriguez  " }, null);
+// Returns: "Amara Rodriguez"
+
+// Operate on expression result
+apply({ $trim: { $get: "input" } }, { input: "  Amara Rodriguez  " });
 // Returns: "Amara Rodriguez"
 ```
 
 ## $uppercase
 
-Converts string to uppercase.
+Converts string to uppercase. Can operate on either the operand (if provided and resolves to a string) or the input data.
 
 ```javascript
-// Format child's name for name tag
+// Operate on input data
 apply({ $uppercase: null }, "Amara");
+// Returns: "AMARA"
+
+// Operate on operand
+apply({ $uppercase: "Amara" }, null);
+// Returns: "AMARA"
+
+// Operate on expression result
+apply({ $uppercase: { $get: "name" } }, { name: "Amara" });
 // Returns: "AMARA"
 ```
 
 ## $unique
 
-Returns an array with duplicate values removed.
+Returns an array with duplicate values removed. Can operate on either the operand (if provided and resolves to an array) or the input data.
 
 ```javascript
-// Get unique dietary restrictions
+// Operate on input data
 const restrictions = [
   "none",
   "nut allergy",
@@ -2005,6 +2072,14 @@ const restrictions = [
 ];
 apply({ $unique: null }, restrictions);
 // Returns: ["none", "nut allergy", "vegetarian"]
+
+// Operate on operand
+apply({ $unique: ["none", "nut allergy", "none"] }, null);
+// Returns: ["none", "nut allergy"]
+
+// Operate on expression result
+apply({ $unique: { $get: "tags" } }, { tags: ["red", "blue", "red", "green"] });
+// Returns: ["red", "blue", "green"]
 ```
 
 ## $values

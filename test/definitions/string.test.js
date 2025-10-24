@@ -210,6 +210,32 @@ describe("String Expressions", () => {
 				expect(apply({ $trim: null }, "   ")).toBe("");
 			});
 		});
+
+		describe("operand-over-inputData pattern", () => {
+			it("operates on input data when operand is null", () => {
+				expect(apply({ $trim: null }, "  hello  ")).toBe("hello");
+			});
+
+			it("operates on operand when provided with literal", () => {
+				expect(apply({ $trim: "  world  " }, null)).toBe("world");
+			});
+
+			it("operates on operand when provided with expression result", () => {
+				expect(apply({ $trim: { $get: "input" } }, { input: "  test  " })).toBe(
+					"test",
+				);
+			});
+
+			it("prefers operand over input data when both are strings", () => {
+				expect(apply({ $trim: "  operand  " }, "  input  ")).toBe("operand");
+			});
+
+			it("respects $literal wrapping", () => {
+				expect(apply({ $trim: { $literal: "  lit  " } }, "  input  ")).toBe(
+					"lit",
+				);
+			});
+		});
 	});
 
 	describe("$uppercase", () => {
@@ -221,6 +247,30 @@ describe("String Expressions", () => {
 				expect(apply({ $uppercase: null }, "")).toBe("");
 			});
 		});
+
+		describe("operand-over-inputData pattern", () => {
+			it("operates on input data when operand is null", () => {
+				expect(apply({ $uppercase: null }, "hello")).toBe("HELLO");
+			});
+
+			it("operates on operand when provided with literal", () => {
+				expect(apply({ $uppercase: "world" }, null)).toBe("WORLD");
+			});
+
+			it("operates on operand when provided with expression result", () => {
+				expect(
+					apply({ $uppercase: { $get: "name" } }, { name: "amara" }),
+				).toBe("AMARA");
+			});
+
+			it("prefers operand over input data when both are strings", () => {
+				expect(apply({ $uppercase: "operand" }, "input")).toBe("OPERAND");
+			});
+
+			it("respects $literal wrapping", () => {
+				expect(apply({ $uppercase: { $literal: "lit" } }, "input")).toBe("LIT");
+			});
+		});
 	});
 
 	describe("$lowercase", () => {
@@ -230,6 +280,30 @@ describe("String Expressions", () => {
 				expect(apply({ $lowercase: null }, "Rajesh")).toBe("rajesh");
 				expect(apply({ $lowercase: null }, "fatima")).toBe("fatima");
 				expect(apply({ $lowercase: null }, "")).toBe("");
+			});
+		});
+
+		describe("operand-over-inputData pattern", () => {
+			it("operates on input data when operand is null", () => {
+				expect(apply({ $lowercase: null }, "HELLO")).toBe("hello");
+			});
+
+			it("operates on operand when provided with literal", () => {
+				expect(apply({ $lowercase: "WORLD" }, null)).toBe("world");
+			});
+
+			it("operates on operand when provided with expression result", () => {
+				expect(
+					apply({ $lowercase: { $get: "name" } }, { name: "AMARA" }),
+				).toBe("amara");
+			});
+
+			it("prefers operand over input data when both are strings", () => {
+				expect(apply({ $lowercase: "OPERAND" }, "INPUT")).toBe("operand");
+			});
+
+			it("respects $literal wrapping", () => {
+				expect(apply({ $lowercase: { $literal: "LIT" } }, "INPUT")).toBe("lit");
 			});
 		});
 	});

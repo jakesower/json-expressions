@@ -125,7 +125,7 @@ export interface DefaultExpression {
 }
 
 export interface UniqueExpression {
-  $unique: null;
+  $unique: null | unknown[] | Expression;
 }
 
 export interface FlattenExpression {
@@ -270,7 +270,7 @@ export interface JoinExpression {
 }
 
 export interface ReverseExpression {
-  $reverse: null;
+  $reverse: null | unknown[] | Expression;
 }
 
 export interface FirstExpression {
@@ -304,15 +304,15 @@ export interface ModuloExpression {
 }
 
 export interface CeilExpression {
-  $ceil: null;
+  $ceil: null | number | Expression;
 }
 
 export interface FloorExpression {
-  $floor: null;
+  $floor: null | number | Expression;
 }
 
 export interface AbsExpression {
-  $abs: null;
+  $abs: null | number | Expression;
 }
 
 export interface PowExpression {
@@ -320,21 +320,21 @@ export interface PowExpression {
 }
 
 export interface SqrtExpression {
-  $sqrt: null;
+  $sqrt: null | number | Expression;
 }
 
 // === STRING EXPRESSIONS ===
 
 export interface LowercaseExpression {
-  $lowercase: null;
+  $lowercase: null | string | Expression;
 }
 
 export interface UppercaseExpression {
-  $uppercase: null;
+  $uppercase: null | string | Expression;
 }
 
 export interface TrimExpression {
-  $trim: null;
+  $trim: null | string | Expression;
 }
 
 export interface ReplaceExpression {

@@ -431,6 +431,34 @@ describe("$reverse", () => {
 			]);
 		});
 	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $reverse: null }, [1, 2, 3])).toEqual([3, 2, 1]);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $reverse: [1, 2, 3] }, null)).toEqual([3, 2, 1]);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(
+				apply({ $reverse: { $get: "items" } }, { items: ["a", "b", "c"] }),
+			).toEqual(["c", "b", "a"]);
+		});
+
+		it("prefers operand over input data when both are arrays", () => {
+			expect(apply({ $reverse: [4, 5, 6] }, [1, 2, 3])).toEqual([6, 5, 4]);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(apply({ $reverse: { $literal: [7, 8, 9] } }, [1, 2, 3])).toEqual([
+				9,
+				8,
+				7,
+			]);
+		});
+	});
 });
 
 describe("$skip", () => {
@@ -488,6 +516,39 @@ describe("$unique", () => {
 
 		it("handles empty arrays", () => {
 			expect(apply({ $unique: {} }, [])).toEqual([]);
+		});
+	});
+
+	describe("operand-over-inputData pattern", () => {
+		it("operates on input data when operand is null", () => {
+			expect(apply({ $unique: null }, [1, 2, 1, 3, 2])).toEqual([1, 2, 3]);
+		});
+
+		it("operates on operand when provided with literal", () => {
+			expect(apply({ $unique: [1, 2, 1, 3, 2] }, null)).toEqual([1, 2, 3]);
+		});
+
+		it("operates on operand when provided with expression result", () => {
+			expect(
+				apply(
+					{ $unique: { $get: "tags" } },
+					{ tags: ["red", "blue", "red", "green"] },
+				),
+			).toEqual(["red", "blue", "green"]);
+		});
+
+		it("prefers operand over input data when both are arrays", () => {
+			expect(apply({ $unique: [4, 5, 4, 6] }, [1, 2, 1, 3])).toEqual([
+				4,
+				5,
+				6,
+			]);
+		});
+
+		it("respects $literal wrapping", () => {
+			expect(
+				apply({ $unique: { $literal: [7, 8, 7, 9] } }, [1, 2, 1, 3]),
+			).toEqual([7, 8, 9]);
 		});
 	});
 });

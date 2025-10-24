@@ -57,11 +57,34 @@ const createAggregativeExpression =
 			: calculateFn(inputData);
 	};
 
-const $abs = (operand, inputData) => Math.abs(inputData);
+/**
+ * Creates a transformation expression that applies a function to either the operand or input data.
+ * Follows the pattern:
+ * - If operand resolves to a value of the expected type, transform the operand
+ * - Otherwise, transform the input data
+ * - Respects $literal wrapping to prevent unwanted resolution
+ *
+ * @param {function(any): any} transformFn - Function that transforms a value
+ * @param {function(any): boolean} [typePredicate] - Optional function to check if value is correct type (defaults to number check)
+ * @returns {function} Expression function that operates on operand or input data
+ */
+const createTransformExpression =
+	(transformFn, typePredicate = (val) => typeof val === "number") =>
+	(operand, inputData, { apply, isWrappedLiteral }) => {
+		const resolved = isWrappedLiteral(operand)
+			? operand.$literal
+			: apply(operand, inputData);
 
-const $ceil = (operand, inputData) => Math.ceil(inputData);
+		return typePredicate(resolved)
+			? transformFn(resolved)
+			: transformFn(inputData);
+	};
 
-const $floor = (operand, inputData) => Math.floor(inputData);
+const $abs = createTransformExpression((value) => Math.abs(value));
+
+const $ceil = createTransformExpression((value) => Math.ceil(value));
+
+const $floor = createTransformExpression((value) => Math.floor(value));
 
 const $add = createMathExpression((left, right) => left + right);
 const $subtract = createMathExpression((left, right) => left - right);
@@ -129,14 +152,14 @@ const $min = createAggregativeExpression("$min", (values) => {
 		: values.reduce((min, v) => Math.min(min, v));
 });
 
-const $sqrt = (operand, inputData) => {
-	if (inputData < 0) {
+const $sqrt = createTransformExpression((value) => {
+	if (value < 0) {
 		throw new Error(
 			"Complex numbers are not supported (square root of negative number)",
 		);
 	}
-	return Math.sqrt(inputData);
-};
+	return Math.sqrt(value);
+});
 
 const $sum = createAggregativeExpression("$sum", (values) => {
 	return values.reduce((sum, v) => sum + v, 0);

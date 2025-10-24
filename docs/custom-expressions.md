@@ -214,12 +214,14 @@ When designing expressions that **extract or compute values from collections** (
 
 - **Aggregations**: `$count`, `$sum`, `$min`, `$max`, `$mean`
 - **Accessors**: `$first`, `$last`
-- Any expression that answers "what value from this collection?"
+- **Transformations**: `$abs`, `$ceil`, `$floor`, `$sqrt`, `$lowercase`, `$uppercase`, `$trim`, `$reverse`, `$unique`
+- Any expression that answers "what value from this collection?" or "transform this value"
 
 **When NOT to use:**
 
-- **Transformations**: `$reverse`, `$uppercase`, `$trim` (operate on "data you have")
-- Expressions that fundamentally operate on input data context
+- **Array iteration expressions**: `$filter`, `$map`, `$find` (always iterate over input data with operand as predicate)
+- **Binary operations**: `$add`, `$subtract`, `$multiply` (operand is the second argument, not alternative data source)
+- Expressions where the operand fundamentally serves a different semantic purpose
 
 ```javascript
 // Example: Custom aggregation following the pattern

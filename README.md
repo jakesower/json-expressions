@@ -95,7 +95,7 @@ JSON Expressions prioritizes **flexibility over raw performance**. This library 
 
 ### When NOT to Use JSON Expressions
 
-- High-frequency operations (>10k ops/sec requirements)
+- High-frequency operations (more than 100k ops/sec requirements)
 - Real-time systems with strict latency requirements
 - Simple static logic that doesn't need to change
 - Performance-critical hot paths
@@ -187,7 +187,7 @@ engine.apply(
       $and: [{ $get: "active" }, { $gte: [{ $get: "age" }, 5] }],
     },
   },
-  users,
+  children,
 );
 // Returns: [{ name: "Zoë", age: 6, active: true }]
 ```
