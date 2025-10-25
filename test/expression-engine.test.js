@@ -132,13 +132,13 @@ describe("validateExpression", () => {
 describe("ensureValidExpression", () => {
 	const { ensureValidExpression } = engine;
 
-	it("returns true for valid expressions", () => {
-		expect(ensureValidExpression({ $get: "name" })).toBe(true);
-		expect(
+	it("does not throw for valid expressions", () => {
+		expect(() => ensureValidExpression({ $get: "name" })).not.toThrow();
+		expect(() =>
 			ensureValidExpression({
 				$pipe: [{ $get: "children" }, { $count: null }],
 			}),
-		).toBe(true);
+		).not.toThrow();
 	});
 
 	it("throws with single error message for one invalid operator", () => {

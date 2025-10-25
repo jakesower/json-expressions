@@ -44,10 +44,9 @@ export interface ExpressionEngine {
   /**
    * Validate an expression tree, throwing on invalid operators
    * @param value - The value to validate
-   * @returns True if the expression is valid
    * @throws Error with all validation errors joined by newline
    */
-  ensureValidExpression(value: unknown): boolean;
+  ensureValidExpression(value: unknown): void;
 }
 
 // === CORE EXPRESSIONS ===

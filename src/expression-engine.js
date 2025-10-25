@@ -23,7 +23,7 @@ const CAUGHT_IN_ENGINE = Symbol("caught in engine");
  * @property {string[]} expressionNames - List of available expression names
  * @property {function(any): boolean} isExpression - Check if a value is an expression
  * @property {function(any): string[]} validateExpression - Validate an expression tree, returning array of error messages (empty if valid)
- * @property {function(any): boolean} ensureValidExpression - Validate an expression tree, throwing all errors joined by newline
+ * @property {function(any): void} ensureValidExpression - Validate an expression tree, throwing all errors joined by newline
  */
 
 function looksLikeExpression(val) {
@@ -151,7 +151,6 @@ export function createExpressionEngine(config = {}) {
 		if (errors.length > 0) {
 			throw new Error(errors.join("\n"));
 		}
-		return true;
 	};
 
 	const checkLooksLikeExpression = (val) => {
