@@ -192,6 +192,36 @@ engine.apply(
 // Returns: [{ name: "Zoë", age: 6, active: true }]
 ```
 
+## Validating Expressions
+
+Before evaluating expressions, validate them to catch invalid operators:
+
+```javascript
+const engine = createExpressionEngine();
+
+// Get all validation errors (empty array = valid)
+const errors = engine.validateExpression({ $get: "name" });
+if (errors.length === 0) {
+  // Safe to evaluate
+}
+
+// Multiple errors returned at once
+const errors = engine.validateExpression({
+  $pipe: [{ $bad1: "oops" }, { $bad2: "another" }],
+});
+// errors.length === 2
+
+// Or ensure validity, throwing all errors
+try {
+  engine.ensureValidExpression({ $typo: "bad" });
+} catch (err) {
+  console.log(err.message);
+  // Unknown expression operator: "$typo". Did you mean "$gt"?
+}
+```
+
+Both methods perform deep validation of nested expressions and correctly handle `$literal` operands.
+
 ## Available Expression Packs
 
 Import only the functionality you need:
@@ -241,7 +271,7 @@ Performance varies based on operation complexity:
 | Operation Type              | Performance          | Example                     |
 | --------------------------- | -------------------- | --------------------------- |
 | Simple operations           | **1-1.6M ops/sec**   | `$gt`, `$get`, `$add`       |
-| Complex operations          | **300-700K ops/sec** | `$matchesAll`, `$filter`       |
+| Complex operations          | **300-700K ops/sec** | `$matchesAll`, `$filter`    |
 | Nested data access          | **2.4M ops/sec**     | `$get: "user.profile.name"` |
 | Data processing             | **70-300K ops/sec**  | Pipeline transformations    |
 | Large datasets (1000 items) | **1.6-3.9K ops/sec** | Filtering, grouping         |

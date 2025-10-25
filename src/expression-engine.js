@@ -22,6 +22,8 @@ const CAUGHT_IN_ENGINE = Symbol("caught in engine");
  * @property {function(any, any): any} apply - Apply an expression to input data
  * @property {string[]} expressionNames - List of available expression names
  * @property {function(any): boolean} isExpression - Check if a value is an expression
+ * @property {function(any): string[]} validateExpression - Validate an expression tree, returning array of error messages (empty if valid)
+ * @property {function(any): boolean} ensureValidExpression - Validate an expression tree, throwing all errors joined by newline
  */
 
 function looksLikeExpression(val) {
@@ -95,6 +97,62 @@ export function createExpressionEngine(config = {}) {
 
 	const isExpression = (val) =>
 		looksLikeExpression(val) && Object.keys(val)[0] in expressions;
+
+	const validateExpression = (val) => {
+		const errors = [];
+
+		const validate = (value) => {
+			if (value === null || value === undefined) {
+				return;
+			}
+
+			if (Array.isArray(value)) {
+				value.forEach(validate);
+				return;
+			}
+
+			if (looksLikeExpression(value)) {
+				if (!isExpression(value)) {
+					const invalidOp = Object.keys(value)[0];
+					const availableOps = Object.keys(expressions);
+					const suggestion = didYouMean(invalidOp, availableOps);
+					const helpText = suggestion
+						? `Did you mean "${suggestion}"?`
+						: `Available operators: ${availableOps
+								.slice(0, 8)
+								.join(", ")}${availableOps.length > 8 ? ", ..." : ""}.`;
+					errors.push(
+						`Unknown expression operator: "${invalidOp}". ${helpText}`,
+					);
+					return;
+				}
+
+				const expressionName = Object.keys(value)[0];
+				const operand = value[expressionName];
+
+				// Don't validate inside $literal
+				if (expressionName !== "$literal") {
+					validate(operand);
+				}
+				return;
+			}
+
+			if (typeof value === "object") {
+				Object.values(value).forEach(validate);
+			}
+		};
+
+		validate(val);
+		return errors;
+	};
+
+	const ensureValidExpression = (val) => {
+		const errors = validateExpression(val);
+		if (errors.length > 0) {
+			throw new Error(errors.join("\n"));
+		}
+		return true;
+	};
 
 	const checkLooksLikeExpression = (val) => {
 		if (looksLikeExpression(val)) {
@@ -206,5 +264,7 @@ export function createExpressionEngine(config = {}) {
 		},
 		expressionNames: Object.keys(expressions),
 		isExpression,
+		validateExpression,
+		ensureValidExpression,
 	};
 }

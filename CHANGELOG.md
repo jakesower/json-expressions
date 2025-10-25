@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- **Expression validation methods** on the expression engine
+  - `validateExpression(value)` - Returns array of all validation errors (empty array if valid)
+  - `ensureValidExpression(value)` - Validates expression tree, throwing all errors joined by newline
+  - Both methods perform deep recursive validation of nested expressions
+  - Returns all errors at once for better user experience (not just first error)
+  - `$literal` operands are correctly excluded from validation (treated as data)
+  - Useful for validating user-provided expressions before evaluation
+
 ## [0.13.1] - 2025-10-24
 
 ### Changed

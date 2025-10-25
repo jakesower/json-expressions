@@ -33,6 +33,21 @@ export interface ExpressionEngine {
    * @returns True if the value is an expression
    */
   isExpression(value: unknown): boolean;
+
+  /**
+   * Validate an expression tree
+   * @param value - The value to validate
+   * @returns Array of error messages (empty array if valid)
+   */
+  validateExpression(value: unknown): string[];
+
+  /**
+   * Validate an expression tree, throwing on invalid operators
+   * @param value - The value to validate
+   * @returns True if the expression is valid
+   * @throws Error with all validation errors joined by newline
+   */
+  ensureValidExpression(value: unknown): boolean;
 }
 
 // === CORE EXPRESSIONS ===
