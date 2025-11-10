@@ -1,6 +1,9 @@
 // Main engine exports
 export { createExpressionEngine } from "./expression-engine.js";
 
+// Expression authoring helpers
+export { withResolvedOperand, createBimodalExpression } from "./helpers.js";
+
 // Pack exports
 export { aggregation as aggregationPack } from "./packs/aggregation.js";
 export { allExpressionsForTesting } from "./packs/all.js";

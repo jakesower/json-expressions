@@ -22,27 +22,7 @@ const customEngine = createExpressionEngine({
 			return inputData * 12;
 		},
 
-		// Find children in age range - ANTI-PATTERN: uses other expressions instead of complete implementation
-		$findByAge: (operand, inputData) => {
-			// Complete implementation: check age directly without delegating to other expressions
-			return inputData.find((child) => {
-				if (operand.$eq !== undefined) return child.age === operand.$eq;
-				if (operand.$gte !== undefined) return child.age >= operand.$gte;
-				if (operand.$lte !== undefined) return child.age <= operand.$lte;
-				if (operand.$and) {
-					return operand.$and.every((cond) => {
-						if (cond.$gte !== undefined) return child.age >= cond.$gte;
-						if (cond.$lte !== undefined) return child.age <= cond.$lte;
-						return false;
-					});
-				}
-				return false;
-			});
-		},
-
-		// ANTI-PATTERN: Calculate nap time score using complete implementation instead of delegating
 		$napTimeScore: (_, inputData) => {
-			// Complete implementation: calculate directly without delegating to other expressions
 			const napMinutes = inputData.napDuration ?? 0;
 			const ageMultiplier = inputData.age < 3 ? 2.0 : 1.5;
 			const baseBonus = napMinutes > 0 ? 10 : 0;
@@ -66,43 +46,6 @@ describe("Custom Expressions", () => {
 			expect(() =>
 				customEngine.apply({ $ageInMonths: null }, "three"),
 			).toThrowError("Age must be a non-negative number");
-		});
-	});
-
-	describe("$findByAge (array iteration case)", () => {
-		it("finds children matching age predicate", () => {
-			const result = customEngine.apply({ $findByAge: { $eq: 3 } }, children);
-			expect(result).toEqual({
-				name: "Astrid",
-				age: 3,
-				napDuration: 90,
-				favoriteToy: "cars",
-			});
-
-			const older = customEngine.apply({ $findByAge: { $gte: 4 } }, children);
-			expect(older).toEqual({
-				name: "Ximena",
-				age: 4,
-				napDuration: 60,
-				favoriteToy: "dolls",
-			});
-		});
-
-		it("returns undefined when no match found", () => {
-			const result = customEngine.apply({ $findByAge: { $eq: 10 } }, children);
-			expect(result).toBeUndefined();
-		});
-
-		it("works with complex predicates", () => {
-			const result = customEngine.apply(
-				{
-					$findByAge: {
-						$and: [{ $gte: 3 }, { $lte: 4 }],
-					},
-				},
-				children,
-			);
-			expect(result.name).toBe("Astrid"); // First match
 		});
 	});
 

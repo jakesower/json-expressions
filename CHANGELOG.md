@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.13.3] - 2025-11-10
+
+### Added
+
+- **Bracket notation support** in `$get` and `$pluck` expressions
+  - Array index access: `"items[0].name"` accesses first item's name property
+  - Consecutive brackets: `"matrix[0][1]"` accesses nested arrays
+  - Mixed notation: `"users[0].profile.age"` combines brackets and dots
+  - Wildcard in brackets: `"[$].name"` or `"items[$].id"` iterates arrays
+  - Nested wildcards: `"teams[$].members[$].name"` flattens nested arrays
+
+### Changed
+
+- **Wildcard validation** - Wildcards (`$`) are now explicitly controlled per expression
+  - `$get` and `$pluck` support wildcards for array iteration
+  - `$matchesAll`, `$matchesAny`, `$filterBy`, `$exists`, and `$sort` reject wildcards with clear error messages
+  - Helps prevent confusing behavior where wildcards produce unexpected results
+
 ## [0.13.2] - 2025-10-25
 
 ### Added

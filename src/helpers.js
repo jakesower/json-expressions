@@ -1,55 +1,95 @@
-import { isEqualWith } from "es-toolkit";
+/**
+ * Expression Authoring Helpers
+ *
+ * Utilities to simplify custom expression creation.
+ */
 
 /**
- * Gets a value from an object using a property path.
- * Supports the $ wildcard for array element iteration and flattening.
+ * @template Resolved, Input, Output
+ * @callback ResolvedExpressionFunction
+ * @param {Resolved} resolved - The resolved operand value
+ * @param {Input} inputData - The input data passed to the expression
+ * @param {import('./expression-engine.js').ExpressionContext} context - The expression context
+ * @returns {Output} The result of the expression
+ */
+
+/**
+ * Wraps a function to automatically resolve the operand before calling it.
+ * Useful for expressions that always want to work with resolved values.
  *
- * @param {Object|Array} objOrArray - The object or array to query
- * @param {string | Array} path - The path of the property to get. Use "$" to iterate over array elements.
- * @returns {*} Returns the resolved value, or null if not found
+ * @template Resolved, Input, Output
+ * @param {ResolvedExpressionFunction<Resolved, Input, Output>} fn - Function to call with resolved operand
+ * @returns {import('./expression-engine.js').Expression<any, Input, Output>} Expression function that auto-resolves operand
  *
  * @example
- * get({ name: "Chen" }, "name") // "Chen"
- * get({ user: { name: "Amira" } }, "user.name") // "Amira"
- * get([{ name: "Luna" }, { name: "Kai" }], "$.name") // ["Luna", "Kai"]
- * get({ items: [{ id: 1 }, { id: 2 }] }, "items.$.id") // [1, 2]
+ * const $trim = withResolvedOperand((str) => str.trim());
+ * // { $trim: { $get: "name" } }, resolves operand, calls trim on result
  */
-export function get(objOrArray, path) {
-	if (objOrArray === null || objOrArray === undefined) return null;
-	if (path === "" || path === "." || path.length === 0) return objOrArray;
+export const withResolvedOperand = (fn) => (operand, inputData, context) => {
+	const resolved = context.apply(operand, inputData);
+	return fn(resolved, inputData, context);
+};
 
-	// Convert the path to an array if it's not already
-	const pathArray = Array.isArray(path) ? path : path.split(".");
+/**
+ * @template T
+ * @callback UnaryFunction
+ * @param {T} value - The value to operate on
+ * @returns {any} The result
+ */
 
-	let current = objOrArray;
+/**
+ * @template A, B
+ * @callback BinaryFunction
+ * @param {A} first - The first argument
+ * @param {B} second - The second argument
+ * @returns {any} The result
+ */
 
-	for (let i = 0; i < pathArray.length; i++) {
-		const segment = pathArray[i];
+/**
+ * Creates a bimodal expression that operates on either operand or inputData based on arity.
+ * This enables expressions to work flexibly with two calling patterns:
+ * 1. Operating on inputData with operand providing parameters
+ * 2. Operating on operand with inputData as context
+ *
+ * For unary functions (1 param):
+ *   - If operand is null/undefined, operates on inputData
+ *   - Otherwise, operates on resolved operand
+ *
+ * For binary functions (2 params):
+ *   - If operand resolves to 2-element array, spreads as both arguments
+ *   - Otherwise, inputData is first arg, resolved operand is second arg
+ *
+ * @template {UnaryFunction<any>|BinaryFunction<any, any>} Fn
+ * @param {Fn} fn - Unary or binary function to wrap (arity must be 1 or 2)
+ * @returns {import('./expression-engine.js').Expression<any, any, any>} Expression function with bimodal behavior
+ * @throws {Error} If function arity is not 1 or 2
+ *
+ * @example
+ * // Unary: operate on value
+ * const $double = createBimodalExpression((val) => val * 2);
+ * // { $double: null }, doubles inputData
+ * // { $double: { $get: "age" } }, doubles the operand result
+ *
+ * @example
+ * // Binary: takes a parameter
+ * const $logN = createBimodalExpression((value, base) => Math.log(value) / Math.log(base));
+ * // { $logN: 2 }, log base 2 of inputData
+ * // { $logN: [{ $get: "age" }, 2] }, log base 2 of age
+ */
+export const createBimodalExpression =
+	(fn) =>
+	(operand, inputData, { apply }) => {
+		const resolved = apply(operand, inputData);
 
-		// Handle wildcard array iteration
-		if (segment === "$") {
-			const asArray = Array.isArray(current) ? current : [current];
-			const remainingPath = pathArray.slice(i + 1);
-
-			// If no remaining path, return the array
-			if (remainingPath.length === 0) return asArray;
-
-			// Recursively get from each array element (can't avoid this recursion for $)
-			return asArray.flatMap((item) => get(item, remainingPath));
+		if (fn.length === 1) {
+			return resolved == null ? fn(inputData) : fn(resolved);
 		}
 
-		// Normal property access
-		current = current?.[segment];
+		if (fn.length === 2) {
+			return Array.isArray(resolved) && resolved.length === 2
+				? fn(...resolved)
+				: fn(inputData, resolved);
+		}
 
-		if (current === null || current === undefined) return null;
-	}
-
-	return current;
-}
-
-export function isEqual(a, b) {
-	return isEqualWith(a, b, (x, y) =>
-		// eslint-disable-next-line eqeqeq
-		x === undefined || x === null ? x == y : undefined,
-	);
-}
+		throw new Error("only unary and binary functions can be wrapped");
+	};

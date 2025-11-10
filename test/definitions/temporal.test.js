@@ -496,9 +496,9 @@ describe("Temporal Expressions", () => {
 		});
 
 		it("should throw error for array form with wrong number of elements", () => {
-			expect(() =>
-				engine.apply({ $parseDate: ["10/05/2025"] }, null),
-			).toThrow("$parseDate in array form requires exactly 2 elements");
+			expect(() => engine.apply({ $parseDate: ["10/05/2025"] }, null)).toThrow(
+				"$parseDate in array form requires exactly 2 elements",
+			);
 		});
 
 		it("should throw error for invalid date in array form", () => {
@@ -516,9 +516,9 @@ describe("Temporal Expressions", () => {
 		});
 
 		it("should throw error for invalid ISO string with null operand", () => {
-			expect(() =>
-				engine.apply({ $parseDate: null }, "not-a-date"),
-			).toThrow("Invalid ISO 8601 date string");
+			expect(() => engine.apply({ $parseDate: null }, "not-a-date")).toThrow(
+				"Invalid ISO 8601 date string",
+			);
 		});
 
 		it("should parse ISO string when inputData is null (operand-only form)", () => {
@@ -530,9 +530,9 @@ describe("Temporal Expressions", () => {
 		});
 
 		it("should throw error for invalid ISO string when inputData is null", () => {
-			expect(() =>
-				engine.apply({ $parseDate: "not-a-date" }, null),
-			).toThrow("Invalid ISO 8601 date string");
+			expect(() => engine.apply({ $parseDate: "not-a-date" }, null)).toThrow(
+				"Invalid ISO 8601 date string",
+			);
 		});
 
 		it("should throw error for invalid date string", () => {
@@ -606,7 +606,10 @@ describe("Temporal Expressions", () => {
 
 		it("should return false when format string is invalid (triggers catch)", () => {
 			// Invalid format string can cause parse() to throw
-			const result = engine.apply({ $isDateValid: "INVALID_FORMAT" }, "some-date");
+			const result = engine.apply(
+				{ $isDateValid: "INVALID_FORMAT" },
+				"some-date",
+			);
 			expect(result).toBe(false);
 		});
 

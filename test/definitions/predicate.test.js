@@ -675,6 +675,17 @@ describe("$matchesAny", () => {
 			);
 		});
 
+		it("throws error when wildcard is used in path", () => {
+			const data = {
+				items: [{ status: "active" }, { status: "inactive" }],
+			};
+			expect(() =>
+				apply({ $matchesAny: { "items.$.status": "active" } }, data),
+			).toThrow(
+				'Wildcard ($) not supported in this context. Path: "items.$.status"',
+			);
+		});
+
 		it("handles complex boolean expressions as conditions", () => {
 			expect(
 				apply(
@@ -1354,6 +1365,18 @@ describe("predicate expressions - edge cases", () => {
 				"$exists operand must resolve to an array or string path",
 			);
 		});
+
+		it("throws error when wildcard is used in path", () => {
+			const data = {
+				items: [
+					{ id: 1, name: "first" },
+					{ id: 2, name: "second" },
+				],
+			};
+			expect(() => apply({ $exists: "items.$.name" }, data)).toThrow(
+				"Wildcard ($) not supported in this context",
+			);
+		});
 	});
 
 	describe("$isEmpty/$isPresent edge cases", () => {
@@ -1476,6 +1499,20 @@ describe("predicate expressions - edge cases", () => {
 			);
 			expect(() => apply({ $matchesAll: null }, {})).toThrow(
 				"$matchesAll operand must be an object with property conditions",
+			);
+		});
+
+		it("throws error when wildcard is used in path", () => {
+			const data = {
+				users: [
+					{ name: "Amira", age: 25 },
+					{ name: "Chen", age: 30 },
+				],
+			};
+			expect(() =>
+				apply({ $matchesAll: { "users.$.age": { $gte: 20 } } }, data),
+			).toThrow(
+				'Wildcard ($) not supported in this context. Path: "users.$.age"',
 			);
 		});
 	});

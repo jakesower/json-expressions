@@ -8,7 +8,7 @@
  */
 
 import { mapValues } from "es-toolkit";
-import { get } from "../helpers.js";
+import { get } from "../internal-helpers.js";
 
 const $get = (operand, inputData, { apply }) => {
 	const resolvedOperand = apply(operand, inputData);
@@ -16,7 +16,7 @@ const $get = (operand, inputData, { apply }) => {
 		? inputData === undefined
 			? null
 			: inputData
-		: get(inputData, resolvedOperand);
+		: get(inputData, resolvedOperand, true);
 };
 
 const $prop = (operand, inputData) => {

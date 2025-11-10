@@ -112,7 +112,7 @@ describe("$prop", () => {
 		});
 
 		it("handles numeric string keys", () => {
-			const data = { "123": "numeric key", name: "Sofia" };
+			const data = { 123: "numeric key", name: "Sofia" };
 			expect(apply({ $prop: "123" }, data)).toBe("numeric key");
 		});
 
@@ -163,6 +163,58 @@ describe("$get", () => {
 			expect(
 				apply({ $get: ["child", "profile", "contact", "email"] }, data),
 			).toEqual("test@example.com");
+		});
+	});
+
+	describe("bracket notation", () => {
+		it("supports array index with brackets", () => {
+			const data = { items: [{ name: "first" }, { name: "second" }] };
+			expect(apply({ $get: "items[0].name" }, data)).toBe("first");
+			expect(apply({ $get: "items[1].name" }, data)).toBe("second");
+		});
+
+		it("supports consecutive bracket notation", () => {
+			const data = {
+				matrix: [
+					[1, 2],
+					[3, 4],
+				],
+			};
+			expect(apply({ $get: "matrix[0][0]" }, data)).toBe(1);
+			expect(apply({ $get: "matrix[1][1]" }, data)).toBe(4);
+		});
+
+		it("supports mixed dot and bracket notation", () => {
+			const data = {
+				users: [
+					{ profile: { name: "Chen", age: 30 } },
+					{ profile: { name: "Amira", age: 25 } },
+				],
+			};
+			expect(apply({ $get: "users[0].profile.name" }, data)).toBe("Chen");
+			expect(apply({ $get: "users[1].profile.age" }, data)).toBe(25);
+		});
+
+		it("supports wildcard in bracket notation", () => {
+			const data = { children: [{ name: "Yuki" }, { name: "Dao" }] };
+			expect(apply({ $get: "children[$].name" }, data)).toEqual([
+				"Yuki",
+				"Dao",
+			]);
+		});
+
+		it("supports mixed bracket and dot wildcard notation", () => {
+			const data = {
+				teams: [
+					{ members: [{ name: "Sofia" }, { name: "Omar" }] },
+					{ members: [{ name: "Zara" }] },
+				],
+			};
+			expect(apply({ $get: "teams[$].members[$].name" }, data)).toEqual([
+				"Sofia",
+				"Omar",
+				"Zara",
+			]);
 		});
 	});
 });
@@ -351,7 +403,8 @@ describe("access expressions - edge cases", () => {
 			};
 			expect(apply({ $get: "child-name" }, data)).toBe("Zara");
 			expect(apply({ $get: "special_key" }, data)).toBe("metadata");
-			expect(apply({ $get: "child[0]" }, data)).toBe("first");
+			// Bracket notation is now parsed, use $prop for literal property names with brackets
+			expect(apply({ $prop: "child[0]" }, data)).toBe("first");
 		});
 
 		it("evaluates path expressions", () => {

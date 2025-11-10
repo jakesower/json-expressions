@@ -10,7 +10,7 @@
  * - Pattern matching ($matchesAll, $matchesAny, $matchesRegex)
  */
 
-import { get, isEqual } from "../helpers.js";
+import { get, isEqual } from "../internal-helpers.js";
 
 /**
  * Creates a comparative expression that applies a comparison function to resolved operands.

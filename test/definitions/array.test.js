@@ -453,9 +453,7 @@ describe("$reverse", () => {
 
 		it("respects $literal wrapping", () => {
 			expect(apply({ $reverse: { $literal: [7, 8, 9] } }, [1, 2, 3])).toEqual([
-				9,
-				8,
-				7,
+				9, 8, 7,
 			]);
 		});
 	});
@@ -538,11 +536,7 @@ describe("$unique", () => {
 		});
 
 		it("prefers operand over input data when both are arrays", () => {
-			expect(apply({ $unique: [4, 5, 4, 6] }, [1, 2, 1, 3])).toEqual([
-				4,
-				5,
-				6,
-			]);
+			expect(apply({ $unique: [4, 5, 4, 6] }, [1, 2, 1, 3])).toEqual([4, 5, 6]);
 		});
 
 		it("respects $literal wrapping", () => {
@@ -694,6 +688,18 @@ describe("array expressions - edge cases", () => {
 			);
 			expect(() => apply({ $filterBy: [] }, [])).toThrow(
 				"$filterBy operand must be an object with property conditions",
+			);
+		});
+
+		it("throws error when wildcard is used in path", () => {
+			const children = [
+				{ toys: [{ name: "ball" }, { name: "blocks" }] },
+				{ toys: [{ name: "puzzle" }] },
+			];
+			expect(() =>
+				apply({ $filterBy: { "toys.$.name": "ball" } }, children),
+			).toThrow(
+				'Wildcard ($) not supported in this context. Path: "toys.$.name"',
 			);
 		});
 
@@ -1262,6 +1268,16 @@ describe("$sort", () => {
 		it("throws error for invalid operand type", () => {
 			expect(() => apply({ $sort: 123 }, children)).toThrow(
 				"$sort operand must be string, object with 'by' property, or array of sort criteria",
+			);
+		});
+
+		it("throws error when wildcard is used in path", () => {
+			const data = [
+				{ tags: [{ priority: 1 }, { priority: 2 }] },
+				{ tags: [{ priority: 3 }] },
+			];
+			expect(() => apply({ $sort: { by: "tags.$.priority" } }, data)).toThrow(
+				'Wildcard ($) not supported in this context. Path: "tags.$.priority"',
 			);
 		});
 	});

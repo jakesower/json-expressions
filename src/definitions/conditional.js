@@ -1,4 +1,4 @@
-import { isEqual } from "../helpers.js";
+import { isEqual } from "../internal-helpers.js";
 
 const $case = (
 	operand,

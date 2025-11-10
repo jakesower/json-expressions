@@ -24,6 +24,91 @@ const $myExpression = (operand, inputData, context) => {
 };
 ```
 
+## Expression Authoring Helpers
+
+JSON Expressions provides helper functions to simplify creating custom expressions. These helpers handle common patterns so you can focus on your expression's core logic.
+
+### `withResolvedOperand`
+
+Automatically resolves the operand before calling your function. Use this when your expression always works with resolved values and doesn't need to inspect the raw operand structure.
+
+```javascript
+import { createExpressionEngine, withResolvedOperand } from "json-expressions";
+
+// Simple: just define what to do with the resolved value
+const $trim = withResolvedOperand((resolved) => {
+  return resolved.trim();
+});
+
+// With access to inputData and context
+const $appendAge = withResolvedOperand((resolved, inputData, context) => {
+  return `${resolved} (${inputData.age})`;
+});
+
+const engine = createExpressionEngine({ custom: { $trim, $appendAge } });
+
+// Usage
+engine.apply({ $trim: { $get: "name" } }, { name: "  Amara  " });
+// Returns: "Amara"
+
+engine.apply({ $appendAge: { $get: "name" } }, { name: "Chen", age: 4 });
+// Returns: "Chen (4)"
+```
+
+**When to use:** Your expression needs the resolved operand value and doesn't care about the raw operand structure.
+
+### `createBimodalExpression`
+
+Creates expressions that work in two modes: operating on inputData with operand as parameters, or operating on the operand itself. This enables flexible, composable expressions that feel natural in both contexts.
+
+```javascript
+import { createExpressionEngine, createBimodalExpression } from "json-expressions";
+
+// Unary (1 parameter): operates on a single value
+const $square = createBimodalExpression((val) => val * val);
+
+// Binary (2 parameters): operates on two values
+const $power = createBimodalExpression((base, exp) => Math.pow(base, exp));
+
+const engine = createExpressionEngine({ custom: { $square, $power } });
+
+// Unary usage:
+engine.apply({ $square: null }, 5);           // inputData mode: 5² = 25
+engine.apply({ $square: { $get: "age" } }, { age: 3 }); // operand mode: 3² = 9
+
+// Binary usage:
+engine.apply({ $power: 2 }, 8);               // inputData^operand: 8² = 64
+engine.apply({ $power: [2, 8] }, null);       // array mode: 2⁸ = 256
+engine.apply({ $power: [{ $get: "base" }, 3] }, { base: 2 }); // 2³ = 8
+```
+
+**How it works:**
+
+For **unary functions** (1 parameter):
+- If operand is `null` or `undefined`, operates on inputData
+- Otherwise, operates on resolved operand
+
+For **binary functions** (2 parameters):
+- If operand resolves to a 2-element array, spreads as both arguments
+- Otherwise, inputData is first arg, resolved operand is second arg
+
+**When to use:**
+- Transformations that can work on piped data or specified values
+- Operations where inputData is the natural "subject" (like comparisons: `inputData > threshold`)
+- Expressions that benefit from both `{ $expr: null }` and `{ $expr: value }` patterns
+
+**Limitations:** Only supports unary and binary functions. For more complex arities or custom logic, write the full expression function manually.
+
+### Choosing the Right Helper
+
+| Helper | Use When | Example |
+|--------|----------|---------|
+| `withResolvedOperand` | You always need the resolved value and don't care about raw operand | `$trim`, `$uppercase`, custom validators |
+| `createBimodalExpression` | Expression should work on inputData OR operand flexibly | `$square`, `$power`, comparisons, math ops |
+| Manual expression | Need fine-grained control, multiple modes, or complex operand handling | `$case`, `$if`, `$map`, `$filter` |
+
+These helpers eliminate boilerplate while maintaining the clarity and power of custom expressions.
+
 ## Execution Context
 
 The `context` parameter provides access to the expression engine's core functions:
@@ -39,6 +124,8 @@ const $processChild = (operand, inputData, { apply }) => {
   return apply(operand.expression, child);
 };
 ```
+
+### `context.isExpression(value)`
 
 Tests if a value is a valid expression. Useful for conditional processing.
 
@@ -201,6 +288,8 @@ const enriched = engine.apply({ $enrichChild: null }, child);
 ## Expression Design Patterns
 
 ### Operand-Over-InputData Pattern
+
+> **Helper available:** For simple unary and binary expressions, consider using `createBimodalExpression` which implements this pattern automatically. See [Expression Authoring Helpers](#expression-authoring-helpers) above.
 
 When designing expressions that **extract or compute values from collections** (arrays, objects), prefer the operand-over-inputData pattern with fallback. This pattern makes expressions more composable and eliminates the need for verbose pipelines.
 

@@ -258,9 +258,9 @@ describe("String Expressions", () => {
 			});
 
 			it("operates on operand when provided with expression result", () => {
-				expect(
-					apply({ $uppercase: { $get: "name" } }, { name: "amara" }),
-				).toBe("AMARA");
+				expect(apply({ $uppercase: { $get: "name" } }, { name: "amara" })).toBe(
+					"AMARA",
+				);
 			});
 
 			it("prefers operand over input data when both are strings", () => {
@@ -293,9 +293,9 @@ describe("String Expressions", () => {
 			});
 
 			it("operates on operand when provided with expression result", () => {
-				expect(
-					apply({ $lowercase: { $get: "name" } }, { name: "AMARA" }),
-				).toBe("amara");
+				expect(apply({ $lowercase: { $get: "name" } }, { name: "AMARA" })).toBe(
+					"amara",
+				);
 			});
 
 			it("prefers operand over input data when both are strings", () => {

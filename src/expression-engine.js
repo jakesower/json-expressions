@@ -36,6 +36,8 @@ function looksLikeExpression(val) {
 	);
 }
 
+// this function is only ever useful when used in the same function as
+// `isExpression` - that's because `apply` naturally resolves $literal exprs
 function isWrappedLiteral(val) {
 	return (
 		val &&
@@ -180,7 +182,7 @@ export function createExpressionEngine(config = {}) {
 							: Array.isArray(step)
 								? apply(val, inputData, [...path, crumb, ...step])
 								: apply(val, inputData, [...path, crumb, step])
-				: apply; // True fast path - no closure at all
+				: apply; // Fast path - no closure
 
 			if (isExpression(val)) {
 				const expressionName = Object.keys(val)[0];
@@ -199,7 +201,11 @@ export function createExpressionEngine(config = {}) {
 
 					return middleware.reduceRight(
 						(next, mw) => (nextOperand, nextInputData) =>
-							mw(nextOperand, nextInputData, next, { expressionName, path }),
+							mw(nextOperand, nextInputData, next, {
+								expressionName,
+								isExpression,
+								path,
+							}),
 						(finalOperand, finalInputData) =>
 							expressionDef(finalOperand, finalInputData, {
 								apply: errorMode ? applyWithPath(expressionName) : apply,

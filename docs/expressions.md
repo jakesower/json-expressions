@@ -632,6 +632,8 @@ apply({ $endOfYear: "2025-10-15T15:23:45.234Z" }, null);
 
 Tests if a property or path exists in an object, regardless of its value. Different from $isPresent - this checks existence, not meaningfulness.
 
+**Note:** Wildcards (`$`) are not supported in paths. Use `$all` or `$any` to check existence across array elements.
+
 ```javascript
 // Check if child has allergies field (even if null)
 const student = { name: "Zara", allergies: null, age: 4 };
@@ -664,6 +666,8 @@ apply({ $filter: { $get: "needsHelp" } }, children);
 ## $filterBy
 
 Filters arrays by object property conditions (shorthand for $filter + $matchesAll).
+
+**Note:** Wildcards (`$`) are not supported in property paths. Use nested `$filter` or `$map` for filtering based on nested array properties.
 
 ```javascript
 // Find active children ready for kindergarten
@@ -805,25 +809,36 @@ apply({ $flatten: { depth: 2 } }, nestedBelongings);
 
 ## $get
 
-Retrieves a value from data using dot notation paths or array paths. Supports the `$` wildcard for array element iteration and flattening. Returns `null` if the path does not exist. Combines well with `$default`.
+Retrieves a value from data using dot notation, bracket notation, or array paths. Supports the `$` wildcard for array element iteration and flattening. Returns `null` if the path does not exist. Combines well with `$default`.
 
 > **Performance tip:** For simple property access without path features, use [`$prop`](#prop) instead - it's 2.5x faster.
+>
+> **Property name edge case:** If you need to access a property with brackets in its name (like `"foo[0]"`), use `$prop` instead of `$get`.
 
 ```javascript
 // Simple path access with dot notation
 apply({ $get: "info.age" }, child);
 // Returns: 4
 
+// Bracket notation for array indices
+const data = { users: [{ name: "Chen" }, { name: "Amira" }] };
+apply({ $get: "users[0].name" }, data);
+// Returns: "Chen"
+
+// Mixed dot and bracket notation
+apply({ $get: "users[1].name" }, data);
+// Returns: "Amira"
+
 // Path access with array notation
 apply({ $get: ["info", "age"] }, child);
 // Returns: 4
 
 // Deep nesting with array path
-const data = { child: { profile: { contact: { email: "test@example.com" } } } };
-apply({ $get: ["child", "profile", "contact", "email"] }, data);
+const deepData = { child: { profile: { contact: { email: "test@example.com" } } } };
+apply({ $get: ["child", "profile", "contact", "email"] }, deepData);
 // Returns: "test@example.com"
 
-// Array iteration with $ wildcard
+// Array iteration with $ wildcard (dot notation)
 const children = [
   { name: "Chen", age: 3 },
   { name: "Amira", age: 4 },
@@ -832,14 +847,18 @@ const children = [
 apply({ $get: "$.name" }, children);
 // Returns: ["Chen", "Amira", "Diego"]
 
-// Nested array iteration
+// Array iteration with $ wildcard (bracket notation)
+apply({ $get: "[$].name" }, children);
+// Returns: ["Chen", "Amira", "Diego"]
+
+// Nested array iteration with mixed notation
 const classrooms = {
   rooms: [
     { children: [{ name: "Sofia" }, { name: "Miguel" }] },
     { children: [{ name: "Zara" }, { name: "Omar" }] },
   ],
 };
-apply({ $get: "rooms.$.children.$.name" }, classrooms);
+apply({ $get: "rooms[$].children[$].name" }, classrooms);
 // Returns: ["Sofia", "Miguel", "Zara", "Omar"] (flattened)
 ```
 
@@ -1265,6 +1284,8 @@ apply({
 
 Tests if an object matches **all** specified property conditions (AND logic). Supports literal values, expressions, and $literal-wrapped values for flexible matching.
 
+**Note:** Wildcards (`$`) are not supported in property paths. To test all array elements, use `$all` with `$matchesAll` inside.
+
 ```javascript
 // Check if child meets multiple criteria
 const child = {
@@ -1289,6 +1310,8 @@ apply(
 ## $matchesAny
 
 Tests if an object matches **at least one** specified property condition (OR logic). Supports literal values, expressions, and $literal-wrapped values for flexible matching.
+
+**Note:** Wildcards (`$`) are not supported in property paths. To test any array element, use `$any` with `$matchesAll` inside.
 
 ```javascript
 // Check if child meets any of the criteria for special activity
@@ -1629,7 +1652,7 @@ apply({ $pick: ["child.profile.name", "meta.teacher"] }, data);
 
 ## $pluck
 
-Extracts a specific property from each object in an array (shorthand for $map + $get).
+Extracts a specific property from each object in an array (shorthand for $map + $get). Supports the `$` wildcard for array iteration within each object.
 
 ```javascript
 // Get all children's names
@@ -1640,6 +1663,14 @@ const children = [
 ];
 apply({ $pluck: "name" }, children);
 // Returns: ["Aria", "Kai", "Zara"]
+
+// Wildcard support for nested arrays
+const teams = [
+  { members: [{ name: "Chen" }, { name: "Amira" }] },
+  { members: [{ name: "Diego" }, { name: "Sofia" }] },
+];
+apply({ $pluck: "members.$.name" }, teams);
+// Returns: [["Chen", "Amira"], ["Diego", "Sofia"]]
 ```
 
 ## $pipe
@@ -1813,6 +1844,8 @@ apply({ $second: "2025-10-05T15:23:45.234Z" }, null);
 ## $sort
 
 Sorts an array based on specified criteria.
+
+**Note:** Wildcards (`$`) are not supported in sort paths. Sort operates on properties of array items, not nested arrays.
 
 ```javascript
 // Sort children by age

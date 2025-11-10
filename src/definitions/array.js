@@ -12,7 +12,7 @@
  * - Utilities ($coalesce)
  */
 
-import { get } from "../helpers.js";
+import { get } from "../internal-helpers.js";
 
 /**
  * Creates an array iteration expression that applies a function to array elements.
@@ -167,7 +167,7 @@ const $pluck = (operand, inputData, { apply }) => {
 	}
 
 	if (typeof operand === "string") {
-		return inputData.map((item) => get(item, operand));
+		return inputData.map((item) => get(item, operand, true));
 	}
 
 	return inputData.map((item) => apply(operand, item));
