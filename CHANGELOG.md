@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.14.0] - 2025-11-11
+
+### Changed
+
+- **Tree-shaking enabled** - Package now ships source files for ESM imports
+  - ESM imports (`import`) now use source files directly, enabling optimal tree-shaking
+  - CJS imports (`require`) use pre-built bundle (no change in behavior)
+  - All existing imports continue to work - **no breaking changes**
+  - Tree-shaking works with modern bundlers (Webpack 5+, Vite, Rollup, esbuild)
+
+### Performance
+
+- **Up to 87% bundle size reduction** with selective imports:
+  - Math pack only: **31 KB** (was 234 KB)
+  - Math + Array: **36 KB** (was 234 KB)
+  - All packs (no temporal): **42 KB** (was 234 KB)
+  - Full bundle with temporal: **133 KB** (was 234 KB)
+
+**How it works:**
+
+```javascript
+// Import packs (recommended) - 31 KB for math only
+import { mathPack, createExpressionEngine } from 'json-expressions';
+const engine = createExpressionEngine({ packs: [mathPack] });
+
+// Or import individual expressions - even smaller (28 KB)
+import { $add, $multiply, $sum, createExpressionEngine } from 'json-expressions';
+const engine = createExpressionEngine({ custom: { $add, $multiply, $sum } });
+```
+
+**No migration needed** - All existing code continues to work. Modern bundlers automatically tree-shake unused code.
+z
 ## [0.13.3] - 2025-11-10
 
 ### Added

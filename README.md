@@ -80,6 +80,46 @@ engine.apply({ $isValidEmail: null }, "user@example.com"); // true
 
 [Read more](docs/custom-expressions.md) about creating custom expressions.
 
+## Bundle Size & Tree-Shaking
+
+JSON Expressions is optimized for tree-shaking when using ESM imports. Import only the packs you need for optimal bundle sizes:
+
+| Use Case                  | Bundle Size | Gzipped |
+| ------------------------- | ----------- | ------- |
+| Math pack only            | 31 KB       | 7 KB    |
+| Math + Array packs        | 36 KB       | 8 KB    |
+| All packs except temporal | 42 KB       | 9 KB    |
+| With temporal (date/time) | 133 KB      | 23 KB   |
+
+**How it works:**
+
+```javascript
+// Import packs (recommended) - Modern bundlers tree-shake automatically
+import { mathPack, createExpressionEngine } from "json-expressions";
+
+const engine = createExpressionEngine({ packs: [mathPack] });
+// Result: ~31 KB in your bundle (only math + engine)
+
+// Import individual expressions for even smaller bundles
+import {
+  $add,
+  $multiply,
+  $sum,
+  createExpressionEngine,
+} from "json-expressions";
+
+const customPack = { $add, $multiply, $sum };
+const engine = createExpressionEngine({ packs: [customPack] });
+// Result: ~28 KB in your bundle (only selected expressions + engine)
+```
+
+**Requirements:**
+
+- Modern bundler (Webpack 5+, Vite, Rollup, esbuild)
+- ESM imports (`import`, not `require`)
+
+**Node.js with `require()`:** Uses pre-built bundle (~71 KB with external dependencies). For smaller server bundles, use ESM imports in Node 16+.
+
 ## Design Philosophy
 
 JSON Expressions prioritizes **flexibility over raw performance**. This library is designed for scenarios where dynamic, data-driven logic is more valuable than execution speed. Performance is an important design goal to enable as many uses as possible, but it will never be a replacement for performance tuned code.
