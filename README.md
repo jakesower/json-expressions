@@ -110,7 +110,7 @@ JSON Expressions prioritizes **flexibility over raw performance**. This library 
 ### Limitations:
 
 - **Performance and Memory Overhead**: Interpretation layer adds execution cost compared to native JavaScript
-- **Runtime Validation**: Expression errors discovered at execution time, not compile time
+- **Synchronous Evaluation**: Expressions return values immediately and cannot perform async operations like API calls or database queries
 
 ## Common Patterns
 

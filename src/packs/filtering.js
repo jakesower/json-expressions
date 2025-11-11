@@ -2,7 +2,7 @@
  * Filtering Pack - Comprehensive Data Filtering Toolkit
  *
  * Complete toolkit for WHERE clause logic and data filtering:
- * - Object filtering ($matchesAll)
+ * - Object filtering ($matchesAll, $matchesAny)
  * - Basic comparisons ($eq, $ne, $gt, $gte, $lt, $lte, $between)
  * - Logic operations ($and, $or, $not)
  * - Membership tests ($in, $nin)
@@ -32,6 +32,7 @@ import {
 	$or,
 	$not,
 	$matchesAll,
+	$matchesAny,
 	$matchesRegex,
 	$between,
 } from "../definitions/predicate.js";
@@ -57,6 +58,7 @@ export const filtering = {
 	$filterBy,
 	$find,
 	$matchesAll,
+	$matchesAny,
 	// Membership tests
 	$in,
 	$nin,

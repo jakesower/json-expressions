@@ -397,7 +397,7 @@ const $goodExample = (operand, inputData, { apply }) => {
 // Usage - user composes expressions in their JSON:
 engine.apply(
   { $goodExample: { threshold: { $add: [{ $get: "baseAge" }, 2] } } },
-  childData
+  childData,
 );
 ```
 

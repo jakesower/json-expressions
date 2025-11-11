@@ -35,7 +35,6 @@ const createMathExpression =
  * Follows the pattern:
  * - If operand resolves to an array, aggregate the operand
  * - Otherwise, aggregate the input data (which must be an array)
- * - Respects $literal wrapping to prevent unwanted resolution
  *
  * @param {string} expressionName - Name of the expression for error messages (e.g., "$count", "$max")
  * @param {function(Array): any} calculateFn - Function that takes an array of values and returns a calculated result
@@ -43,10 +42,8 @@ const createMathExpression =
  */
 const createAggregativeExpression =
 	(expressionName, calculateFn) =>
-	(operand, inputData, { apply, isWrappedLiteral }) => {
-		const resolved = isWrappedLiteral(operand)
-			? operand.$literal
-			: apply(operand, inputData);
+	(operand, inputData, { apply }) => {
+		const resolved = apply(operand, inputData);
 
 		if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
 			throw new Error(`${expressionName} requires array operand or input data`);
@@ -62,7 +59,6 @@ const createAggregativeExpression =
  * Follows the pattern:
  * - If operand resolves to a value of the expected type, transform the operand
  * - Otherwise, transform the input data
- * - Respects $literal wrapping to prevent unwanted resolution
  *
  * @param {function(any): any} transformFn - Function that transforms a value
  * @param {function(any): boolean} [typePredicate] - Optional function to check if value is correct type (defaults to number check)
@@ -70,10 +66,8 @@ const createAggregativeExpression =
  */
 const createTransformExpression =
 	(transformFn, typePredicate = (val) => typeof val === "number") =>
-	(operand, inputData, { apply, isWrappedLiteral }) => {
-		const resolved = isWrappedLiteral(operand)
-			? operand.$literal
-			: apply(operand, inputData);
+	(operand, inputData, { apply }) => {
+		const resolved = apply(operand, inputData);
 
 		return typePredicate(resolved)
 			? transformFn(resolved)
