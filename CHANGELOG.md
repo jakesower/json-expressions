@@ -26,16 +26,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ```javascript
 // Import packs (recommended) - 31 KB for math only
-import { mathPack, createExpressionEngine } from 'json-expressions';
+import { mathPack, createExpressionEngine } from "json-expressions";
 const engine = createExpressionEngine({ packs: [mathPack] });
 
 // Or import individual expressions - even smaller (28 KB)
-import { $add, $multiply, $sum, createExpressionEngine } from 'json-expressions';
+import {
+  $add,
+  $multiply,
+  $sum,
+  createExpressionEngine,
+} from "json-expressions";
 const engine = createExpressionEngine({ custom: { $add, $multiply, $sum } });
 ```
 
 **No migration needed** - All existing code continues to work. Modern bundlers automatically tree-shake unused code.
-z
+
 ## [0.13.3] - 2025-11-10
 
 ### Added
