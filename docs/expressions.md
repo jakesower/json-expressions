@@ -632,6 +632,8 @@ apply({ $endOfYear: "2025-10-15T15:23:45.234Z" }, null);
 
 Tests if a property or path exists in an object, regardless of its value. Different from $isPresent - this checks existence, not meaningfulness.
 
+**Type handling:** Returns `false` when input data is not an object (null, undefined, arrays, or other primitive types).
+
 **Note:** Wildcards (`$`) are not supported in paths. Use `$all` or `$any` to check existence across array elements.
 
 ```javascript
@@ -667,6 +669,8 @@ apply({ $filter: { $get: "needsHelp" } }, children);
 
 Filters arrays by object property conditions (shorthand for $filter + $matchesAll).
 
+**Type handling:** Returns an empty array `[]` when applied to non-array input (null, undefined, or other types).
+
 **Note:** Wildcards (`$`) are not supported in property paths. Use nested `$filter` or `$map` for filtering based on nested array properties.
 
 ```javascript
@@ -699,6 +703,8 @@ apply({ $find: { $matchesAll: { age: { $gte: 5 } } } }, children);
 ## $first
 
 Returns the first item in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
+
+**Type handling:** Returns `null` when neither the operand nor input data is an array.
 
 ```javascript
 // Get first item from input data array
@@ -761,6 +767,8 @@ apply({ $formatDate: ["2025-10-05T14:30:00.000Z", "yyyy-MM-dd"] }, null);
 ## $fromPairs
 
 Converts an array of [key, value] pairs into an object.
+
+**Type handling:** Returns an empty object `{}` when applied to non-array input (null, undefined, or other types).
 
 ```javascript
 // Convert child data pairs to object
@@ -885,6 +893,8 @@ apply({ $getTime: "dayOfWeek" }, "2025-10-05T00:00:00.000Z");
 ## $groupBy
 
 Groups array elements by a specified key or expression result.
+
+**Type handling:** Returns an empty object `{}` when applied to non-array input (null, undefined, or other types).
 
 ```javascript
 // Group children by age
@@ -1159,6 +1169,8 @@ apply({ $join: ", " }, names);
 
 Returns an array of all property names from an object.
 
+**Type handling:** Returns an empty array `[]` when applied to non-object input (null, undefined, arrays, or other types).
+
 ```javascript
 // Get all field names from child record
 const child = { name: "Amara", age: 4, group: "Butterflies", present: true };
@@ -1169,6 +1181,8 @@ apply({ $keys: null }, child);
 ## $last
 
 Returns the last item in an array. Can operate on either the operand (if provided and resolves to an array) or the input data.
+
+**Type handling:** Returns `null` when neither the operand nor input data is an array.
 
 ```javascript
 // Get last item from input data array
@@ -1203,6 +1217,8 @@ apply({ $literal: { $special: "not an expression" } }, anyInput);
 ## $lowercase
 
 Converts string to lowercase. Can operate on either the operand (if provided and resolves to a string) or the input data.
+
+**Type handling:** Returns `null` when neither the operand nor input data is a string.
 
 ```javascript
 // Operate on input data
@@ -1350,6 +1366,8 @@ apply(
 
 Tests if string matches a regular expression with support for PCRE-style inline flags.
 
+**Type handling:** Returns `false` when input data is not a string (null, undefined, numbers, or other types).
+
 **Supported flags:**
 
 - `i`: Case insensitive matching
@@ -1420,6 +1438,8 @@ apply({ $mean: { $get: "scores" } }, data);
 ## $merge
 
 Merges an object into the input object, with the merge object properties overriding input object properties.
+
+**Type handling:** When input is not an object (null, undefined, arrays, or other types), returns the operand object directly.
 
 ```javascript
 // Merge child info with updates
@@ -1580,6 +1600,8 @@ apply(
 
 Returns a new object excluding the specified properties.
 
+**Type handling:** Returns an empty object `{}` when applied to non-object input (null, undefined, arrays, or other types).
+
 ```javascript
 // Remove sensitive data from child record
 const child = {
@@ -1595,6 +1617,8 @@ apply({ $omit: ["ssn"] }, child);
 ## $pairs
 
 Converts an object into an array of [key, value] pairs.
+
+**Type handling:** Returns an empty array `[]` when applied to non-object input (null, undefined, arrays, or other types).
 
 ```javascript
 // Convert child data to key-value pairs
@@ -1627,6 +1651,8 @@ apply({ $parseDate: ["10/05/2025", "MM/dd/yyyy"] }, null);
 
 Returns a new object containing only the specified properties by name.
 
+**Type handling:** Returns an empty object `{}` when applied to non-object input (null, undefined, arrays, or other types).
+
 ```javascript
 // Extract only essential child info
 const child = {
@@ -1653,6 +1679,8 @@ apply({ $pick: ["child.profile.name", "meta.teacher"] }, data);
 ## $pluck
 
 Extracts a specific property from each object in an array (shorthand for $map + $get). Supports the `$` wildcard for array iteration within each object.
+
+**Type handling:** Returns an empty array `[]` when applied to non-array input (null, undefined, or other types).
 
 ```javascript
 // Get all children's names
@@ -1768,6 +1796,8 @@ apply({ $get: "user.name" }, data);
 
 Replaces occurrences of a pattern in a string.
 
+**Type handling:** Returns `null` when input data is not a string.
+
 ```javascript
 // Clean up child's name input
 apply({ $replace: ["\\s+", " "] }, "Amara   Rodriguez");
@@ -1845,6 +1875,8 @@ apply({ $second: "2025-10-05T15:23:45.234Z" }, null);
 
 Sorts an array based on specified criteria.
 
+**Type handling:** Returns an empty array `[]` when applied to non-array input (null, undefined, or other types).
+
 **Note:** Wildcards (`$`) are not supported in sort paths. Sort operates on properties of array items, not nested arrays.
 
 ```javascript
@@ -1871,6 +1903,8 @@ apply({ $sort: { by: { $multiply: [{ $get: "age" }, 12] } } }, children);
 ## $split
 
 Splits a string into an array using a separator.
+
+**Type handling:** Returns `null` when input data is not a string.
 
 ```javascript
 // Split child's full name
@@ -1953,6 +1987,8 @@ apply({ $startOf: "year" }, "2025-10-15T15:23:45.123Z");
 ## $substring
 
 Extracts a portion of a string.
+
+**Type handling:** Returns `null` when input data is not a string.
 
 ```javascript
 // Get child's initials from name
@@ -2058,6 +2094,8 @@ apply({ $take: 3 }, allChildren);
 
 Removes whitespace from beginning and end of string. Can operate on either the operand (if provided and resolves to a string) or the input data.
 
+**Type handling:** Returns `null` when neither the operand nor input data is a string.
+
 ```javascript
 // Operate on input data
 apply({ $trim: null }, "  Amara Rodriguez  ");
@@ -2075,6 +2113,8 @@ apply({ $trim: { $get: "input" } }, { input: "  Amara Rodriguez  " });
 ## $uppercase
 
 Converts string to uppercase. Can operate on either the operand (if provided and resolves to a string) or the input data.
+
+**Type handling:** Returns `null` when neither the operand nor input data is a string.
 
 ```javascript
 // Operate on input data
@@ -2118,6 +2158,8 @@ apply({ $unique: { $get: "tags" } }, { tags: ["red", "blue", "red", "green"] });
 ## $values
 
 Returns an array of all property values from an object.
+
+**Type handling:** Returns an empty array `[]` when applied to non-object input (null, undefined, arrays, or other types).
 
 ```javascript
 // Get all values from child record

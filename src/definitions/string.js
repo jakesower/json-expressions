@@ -23,9 +23,8 @@ const createStringTransformExpression =
 			? operand.$literal
 			: apply(operand, inputData);
 
-		return typeof resolved === "string"
-			? transformFn(resolved)
-			: transformFn(inputData);
+		const target = typeof resolved === "string" ? resolved : inputData;
+		return typeof target === "string" ? transformFn(target) : null;
 	};
 
 /**
@@ -37,15 +36,24 @@ const createStringTransformExpression =
 const createStringOperationExpression =
 	(operationFn) =>
 	(operand, inputData, { apply }) => {
+		// Evaluate operands first to ensure errors propagate
+		let resolvedParams;
 		if (Array.isArray(operand)) {
 			const [param, ...rest] = operand;
-			return operationFn(
-				inputData,
+			resolvedParams = [
 				apply(param, inputData, 0),
 				...rest.map((r, idx) => apply(r, inputData, idx + 1)),
-			);
+			];
+		} else {
+			resolvedParams = [apply(operand, inputData)];
 		}
-		return operationFn(inputData, apply(operand, inputData));
+
+		// After evaluation, check if we can operate on inputData
+		if (typeof inputData !== "string") {
+			return null;
+		}
+
+		return operationFn(inputData, ...resolvedParams);
 	};
 
 const $lowercase = createStringTransformExpression((str) => str.toLowerCase());

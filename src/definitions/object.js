@@ -16,8 +16,8 @@ const createKeyInclusionExpression =
 			);
 		}
 
-		if (!inputData || typeof inputData !== "object") {
-			throw new Error(`${expressionName} must be applied to an object`);
+		if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+			return {};
 		}
 
 		const keySet = new Set(operand.map((path) => apply(path, inputData)));
@@ -38,16 +38,15 @@ const createObjectExtractionExpression =
 			typeof inputData !== "object" ||
 			Array.isArray(inputData)
 		) {
-			throw new Error(`${expressionName} can only be applied to objects`);
+			// Return appropriate empty value based on the extraction function
+			if (fn === Object.keys || fn === Object.values) return [];
+			if (fn === Object.entries) return [];
+			return null;
 		}
 		return fn(inputData);
 	};
 
 const $merge = (operand, inputData, { apply }) => {
-	if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
-		throw new Error("$merge can only be applied to objects");
-	}
-
 	const resolvedOperand = apply(operand, inputData);
 	if (
 		!resolvedOperand ||
@@ -55,6 +54,10 @@ const $merge = (operand, inputData, { apply }) => {
 		Array.isArray(resolvedOperand)
 	) {
 		throw new Error("$merge operand must resolve to an object");
+	}
+
+	if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+		return resolvedOperand;
 	}
 
 	return Object.assign({}, inputData, resolvedOperand);
@@ -73,9 +76,7 @@ const $pairs = createObjectExtractionExpression(Object.entries, "$pairs");
 
 const $fromPairs = (_, inputData) => {
 	if (!Array.isArray(inputData)) {
-		throw new Error(
-			"$fromPairs can only be applied to arrays of [key, value] pairs",
-		);
+		return {};
 	}
 
 	const result = {};

@@ -82,7 +82,7 @@ const $find = createArrayIterationExpression((array, itemFn) =>
 
 const $filterBy = (operand, inputData, { apply, isExpression }) => {
 	if (!Array.isArray(inputData)) {
-		throw new Error("$filterBy can only be applied to arrays");
+		return [];
 	}
 
 	if (!operand || typeof operand !== "object" || Array.isArray(operand)) {
@@ -116,7 +116,7 @@ const $flatten = (operand, inputData) => {
 
 const $groupBy = (operand, inputData, { apply }) => {
 	if (!Array.isArray(inputData)) {
-		throw new Error("$groupBy can only be applied to arrays");
+		return {};
 	}
 
 	if (typeof operand === "string") {
@@ -163,7 +163,7 @@ const $map = createArrayIterationExpression((array, itemFn) =>
 
 const $pluck = (operand, inputData, { apply }) => {
 	if (!Array.isArray(inputData)) {
-		throw new Error("$pluck can only be applied to arrays");
+		return [];
 	}
 
 	if (typeof operand === "string") {
@@ -189,7 +189,7 @@ const $unique = createArrayTransformExpression((array) => [...new Set(array)]);
 
 const $sort = (operand, inputData, { apply }) => {
 	if (!Array.isArray(inputData)) {
-		throw new Error("$sort can only be applied to arrays");
+		return [];
 	}
 
 	const by =
@@ -240,9 +240,7 @@ const createArrayAccessorExpression =
 			: apply(operand, inputData);
 
 		if (!Array.isArray(resolved) && !Array.isArray(inputData)) {
-			throw new Error(
-				"Array accessor expressions require array operand or input data",
-			);
+			return null;
 		}
 
 		return Array.isArray(resolved)

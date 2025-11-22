@@ -139,10 +139,8 @@ describe("$omit", () => {
 			});
 		});
 
-		it("handles non-object input", () => {
-			expect(() => apply({ $omit: ["name"] }, "not an object")).toThrow(
-				"$omit must be applied to an object",
-			);
+		it("returns empty object for non-object input", () => {
+			expect(apply({ $omit: ["name"] }, "not an object")).toEqual({});
 		});
 
 		it("throws error for non-array operand", () => {
@@ -160,10 +158,8 @@ describe("$keys", () => {
 			expect(result.sort()).toEqual(["age", "name", "scores", "status"]);
 		});
 
-		it("throws error for non-object input", () => {
-			expect(() => apply({ $keys: null }, "not an object")).toThrow(
-				"$keys can only be applied to objects",
-			);
+		it("returns empty array for non-object input", () => {
+			expect(apply({ $keys: null }, "not an object")).toEqual([]);
 		});
 	});
 });
@@ -176,10 +172,8 @@ describe("$values", () => {
 			expect(result).toEqual(["Chen", 5]);
 		});
 
-		it("throws error for non-object input", () => {
-			expect(() => apply({ $values: null }, [])).toThrow(
-				"$values can only be applied to objects",
-			);
+		it("returns empty array for non-object input", () => {
+			expect(apply({ $values: null }, [])).toEqual([]);
 		});
 	});
 });
@@ -195,10 +189,8 @@ describe("$pairs", () => {
 			]);
 		});
 
-		it("throws error for non-object input", () => {
-			expect(() => apply({ $pairs: null }, "not an object")).toThrow(
-				"$pairs can only be applied to objects",
-			);
+		it("returns empty array for non-object input", () => {
+			expect(apply({ $pairs: null }, "not an object")).toEqual([]);
 		});
 	});
 });
@@ -219,10 +211,8 @@ describe("$fromPairs", () => {
 			});
 		});
 
-		it("throws error for non-array input", () => {
-			expect(() => apply({ $fromPairs: null }, "not an array")).toThrow(
-				"$fromPairs can only be applied to arrays of [key, value] pairs",
-			);
+		it("returns empty object for non-array input", () => {
+			expect(apply({ $fromPairs: null }, "not an array")).toEqual({});
 		});
 
 		it("throws error for invalid pair format", () => {

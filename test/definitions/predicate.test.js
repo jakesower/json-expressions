@@ -170,19 +170,11 @@ describe("$matchesRegex", () => {
 			expect(apply({ $matchesRegex: "hello" }, "hello")).toBe(true); // no flags
 		});
 
-		it("should throw when input is not a string", () => {
-			expect(() => apply({ $matchesRegex: "pattern" }, 123)).toThrow(
-				"$matchesRegex requires string input",
-			);
-			expect(() => apply({ $matchesRegex: "pattern" }, null)).toThrow(
-				"$matchesRegex requires string input",
-			);
-			expect(() => apply({ $matchesRegex: "pattern" }, [])).toThrow(
-				"$matchesRegex requires string input",
-			);
-			expect(() => apply({ $matchesRegex: "pattern" }, {})).toThrow(
-				"$matchesRegex requires string input",
-			);
+		it("should return false when input is not a string", () => {
+			expect(apply({ $matchesRegex: "pattern" }, 123)).toBe(false);
+			expect(apply({ $matchesRegex: "pattern" }, null)).toBe(false);
+			expect(apply({ $matchesRegex: "pattern" }, [])).toBe(false);
+			expect(apply({ $matchesRegex: "pattern" }, {})).toBe(false);
 		});
 
 		it("should handle invalid regex patterns", () => {
@@ -1568,16 +1560,10 @@ describe("predicate expressions - edge cases", () => {
 			expect(apply({ $matchesRegex: "a\\.b" }, "a.b")).toBe(true);
 		});
 
-		it("throws error for non-string input", () => {
-			expect(() => apply({ $matchesRegex: "test" }, 123)).toThrow(
-				"$matchesRegex requires string input",
-			);
-			expect(() => apply({ $matchesRegex: "test" }, null)).toThrow(
-				"$matchesRegex requires string input",
-			);
-			expect(() => apply({ $matchesRegex: "test" }, undefined)).toThrow(
-				"$matchesRegex requires string input",
-			);
+		it("returns false for non-string input", () => {
+			expect(apply({ $matchesRegex: "test" }, 123)).toBe(false);
+			expect(apply({ $matchesRegex: "test" }, null)).toBe(false);
+			expect(apply({ $matchesRegex: "test" }, undefined)).toBe(false);
 		});
 
 		it("handles edge case patterns", () => {

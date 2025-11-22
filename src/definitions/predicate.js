@@ -62,9 +62,7 @@ const createInclusionExpression =
  * @returns {boolean} Whether the pattern matches the input
  */
 const testRegexPattern = (pattern, inputData) => {
-	if (typeof inputData !== "string") {
-		throw new Error("$matchesRegex requires string input");
-	}
+	if (typeof inputData !== "string") return false;
 
 	// Extract inline flags and clean pattern
 	const flagMatch = pattern.match(/^\(\?([ims]*)\)(.*)/);
@@ -132,7 +130,7 @@ const $isEmpty = (operand, inputData, { apply }) => {
 
 const $exists = (operand, inputData, { apply }) => {
 	if (typeof inputData !== "object" || inputData === null) {
-		throw new Error("$exists input data must be an object");
+		return false;
 	}
 
 	const resolvedPath = apply(operand, inputData);

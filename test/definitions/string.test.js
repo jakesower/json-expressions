@@ -50,13 +50,9 @@ describe("String Expressions", () => {
 				);
 			});
 
-			it("should throw error for non-string input", () => {
-				expect(() => apply({ $matchesRegex: "test" }, 123)).toThrow(
-					"$matchesRegex requires string input",
-				);
-				expect(() => apply({ $matchesRegex: "test" }, null)).toThrow(
-					"$matchesRegex requires string input",
-				);
+			it("should return false for non-string input", () => {
+				expect(apply({ $matchesRegex: "test" }, 123)).toBe(false);
+				expect(apply({ $matchesRegex: "test" }, null)).toBe(false);
 			});
 		});
 	});

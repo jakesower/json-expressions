@@ -173,10 +173,10 @@ describe("$filterBy", () => {
 			expect(result).toEqual(children);
 		});
 
-		it("throws error when applied to non-array", () => {
-			expect(() =>
+		it("returns empty array when applied to non-array", () => {
+			expect(
 				apply({ $filterBy: { age: { $gt: 5 } } }, "not an array"),
-			).toThrow("$filterBy can only be applied to arrays");
+			).toEqual([]);
 		});
 
 		it("throws error with invalid operand", () => {
@@ -285,10 +285,8 @@ describe("$groupBy", () => {
 			);
 		});
 
-		it("throws error for non-array input", () => {
-			expect(() => apply({ $groupBy: "room" }, "not an array")).toThrow(
-				"$groupBy can only be applied to arrays",
-			);
+		it("returns empty object for non-array input", () => {
+			expect(apply({ $groupBy: "room" }, "not an array")).toEqual({});
 		});
 	});
 });
@@ -397,10 +395,8 @@ describe("$pluck", () => {
 		]);
 	});
 
-	it("throws error when applied to non-array", () => {
-		expect(() => apply({ $pluck: "name" }, { name: "not array" })).toThrow(
-			"$pluck can only be applied to arrays",
-		);
+	it("returns empty array when applied to non-array", () => {
+		expect(apply({ $pluck: "name" }, { name: "not array" })).toEqual([]);
 	});
 
 	describe("$pluck integration with other expressions", () => {
@@ -676,10 +672,10 @@ describe("array expressions - edge cases", () => {
 			expect(apply({ $filterBy: { status: "enrolled" } }, [])).toEqual([]);
 		});
 
-		it("throws error when applied to non-arrays", () => {
-			expect(() =>
-				apply({ $filterBy: { name: "Amara" } }, "not an array"),
-			).toThrow("$filterBy can only be applied to arrays");
+		it("returns empty array when applied to non-arrays", () => {
+			expect(apply({ $filterBy: { name: "Amara" } }, "not an array")).toEqual(
+				[],
+			);
 		});
 
 		it("throws error for invalid operand types", () => {
@@ -824,10 +820,8 @@ describe("array expressions - edge cases", () => {
 			expect(apply({ $groupBy: { $get: "room" } }, [])).toEqual({});
 		});
 
-		it("throws error when applied to non-arrays", () => {
-			expect(() => apply({ $groupBy: "room" }, "not an array")).toThrow(
-				"$groupBy can only be applied to arrays",
-			);
+		it("returns empty object when applied to non-arrays", () => {
+			expect(apply({ $groupBy: "room" }, "not an array")).toEqual({});
 		});
 
 		it("throws error when grouping key is missing (string operand)", () => {
@@ -929,10 +923,8 @@ describe("array expressions - edge cases", () => {
 			expect(apply({ $pluck: { $get: "age" } }, [])).toEqual([]);
 		});
 
-		it("throws error when applied to non-arrays", () => {
-			expect(() => apply({ $pluck: "name" }, "not an array")).toThrow(
-				"$pluck can only be applied to arrays",
-			);
+		it("returns empty array when applied to non-arrays", () => {
+			expect(apply({ $pluck: "name" }, "not an array")).toEqual([]);
 		});
 
 		it("handles missing properties", () => {
@@ -1139,10 +1131,8 @@ describe("$first", () => {
 			expect(apply({ $first: null }, [false, true])).toBe(false);
 		});
 
-		it("throws error for non-array input and operand", () => {
-			expect(() => apply({ $first: null }, "not array")).toThrowError(
-				"Array accessor expressions require array operand or input data",
-			);
+		it("returns null for non-array input and operand", () => {
+			expect(apply({ $first: null }, "not array")).toBe(null);
 		});
 	});
 });
@@ -1183,10 +1173,8 @@ describe("$last", () => {
 			expect(apply({ $last: null }, [true, false])).toBe(false);
 		});
 
-		it("throws error for non-array input and operand", () => {
-			expect(() => apply({ $last: null }, "not array")).toThrowError(
-				"Array accessor expressions require array operand or input data",
-			);
+		it("returns null for non-array input and operand", () => {
+			expect(apply({ $last: null }, "not array")).toBe(null);
 		});
 	});
 });
@@ -1253,10 +1241,8 @@ describe("$sort", () => {
 			expect(children).toEqual(original);
 		});
 
-		it("throws error when applied to non-array", () => {
-			expect(() => apply({ $sort: "age" }, { name: "not array" })).toThrow(
-				"$sort can only be applied to arrays",
-			);
+		it("returns empty array when applied to non-array", () => {
+			expect(apply({ $sort: "age" }, { name: "not array" })).toEqual([]);
 		});
 
 		it("throws error for object form without 'by' property", () => {

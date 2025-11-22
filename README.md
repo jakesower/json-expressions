@@ -152,6 +152,35 @@ JSON Expressions prioritizes **flexibility over raw performance**. This library 
 - **Performance and Memory Overhead**: Interpretation layer adds execution cost compared to native JavaScript
 - **Synchronous Evaluation**: Expressions return values immediately and cannot perform async operations like API calls or database queries
 
+### Data Handling
+
+JSON Expressions distinguishes between two types of errors:
+
+1. **Configuration errors** (malformed expressions) - These throw errors immediately
+2. **Data variance** (null, undefined, or unexpected types) - These return sensible defaults
+
+This design handles real-world heterogeneous data gracefully:
+
+```javascript
+// String operations return null for non-string input
+engine.apply({ $uppercase: null }, null); // null (not an error)
+engine.apply({ $uppercase: null }, 123); // null (not an error)
+
+// Array operations return empty arrays for non-array input
+engine.apply({ $filterBy: { age: { $gt: 5 } } }, null); // []
+
+// Object operations return empty objects/arrays for non-object input
+engine.apply({ $keys: null }, null); // []
+
+// Predicates return false for type mismatches
+engine.apply({ $matchesRegex: "\\d+" }, null); // false
+engine.apply({ $exists: "field" }, "not an object"); // false
+```
+
+In databases and APIs, fields often have nullable types (`string | null`). Expressions can operate on this data without requiring null checks at every step, making them more composable and easier to use in query builders and data pipelines.
+
+**Null and undefined are treated identically** throughout the library, following JSON semantics where both represent the absence of a value.
+
 ## Common Patterns
 
 ### Data Access and Transformation
