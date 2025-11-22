@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- **More forgiving type handling** - Expressions now return sensible defaults for type mismatches instead of throwing errors
+  - String expressions (`$uppercase`, `$lowercase`, `$trim`, `$split`, `$replace`, `$substring`) return `null` for non-string input
+  - Array expressions (`$filterBy`, `$groupBy`, `$pluck`, `$sort`, `$first`, `$last`) return empty arrays/null for non-array input
+  - Object expressions (`$keys`, `$values`, `$pairs`, `$fromPairs`, `$pick`, `$omit`, `$merge`) return empty objects/arrays for non-object input
+  - Predicate expressions (`$matchesRegex`, `$exists`) return `false` for type mismatches
+  - Updated README and documentation with data handling philosophy and examples
+
 ## [0.14.0] - 2025-11-11
 
 ### Changed
