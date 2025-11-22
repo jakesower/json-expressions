@@ -32,7 +32,7 @@ const createKeyInclusionExpression =
 	};
 
 const createObjectExtractionExpression =
-	(fn, expressionName) => (_, inputData) => {
+	(fn) => (_, inputData) => {
 		if (
 			!inputData ||
 			typeof inputData !== "object" ||
