@@ -124,7 +124,7 @@ const $groupBy = (operand, inputData, { apply }) => {
 		const groups = {};
 		inputData.forEach((item) => {
 			const key = item?.[operand];
-			if (!key) {
+			if (key === null || key === undefined) {
 				throw new Error(
 					`${JSON.stringify(item)} could not be grouped by ${operand}`,
 				);
@@ -140,7 +140,7 @@ const $groupBy = (operand, inputData, { apply }) => {
 	const groups = {};
 	inputData.forEach((item) => {
 		const key = apply(operand, item);
-		if (!key) {
+		if (key === null || key === undefined) {
 			throw new Error(
 				`${JSON.stringify(item)} could not be grouped by ${operand}`,
 			);

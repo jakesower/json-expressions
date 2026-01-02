@@ -563,9 +563,18 @@ export type AnyExpression =
   | IsDateValidExpression;
 
 /**
- * A JSON expression - either built-in or custom
+ * A JSON expression - can be a built-in expression, custom expression,
+ * array of expressions, object containing expressions, or primitive value
  */
-export type Expression = ExpressionLike | AnyExpression;
+export type Expression =
+  | ExpressionLike
+  | AnyExpression
+  | Expression[]
+  | { [key: string]: Expression }
+  | string
+  | number
+  | boolean
+  | null;
 
 // === MAIN EXPORTS ===
 

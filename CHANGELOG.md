@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- **`$groupBy` now correctly handles falsy values** - Fixed bug where valid falsy keys (`0`, `false`, `""`) were incorrectly rejected
+  - Previously: `$groupBy` would throw an error when grouping by `0`, `false`, or empty string
+  - Now: Only `null` and `undefined` keys are rejected (as intended)
+  - Example: `{ $groupBy: "score" }` now works correctly with `score: 0`
+  - **Breaking:** None - this is a bug fix that allows previously-rejected valid cases
+  - Added comprehensive tests for all falsy value edge cases
+
 ## [0.14.0] - 2025-11-11
 
 ### Changed

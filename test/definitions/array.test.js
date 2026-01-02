@@ -865,6 +865,132 @@ describe("array expressions - edge cases", () => {
 				preschool: [{ child: { room: "preschool", readingLevel: "beginner" } }],
 			});
 		});
+
+		it("allows grouping by 0 (number zero) - string operand", () => {
+			const children = [
+				{ name: "Amara", napMinutes: 0, room: "toddlers" },
+				{ name: "Kenji", napMinutes: 0, room: "preschool" },
+				{ name: "Yuki", napMinutes: 60, room: "toddlers" },
+			];
+			const result = apply({ $groupBy: "napMinutes" }, children);
+			expect(result).toEqual({
+				0: [
+					{ name: "Amara", napMinutes: 0, room: "toddlers" },
+					{ name: "Kenji", napMinutes: 0, room: "preschool" },
+				],
+				60: [{ name: "Yuki", napMinutes: 60, room: "toddlers" }],
+			});
+		});
+
+		it("allows grouping by 0 (number zero) - expression operand", () => {
+			const children = [
+				{ name: "Amara", napMinutes: 0, room: "toddlers" },
+				{ name: "Kenji", napMinutes: 0, room: "preschool" },
+				{ name: "Yuki", napMinutes: 60, room: "toddlers" },
+			];
+			const result = apply({ $groupBy: { $get: "napMinutes" } }, children);
+			expect(result).toEqual({
+				0: [
+					{ name: "Amara", napMinutes: 0, room: "toddlers" },
+					{ name: "Kenji", napMinutes: 0, room: "preschool" },
+				],
+				60: [{ name: "Yuki", napMinutes: 60, room: "toddlers" }],
+			});
+		});
+
+		it("allows grouping by false (boolean) - string operand", () => {
+			const children = [
+				{ name: "Amara", pottyTrained: false, age: 3 },
+				{ name: "Kenji", pottyTrained: true, age: 4 },
+				{ name: "Yuki", pottyTrained: false, age: 3 },
+			];
+			const result = apply({ $groupBy: "pottyTrained" }, children);
+			expect(result).toEqual({
+				false: [
+					{ name: "Amara", pottyTrained: false, age: 3 },
+					{ name: "Yuki", pottyTrained: false, age: 3 },
+				],
+				true: [{ name: "Kenji", pottyTrained: true, age: 4 }],
+			});
+		});
+
+		it("allows grouping by false (boolean) - expression operand", () => {
+			const children = [
+				{ name: "Amara", pottyTrained: false, age: 3 },
+				{ name: "Kenji", pottyTrained: true, age: 4 },
+				{ name: "Yuki", pottyTrained: false, age: 3 },
+			];
+			const result = apply({ $groupBy: { $get: "pottyTrained" } }, children);
+			expect(result).toEqual({
+				false: [
+					{ name: "Amara", pottyTrained: false, age: 3 },
+					{ name: "Yuki", pottyTrained: false, age: 3 },
+				],
+				true: [{ name: "Kenji", pottyTrained: true, age: 4 }],
+			});
+		});
+
+		it("allows grouping by empty string - string operand", () => {
+			const children = [
+				{ name: "Amara", allergyNotes: "", age: 3 },
+				{ name: "Kenji", allergyNotes: "peanuts", age: 4 },
+				{ name: "Yuki", allergyNotes: "", age: 3 },
+			];
+			const result = apply({ $groupBy: "allergyNotes" }, children);
+			expect(result).toEqual({
+				"": [
+					{ name: "Amara", allergyNotes: "", age: 3 },
+					{ name: "Yuki", allergyNotes: "", age: 3 },
+				],
+				peanuts: [{ name: "Kenji", allergyNotes: "peanuts", age: 4 }],
+			});
+		});
+
+		it("allows grouping by empty string - expression operand", () => {
+			const children = [
+				{ name: "Amara", allergyNotes: "", age: 3 },
+				{ name: "Kenji", allergyNotes: "peanuts", age: 4 },
+				{ name: "Yuki", allergyNotes: "", age: 3 },
+			];
+			const result = apply({ $groupBy: { $get: "allergyNotes" } }, children);
+			expect(result).toEqual({
+				"": [
+					{ name: "Amara", allergyNotes: "", age: 3 },
+					{ name: "Yuki", allergyNotes: "", age: 3 },
+				],
+				peanuts: [{ name: "Kenji", allergyNotes: "peanuts", age: 4 }],
+			});
+		});
+
+		it("throws error for null grouping key - string operand", () => {
+			const children = [{ name: "Noah", allergyNotes: null }];
+			expect(() => apply({ $groupBy: "allergyNotes" }, children)).toThrow(
+				'{"name":"Noah","allergyNotes":null} could not be grouped by allergyNotes',
+			);
+		});
+
+		it("throws error for undefined grouping key - string operand", () => {
+			const children = [{ name: "Noah", allergyNotes: undefined }];
+			expect(() => apply({ $groupBy: "allergyNotes" }, children)).toThrow(
+				'{"name":"Noah"} could not be grouped by allergyNotes',
+			);
+		});
+
+		it("throws error for null grouping key - expression operand", () => {
+			const children = [{ name: "Noah", allergyNotes: null }];
+			expect(() =>
+				apply({ $groupBy: { $get: "allergyNotes" } }, children),
+			).toThrow(
+				'{"name":"Noah","allergyNotes":null} could not be grouped by [object Object]',
+			);
+		});
+
+		it("throws error for undefined grouping key - expression operand", () => {
+			const children = [{ name: "Noah", allergyNotes: undefined }];
+			expect(() =>
+				apply({ $groupBy: { $get: "allergyNotes" } }, children),
+			).toThrow('{"name":"Noah"} could not be grouped by [object Object]');
+		});
 	});
 
 	describe("$join edge cases", () => {
