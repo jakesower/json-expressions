@@ -16,7 +16,11 @@ const createKeyInclusionExpression =
 			);
 		}
 
-		if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+		if (
+			!inputData ||
+			typeof inputData !== "object" ||
+			Array.isArray(inputData)
+		) {
 			return {};
 		}
 
@@ -31,20 +35,15 @@ const createKeyInclusionExpression =
 		return result;
 	};
 
-const createObjectExtractionExpression =
-	(fn) => (_, inputData) => {
-		if (
-			!inputData ||
-			typeof inputData !== "object" ||
-			Array.isArray(inputData)
-		) {
-			// Return appropriate empty value based on the extraction function
-			if (fn === Object.keys || fn === Object.values) return [];
-			if (fn === Object.entries) return [];
-			return null;
-		}
-		return fn(inputData);
-	};
+const createObjectExtractionExpression = (fn) => (_, inputData) => {
+	if (!inputData || typeof inputData !== "object" || Array.isArray(inputData)) {
+		// Return appropriate empty value based on the extraction function
+		if (fn === Object.keys || fn === Object.values) return [];
+		if (fn === Object.entries) return [];
+		return null;
+	}
+	return fn(inputData);
+};
 
 const $merge = (operand, inputData, { apply }) => {
 	const resolvedOperand = apply(operand, inputData);

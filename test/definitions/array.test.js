@@ -174,9 +174,9 @@ describe("$filterBy", () => {
 		});
 
 		it("returns empty array when applied to non-array", () => {
-			expect(
-				apply({ $filterBy: { age: { $gt: 5 } } }, "not an array"),
-			).toEqual([]);
+			expect(apply({ $filterBy: { age: { $gt: 5 } } }, "not an array")).toEqual(
+				[],
+			);
 		});
 
 		it("throws error with invalid operand", () => {
