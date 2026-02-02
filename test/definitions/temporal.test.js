@@ -94,6 +94,96 @@ describe("Temporal Expressions", () => {
 			expect(result).toBe("2025-10-05T10:00:30.000Z");
 		});
 
+		it("should add milliseconds", () => {
+			const result = engine.apply(
+				{ $addTime: { milliseconds: 500 } },
+				"2025-10-05T10:00:00.000Z",
+			);
+			expect(result).toBe("2025-10-05T10:00:00.500Z");
+		});
+
+		it("should add milliseconds (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T10:00:00.000Z", { milliseconds: 500 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-05T10:00:00.500Z");
+		});
+
+		it("should add minutes (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T10:00:00.000Z", { minutes: 30 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-05T10:30:00.000Z");
+		});
+
+		it("should add weeks (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T00:00:00.000Z", { weeks: 2 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-19T00:00:00.000Z");
+		});
+
+		it("should add hours (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T10:00:00.000Z", { hours: 5 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-05T15:00:00.000Z");
+		});
+
+		it("should add seconds (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T10:00:00.000Z", { seconds: 30 }] },
+				null,
+			);
+			expect(result).toBe("2025-10-05T10:00:30.000Z");
+		});
+
+		it("should add years (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T00:00:00.000Z", { years: 5 }] },
+				null,
+			);
+			expect(result).toBe("2030-10-05T00:00:00.000Z");
+		});
+
+		it("should add months (array form)", () => {
+			const result = engine.apply(
+				{ $addTime: ["2025-10-05T00:00:00.000Z", { months: 3 }] },
+				null,
+			);
+			expect(result).toBe("2026-01-05T00:00:00.000Z");
+		});
+
+		it("should throw error for unknown time unit (array form)", () => {
+			expect(() =>
+				engine.apply(
+					{ $addTime: ["2025-10-05T00:00:00.000Z", { decades: 1 }] },
+					null,
+				),
+			).toThrow("Unknown time unit: decades");
+		});
+
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply({ $addTime: ["2025-10-05T00:00:00.000Z"] }, null),
+			).toThrow("$addTime array form requires exactly 2 elements");
+		});
+
+		it("should throw error for array form with non-object duration", () => {
+			expect(() =>
+				engine.apply(
+					{ $addTime: ["2025-10-05T00:00:00.000Z", "invalid"] },
+					null,
+				),
+			).toThrow(
+				"$addTime duration must be an object with time unit properties",
+			);
+		});
+
 		it("should throw error for invalid duration object", () => {
 			expect(() =>
 				engine.apply({ $addTime: "invalid" }, "2025-10-05T00:00:00.000Z"),
@@ -208,6 +298,40 @@ describe("Temporal Expressions", () => {
 				),
 			).toThrow("Unknown time unit: decades");
 		});
+
+		it("should throw error for array form with wrong number of elements", () => {
+			expect(() =>
+				engine.apply(
+					{
+						$diffTime: ["2025-10-05T00:00:00.000Z", "2025-12-25T00:00:00.000Z"],
+					},
+					null,
+				),
+			).toThrow("$diffTime array form requires exactly 3 elements");
+		});
+
+		it("should throw error for array form with unknown time unit", () => {
+			expect(() =>
+				engine.apply(
+					{
+						$diffTime: [
+							"2025-10-05T00:00:00.000Z",
+							"2025-12-25T00:00:00.000Z",
+							"decades",
+						],
+					},
+					null,
+				),
+			).toThrow("Unknown time unit: decades");
+		});
+
+		it("should throw error for non-object operand", () => {
+			expect(() =>
+				engine.apply({ $diffTime: "invalid" }, "2025-10-05T00:00:00.000Z"),
+			).toThrow(
+				"$diffTime operand must be an object with 'date' and 'unit' properties or array [date1, date2, unit]",
+			);
+		});
 	});
 
 	describe("$startOf", () => {
@@ -248,6 +372,12 @@ describe("Temporal Expressions", () => {
 				engine.apply({ $startOf: "decade" }, "2025-10-05T00:00:00.000Z"),
 			).toThrow("Unknown boundary unit: decade");
 		});
+
+		it("should throw error for non-string operand", () => {
+			expect(() =>
+				engine.apply({ $startOf: 123 }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("$startOf operand must be a string unit");
+		});
 	});
 
 	describe("$endOf", () => {
@@ -287,6 +417,12 @@ describe("Temporal Expressions", () => {
 			expect(() =>
 				engine.apply({ $endOf: "decade" }, "2025-10-05T00:00:00.000Z"),
 			).toThrow("Unknown boundary unit: decade");
+		});
+
+		it("should throw error for non-string operand", () => {
+			expect(() =>
+				engine.apply({ $endOf: 123 }, "2025-10-05T00:00:00.000Z"),
+			).toThrow("$endOf operand must be a string unit");
 		});
 	});
 
