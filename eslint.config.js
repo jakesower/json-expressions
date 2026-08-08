@@ -1,8 +1,10 @@
 import js from "@eslint/js";
 import prettier from "eslint-config-prettier";
+import tseslint from "typescript-eslint";
 
 export default [
 	js.configs.recommended,
+	...tseslint.configs.recommended,
 	prettier,
 	{
 		languageOptions: {
@@ -20,6 +22,15 @@ export default [
 			},
 		},
 		rules: {
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-unused-vars": "off",
+			"@typescript-eslint/no-require-imports": "off",
+			"@typescript-eslint/ban-ts-comment": "off",
+			"@typescript-eslint/no-empty-function": "off",
+			"@typescript-eslint/no-inferrable-types": "off",
+			"@typescript-eslint/no-non-null-assertion": "off",
+			"@typescript-eslint/no-empty-interface": "off",
+			"@typescript-eslint/no-var-requires": "off",
 			"array-callback-return": ["error"],
 			"comma-dangle": [
 				"error",
@@ -49,7 +60,11 @@ export default [
 			],
 			"no-nested-ternary": "off",
 			"no-param-reassign": "error",
-			"no-use-before-define": ["error", { functions: false }],
+			"no-use-before-define": "off",
+			"@typescript-eslint/no-use-before-define": [
+				"error",
+				{ functions: false },
+			],
 			"prefer-destructuring": ["warn", { array: false, object: true }],
 			"object-curly-spacing": ["error", "always"],
 			quotes: ["error", "double", { avoidEscape: true }],
@@ -58,7 +73,7 @@ export default [
 		},
 	},
 	{
-		files: ["**/test/**/*.js"],
+		files: ["**/test/**/*.{js,ts}"],
 		languageOptions: {
 			globals: {
 				describe: "readonly",

@@ -1,4 +1,5 @@
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import typescript from "@rollup/plugin-typescript";
 
 // Only build CommonJS - ESM uses source files directly for better tree-shaking
 export default {
@@ -8,7 +9,10 @@ export default {
 		format: "cjs",
 		exports: "named"
 	},
-	plugins: [nodeResolve()],
+	plugins: [
+		nodeResolve({ extensions: [".js", ".ts"] }),
+		typescript({ noEmit: false, declaration: false }),
+	],
 	external: [
 		"es-toolkit",
 		"didyoumean",
